@@ -195,6 +195,7 @@ export default function Marketplace() {
   const [mode, setMode] = useState<Mode>("exhibition");
   const [config, setConfig] = useState<Configuration>(defaults);
   const [webgl, setWebgl] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
   const [reduced, setReduced] = useState(true);
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -268,6 +269,7 @@ export default function Marketplace() {
   useEffect(() => {
     if (
       workspace ||
+      (webgl && !sceneReady) ||
       paused ||
       reduced ||
       !visible ||
@@ -282,6 +284,8 @@ export default function Marketplace() {
     return () => clearInterval(timer);
   }, [
     workspace,
+    webgl,
+    sceneReady,
     paused,
     reduced,
     visible,
@@ -323,10 +327,6 @@ export default function Marketplace() {
     setDetailsOpen(true);
     requestAnimationFrame(() => {
       panelTitle.current?.focus({ preventScroll: true });
-      panelTitle.current?.scrollIntoView({
-        block: "nearest",
-        behavior: reduced ? "instant" : "smooth",
-      });
     });
   }
   function startObject(event: PointerEvent, orientation = { x: 0, y: -0.45 }) {
@@ -715,6 +715,7 @@ export default function Marketplace() {
               <SceneBoundary fallback={fallback}>
                 <Scene
                   selected={selected}
+                  onReady={() => setSceneReady(true)}
                   reduced={reduced}
                   paused={paused || !visible}
                   workspace={workspace}
@@ -965,6 +966,112 @@ export default function Marketplace() {
               </div>
             </>
           )}
+          {!workspace && detailsOpen && (
+            <section
+              className="creation-panel"
+              id="community"
+              aria-labelledby="creation-panel-title"
+            >
+              <div className="detail-heading">
+                <div>
+                  <span className="fictional-badge">
+                    FICTIONAL DEMO · PROFILES, RATINGS & COMMENTS ARE INVENTED
+                  </span>
+                  <h2 id="creation-panel-title" ref={panelTitle} tabIndex={-1}>
+                    {item.name}
+                  </h2>
+                </div>
+                <button
+                  aria-label="Close creation details"
+                  onClick={() => {
+                    setDetailsOpen(false);
+                    sceneRoot.current?.focus({ preventScroll: true });
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="detail-grid">
+                <article>
+                  <span className="eyebrow">DESIGNED BY {item.creator}</span>
+                  <p>{item.biography}</p>
+                  <p className="designer-motivation">{item.story}</p>
+                  <a
+                    href={`#designer-${selected}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      openDetail("profile", e.currentTarget);
+                    }}
+                  >
+                    Full designer profile & story <Arrow />
+                  </a>
+                </article>
+                <article>
+                  <span className="eyebrow">FICTIONAL MANUFACTURER</span>
+                  <h3>{item.maker}</h3>
+                  <div
+                    className="rating"
+                    aria-label={`Fictional manufacturer rating: ${item.rating} out of 5 stars`}
+                  >
+                    <span aria-hidden="true">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <svg key={i} viewBox="0 0 20 20">
+                          <path
+                            d="m10 1 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L10 15.3l-5.6 2.9 1.1-6.2L1 7.6l6.2-.9Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      ))}
+                    </span>
+                    <strong>{item.rating} / 5</strong>
+                  </div>
+                  <small>Illustrative demo rating. No real reviews.</small>
+                  <p>{item.material}</p>
+                  <p className="model-provenance">
+                    {selected === 2
+                      ? "Licensed reference: Sheen Chair · Eric Chadwick / Wayfair · CC0"
+                      : selected === 10
+                        ? "Licensed reference: BoomBox · Microsoft · CC0"
+                        : "Procedural demo placeholder · Not photorealistic"}
+                  </p>
+                  <a
+                    className="asset-credit"
+                    href="/models/ATTRIBUTION.md"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Model credits & licences <Arrow />
+                  </a>
+                </article>
+                <article className="detail-comments">
+                  <span className="eyebrow">COMMUNITY · FICTIONAL PREVIEW</span>
+                  <blockquote>
+                    {recentComment
+                      ? recentComment.text.slice(0, 160) +
+                        (recentComment.text.length > 160 ? "…" : "")
+                      : item.comment}
+                    <cite>
+                      {recentComment
+                        ? "You · Local preview, not published"
+                        : `${item.author} · Fictional`}
+                    </cite>
+                  </blockquote>
+                  {commentForm("preview-comment")}
+                  <a
+                    href={`#comments-${selected}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      openDetail("comments", e.currentTarget);
+                    }}
+                  >
+                    Full comments (
+                    {1 + comments.filter((c) => c.creation === selected).length}
+                    ) <Arrow />
+                  </a>
+                </article>
+              </div>
+            </section>
+          )}
         </section>
         {!workspace && (
           <div className="carousel-access" aria-label="Carousel controls">
@@ -992,97 +1099,6 @@ export default function Marketplace() {
               →
             </button>
           </div>
-        )}
-        {!workspace && detailsOpen && (
-          <section
-            className="creation-panel"
-            id="community"
-            aria-labelledby="creation-panel-title"
-          >
-            <div className="detail-heading">
-              <div>
-                <span className="fictional-badge">
-                  FICTIONAL DEMO · PROFILES, RATINGS & COMMENTS ARE INVENTED
-                </span>
-                <h2 id="creation-panel-title" ref={panelTitle} tabIndex={-1}>
-                  {item.name}
-                </h2>
-              </div>
-              <button
-                aria-label="Close creation details"
-                onClick={() => {
-                  setDetailsOpen(false);
-                  sceneRoot.current?.focus({ preventScroll: true });
-                }}
-              >
-                ×
-              </button>
-            </div>
-            <div className="detail-grid">
-              <article>
-                <span className="eyebrow">DESIGNED BY {item.creator}</span>
-                <p>{item.biography}</p>
-                <p>{item.story}</p>
-                <a
-                  href={`#designer-${selected}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    openDetail("profile", e.currentTarget);
-                  }}
-                >
-                  Full designer profile & story <Arrow />
-                </a>
-              </article>
-              <article>
-                <span className="eyebrow">FICTIONAL MANUFACTURER</span>
-                <h3>{item.maker}</h3>
-                <div
-                  className="rating"
-                  aria-label={`Fictional manufacturer rating: ${item.rating} out of 5 stars`}
-                >
-                  <span aria-hidden="true">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <svg key={i} viewBox="0 0 20 20">
-                        <path
-                          d="m10 1 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L10 15.3l-5.6 2.9 1.1-6.2L1 7.6l6.2-.9Z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                    ))}
-                  </span>
-                  <strong>{item.rating} / 5</strong>
-                </div>
-                <small>Illustrative demo rating. No real reviews.</small>
-                <p>{item.material}</p>
-              </article>
-              <article className="detail-comments">
-                <span className="eyebrow">COMMUNITY · FICTIONAL PREVIEW</span>
-                <blockquote>
-                  {recentComment
-                    ? recentComment.text.slice(0, 160) +
-                      (recentComment.text.length > 160 ? "…" : "")
-                    : item.comment}
-                  <cite>
-                    {recentComment
-                      ? "You · Local preview, not published"
-                      : `${item.author} · Fictional`}
-                  </cite>
-                </blockquote>
-                {commentForm("preview-comment")}
-                <a
-                  href={`#comments-${selected}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    openDetail("comments", e.currentTarget);
-                  }}
-                >
-                  Full comments (
-                  {1 + comments.filter((c) => c.creation === selected).length}){" "}
-                  <Arrow />
-                </a>
-              </article>
-            </div>
-          </section>
         )}
         {workspace && (
           <section className="workspace-disclaimer">

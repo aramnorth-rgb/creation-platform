@@ -24,7 +24,7 @@ The npm cache uses `/tmp` for restricted cloud home directories. Models, illustr
 
 ## Carousel interactions
 
-The initial viewport contains the header/mode navigation and the visual carousel, without a hero headline, creation list or information overlay. Additional accessible controls sit **below** the initial viewport.
+The initial viewport contains the header/mode navigation and the visual carousel, without a hero headline or creation list. A compact floating information card appears beside the selected creation only after selection; on mobile it becomes a scrollable floating card above the lowered creation. Opening or closing it does not resize the canvas, scroll the page or reset the carousel. Additional accessible controls sit **below** the initial viewport.
 
 Twelve distinct procedural demo creations sit around a large circular platform: an Atlas motorhome, Glide scooter, Fold chair, Halo light, Mira robotic arm, Orbit ring, Quiet Pavilion, Torque drill, Meridian watch, Aero Seed drone, Resonance speaker and Tidal Vessel. A fixed spotlight illuminates the front position; the other creations remain shadow silhouettes.
 
@@ -32,7 +32,7 @@ Twelve distinct procedural demo creations sit around a large circular platform: 
 - **Carousel drag:** drag the surrounding space horizontally, then release to snap to a creation. The angular distance determines how many positions move. Pointer cancellation restores the current selection.
 - **Object drag:** start on the spotlighted model to rotate it independently in pitch/yaw. Release to ease back to its original orientation, then resume slow rotation. This does not move the carousel or open details. Pointer movement over 8 CSS pixels counts as a drag; a tap/click opens details instead. Pausing automatic movement still allows manual interaction and animated return. Reduced motion uses an immediate return.
 - **Keyboard:** focus the carousel with Tab. Left/Right selects creations; Home returns to Atlas; Enter or Space opens details; P pauses/resumes automatic movement. Shift + arrow keys rotates the object; releasing the arrow returns it. Previous/Next, Explore creation and Pause buttons below the canvas provide equivalent controls.
-- **Details:** click/tap the featured object to reveal a compact panel below it. It contains the chosen object name, designer biography/motivation, fictional manufacturer and numeric star rating, a comments preview and a local comment-entry control. Full profile/story and full comments links open working accessible demo dialogs. Close with Escape or the labelled close buttons; focus returns to the opener.
+- **Details:** click/tap the featured object to reveal a compact floating panel beside it. It contains the chosen object name, designer biography/motivation, fictional manufacturer and numeric star rating, a comments preview and a local comment-entry control. Full profile/story and full comments links open working accessible demo dialogs. Close with Escape or the labelled close buttons; focus returns to the opener.
 - **Local comments:** additions belong to the selected creation, appear in its full comments view and are never sent to a server. Everything resets on refresh. Clear fictional and unpublished labels remain visible in all detail views.
 
 ## Three preserved studio modes
@@ -49,7 +49,7 @@ Options are shared between modes. Workshop background/grid, pause and reset rema
 
 - Semantic labelled controls, visible keyboard focus, screen-reader instructions, focus restoration and native dialogs with focus wrapping.
 - Reduced-motion preferences disable automatic cycling, rotation and cinematic transitions. Manual selection, object rotation and all configurators remain available.
-- One canvas, capped device pixel ratio (1.5), low-complexity geometry and demand rendering when paused/reduced-motion. Necessary return/snap frames are requested only until settled. No external assets, postprocessing or real-time shadow maps.
+- One canvas, capped device pixel ratio (1.5), demand rendering when paused/reduced-motion, and a single 1024px soft spotlight shadow map. Necessary return/snap frames are requested only until settled. Locally generated studio reflections require no external HDR download. Detailed geometry and GLBs load only for the featured creation; shadow silhouettes use the lightweight procedural models. A wider, feathered light covers the full creation and surrounding floor. The circular platform is lower and the camera is framed closer to floor level. All gallery lighting/model changes are isolated from the three configurators.
 - When WebGL is unavailable or rendering fails, local SVG illustrations preserve selection, drag/tap details and studio options. Motorhome illustrations reflect colour, length, wheel size and modules; polished shading, body wireframe and clearance are best explored in 3D.
 - Responsive layouts include a full mobile carousel and stacked studio controls. Horizontal scene drags and vertical object drags use pointer capture; page scrolling remains available outside the canvas.
 
@@ -75,6 +75,16 @@ Playwright starts a dedicated **production server on port 3100**, leaving a dev 
 
 - `app/`: App Router page/layout, metadata and Tailwind/global styling.
 - `components/marketplace.tsx`: pointer/keyboard interactions, details, dialogs, configurators, fallback illustrations and local state.
-- `components/creation-scene.tsx`: procedural models, circular group animation, independent model orientation and studio rendering.
+- `components/creation-scene.tsx`: circular group animation, independent model orientation and unchanged studio rendering.
+- `components/gallery-models.tsx`: gallery-only PBR details, licensed GLB loading and procedural fallbacks.
+- `components/gallery-lighting.tsx`: local studio reflections, restored on leaving the exhibition.
 - `components/exhibition-data.ts`: explicitly fictional concepts, profiles, ratings and configuration defaults.
 - `tests/home.spec.ts`: browser integration checks.
+
+## Assets and visual limitations
+
+Two detailed **CC0** Khronos reference GLBs are shipped locally: **Sheen Chair** (Eric Chadwick / Wayfair) for Fold, and **BoomBox** (Microsoft) for Resonance. Geometry and PBR material definitions are preserved; embedded textures were resized to 512px. The chair's sample label is hidden at runtime. Combined binaries are approximately 3.15 MB and load on first selection, not on initial page display. Files then use the loader cache.
+
+Full upstream sources, licences, modifications and SHA-256 checksums are recorded in [public/models/ATTRIBUTION.md](public/models/ATTRIBUTION.md), with retained licence notices beside the binaries. These real asset authors are separate from the exhibition's fictional designer/manufacturer stories. Source trademarks do not imply affiliation or endorsement.
+
+The other ten creations remain **procedural demo placeholders**, with gallery-only additions such as tyre/hub detail, mirrors and lights, scooter brakes and grips, lamp diffuser, robot hardware, jewellery facets, pavilion decking and glass, drill vents/grip, watch dial/strap, drone camera/rotors and a smooth glazed vessel. They are not photorealistic scans or production CAD. Procedural stand-ins are also used during GLB loading or failure; SVGs remain the no-WebGL fallback.
