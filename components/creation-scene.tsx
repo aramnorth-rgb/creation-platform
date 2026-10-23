@@ -3,6 +3,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import type { Group } from "three";
+import GalleryProduct from "./gallery-models";
+import GalleryLighting from "./gallery-lighting";
 import { creations, defaults, type Configuration } from "./exhibition-data";
 
 function Box({
@@ -503,19 +505,26 @@ export type ObjectRotation = {
   dragging: boolean;
   returning: boolean;
 };
-function CameraRig({ workspace }: { workspace: boolean }) {
+function CameraRig({
+  workspace,
+  onReady,
+}: {
+  workspace: boolean;
+  onReady?: () => void;
+}) {
   const { camera, invalidate } = useThree();
   const ready = useRef(false);
   useFrame(({ gl }) => {
     if (!ready.current) {
       gl.domElement.dataset.sceneReady = "true";
       ready.current = true;
+      onReady?.();
     }
   });
   useEffect(() => {
     if (workspace) camera.position.set(6.6, 3.8, 8.8);
-    else camera.position.set(0, 4.5, 13);
-    camera.lookAt(0, workspace ? 0 : 1, -1);
+    else camera.position.set(0, 3.5, 14.5);
+    camera.lookAt(0, workspace ? 0 : 1.4, -1);
     camera.updateProjectionMatrix();
     invalidate();
   }, [camera, invalidate, workspace]);
@@ -589,7 +598,13 @@ function CarouselItem({
             }
           }}
         >
-          <Product index={index} config={config} />
+          {onObjectDown ? (
+            <GalleryProduct index={index} active={active}>
+              <Product index={index} config={config} />
+            </GalleryProduct>
+          ) : (
+            <Product index={index} config={config} />
+          )}
         </group>
       </group>
     </group>
@@ -688,15 +703,23 @@ function Carousel({
   ) : (
     <group
       ref={ring}
-      position={[0, 0, -12]}
+      position={[0, -0.6, -12]}
       rotation={reduced ? [0, target, 0] : undefined}
     >
       {creations.map((_, i) => item(i))}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 0]}>
+      <mesh
+        receiveShadow
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -0.02, 0]}
+      >
         <circleGeometry args={[14, 96]} />
-        <meshStandardMaterial color="#090c0e" roughness={0.9} />
+        <meshStandardMaterial
+          color="#090c0e"
+          roughness={0.9}
+          envMapIntensity={0}
+        />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.025, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.015, 0]}>
         <ringGeometry args={[11.8, 11.83, 96]} />
         <meshBasicMaterial color="#252a2c" />
       </mesh>
@@ -705,6 +728,7 @@ function Carousel({
 }
 export default function CreationScene({
   selected,
+  onReady,
   reduced,
   paused,
   workspace,
@@ -715,6 +739,7 @@ export default function CreationScene({
   onObjectDown = () => {},
 }: {
   selected: number;
+  onReady?: () => void;
   reduced: boolean;
   paused?: boolean;
   workspace: boolean;
@@ -727,24 +752,31 @@ export default function CreationScene({
   return (
     <Canvas
       dpr={[1, 1.5]}
+      shadows="soft"
       camera={{ position: [0, 4.5, 13], fov: 39 }}
       gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
       frameloop={reduced || paused ? "demand" : "always"}
       aria-hidden="true"
     >
-      <CameraRig workspace={workspace} />
-      <ambientLight intensity={workspace ? 2 : 0.085} />
+      <CameraRig workspace={workspace} onReady={onReady} />
+      {!workspace && <GalleryLighting />}
+      <ambientLight intensity={workspace ? 2 : 0.06} />
       <spotLight
         position={[0, 7, 3]}
-        angle={0.43}
-        penumbra={0.7}
-        intensity={workspace ? 150 : 230}
-        distance={20}
+        angle={workspace ? 0.43 : 0.85}
+        penumbra={workspace ? 0.7 : 1}
+        castShadow={!workspace}
+        shadow-mapSize={[1024, 1024]}
+        shadow-normalBias={0.035}
+        shadow-bias={-0.00015}
+        shadow-radius={4}
+        intensity={workspace ? 150 : 260}
+        distance={workspace ? 20 : 24}
         color="#fff0d2"
       />
       <directionalLight
         position={[-5, 3, -4]}
-        intensity={workspace ? 3 : 0.32}
+        intensity={workspace ? 3 : 0.2}
         color={workspace ? "#ffffff" : "#7a8b9b"}
       />
       {workspace && <directionalLight position={[4, 3, 1]} intensity={2} />}
@@ -758,14 +790,22 @@ export default function CreationScene({
         rotation={rotation}
         onObjectDown={onObjectDown}
       />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, 0]}>
+      <mesh
+        receiveShadow={!workspace}
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, workspace ? -0.03 : -0.63, 0]}
+      >
         <planeGeometry args={[200, 200]} />
         <meshStandardMaterial
           color={workspace ? "#f0f1ed" : "#050708"}
+          envMapIntensity={workspace ? 1 : 0}
           roughness={0.9}
         />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.008, 0]}>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, workspace ? -0.008 : -0.608, 0]}
+      >
         <planeGeometry args={[7, 4]} />
         <shaderMaterial
           transparent

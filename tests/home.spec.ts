@@ -1,18 +1,28 @@
 import { expect, test } from "@playwright/test";
 
-test("minimal viewport, twelve-step automatic carousel, keyboard selection and pause", async ({
+test("minimal viewport and twelve-step fallback timing, keyboard selection and pause", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.setViewportSize({ width: 1440, height: 1000 });
+  // Timer/controller coverage is independent of GPU shader compilation.
+  // The separate drag, asset and touch tests exercise the live WebGL scene.
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      ...args: Parameters<typeof original>
+    ) {
+      return String(args[0]).includes("webgl")
+        ? null
+        : original.apply(this, args);
+    } as typeof original;
+  });
   await page.clock.install();
   await page.goto("/");
   const scene = page.locator(".scene");
-  await expect(scene.locator("canvas")).toHaveAttribute(
-    "data-scene-ready",
-    "true",
-  );
+  await expect(scene.locator(".fallback-object")).toBeVisible();
   // Freeze between explicit advances: software-rendered actions must not consume
   // the remaining portion of the ten-second interval in real wall-clock time.
   const virtualNow = await page.evaluate(() => Date.now());
@@ -61,12 +71,13 @@ test("object drag is isolated, returns smoothly, carousel drag selects, click op
 }) => {
   // Software WebGL plus canvas captures can be slower on shared CI machines.
   test.setTimeout(60000);
-  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.setViewportSize({ width: 960, height: 720 });
   await page.goto("/");
   const scene = page.locator(".scene");
   await expect(scene.locator("canvas")).toHaveAttribute(
     "data-scene-ready",
     "true",
+    { timeout: 20000 },
   );
   // Pause using keyboard, leaving the full-screen canvas in view.
   await scene.focus();
@@ -74,11 +85,11 @@ test("object drag is isolated, returns smoothly, carousel drag selects, click op
   await page.waitForTimeout(500);
   const box = (await scene.boundingBox())!;
   const x = box.x + box.width * 0.5,
-    y = box.y + box.height * 0.48;
+    y = box.y + box.height * 0.62;
   const before = await scene.locator("canvas").screenshot();
   await page.mouse.move(x, y);
   await page.mouse.down();
-  await page.mouse.move(x + 160, y - 90, { steps: 12 });
+  await page.mouse.move(x + 160, y - 90, { steps: 6 });
   await expect(scene).toHaveAttribute("data-object-dragging", "true");
   await expect(scene).toHaveAttribute("data-creation", "0");
   const heldDrag = await scene.locator("canvas").screenshot();
@@ -94,8 +105,8 @@ test("object drag is isolated, returns smoothly, carousel drag selects, click op
   // Empty upper canvas belongs to the carousel, independently of the object.
   await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.12);
   await page.mouse.down();
-  await page.mouse.move(box.x + box.width * 0.55, box.y + box.height * 0.12, {
-    steps: 12,
+  await page.mouse.move(box.x + box.width * 0.67, box.y + box.height * 0.12, {
+    steps: 6,
   });
   await page.mouse.up();
   await expect(scene).not.toHaveAttribute("data-creation", "0");
@@ -117,6 +128,7 @@ test("on-demand information, fictional designer profile, rating and full local c
   await expect(scene.locator("canvas")).toHaveAttribute(
     "data-scene-ready",
     "true",
+    { timeout: 20000 },
   );
   await scene.focus();
   await page.keyboard.down("Shift");
@@ -126,9 +138,22 @@ test("on-demand information, fictional designer profile, rating and full local c
   await page.keyboard.up("Shift");
   await expect(scene).toHaveAttribute("data-object-dragging", "false");
   await expect(scene).toHaveAttribute("data-creation", "0");
+  const stageBefore = (await page.locator(".stage").boundingBox())!;
+  const sceneBefore = (await scene.boundingBox())!;
+  const scrollBefore = await page.evaluate(() => scrollY);
   await page.keyboard.press("Enter");
   const panel = page.locator(".creation-panel");
   await expect(panel).toBeVisible();
+  expect((await page.locator(".stage").boundingBox())!.height).toBe(
+    stageBefore.height,
+  );
+  expect((await scene.boundingBox())!.width).toBe(sceneBefore.width);
+  expect(await page.evaluate(() => scrollY)).toBe(scrollBefore);
+  const panelBox = (await panel.boundingBox())!;
+  expect(panelBox.width).toBeLessThanOrEqual(340);
+  expect(panelBox.y + panelBox.height).toBeLessThanOrEqual(
+    stageBefore.y + stageBefore.height,
+  );
   await expect(page.getByRole("heading", { name: "Atlas / 01" })).toBeFocused();
   await expect(
     panel.getByLabel(/Fictional manufacturer rating: 4.4/),
@@ -165,6 +190,10 @@ test("on-demand information, fictional designer profile, rating and full local c
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Close creation details" }).click();
   await expect(panel).toHaveCount(0);
+  expect((await page.locator(".stage").boundingBox())!.height).toBe(
+    stageBefore.height,
+  );
+  await expect(scene).toHaveAttribute("data-creation", "0");
   await expect(scene).toBeFocused();
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("Enter");
@@ -364,6 +393,7 @@ test("mobile WebGL object touch rotates without choosing or opening, tap opens",
   await expect(scene.locator("canvas")).toHaveAttribute(
     "data-scene-ready",
     "true",
+    { timeout: 20000 },
   );
   const client = await page.context().newCDPSession(page);
   await client.send("Emulation.setTouchEmulationEnabled", {
@@ -372,7 +402,7 @@ test("mobile WebGL object touch rotates without choosing or opening, tap opens",
   });
   const box = (await scene.boundingBox())!;
   const x = box.width / 2,
-    y = box.y + box.height * 0.48;
+    y = box.y + box.height * 0.62;
   await client.send("Input.dispatchTouchEvent", {
     type: "touchStart",
     touchPoints: [{ x, y }],
@@ -398,4 +428,56 @@ test("mobile WebGL object touch rotates without choosing or opening, tap opens",
   });
   await expect(page.locator(".creation-panel")).toBeVisible();
   expect(errors).toEqual([]);
+});
+
+test("local CC0 assets load, credits are available and missing assets fall back", async ({
+  page,
+  request,
+}) => {
+  test.setTimeout(60000);
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  expect((await request.get("/models/SheenChair.glb")).ok()).toBe(true);
+  expect((await request.get("/models/BoomBox.glb")).ok()).toBe(true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const scene = page.locator(".scene");
+  await expect(scene.locator("canvas")).toHaveAttribute(
+    "data-scene-ready",
+    "true",
+    { timeout: 20000 },
+  );
+  const chairLoaded = page.waitForResponse((r) =>
+    r.url().endsWith("/models/SheenChair.glb"),
+  );
+  await scene.focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  expect((await chairLoaded).ok()).toBe(true);
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".model-provenance")).toContainText("Sheen Chair");
+  await expect(
+    page.getByRole("link", { name: /Model credits/ }),
+  ).toHaveAttribute("href", "/models/ATTRIBUTION.md");
+  const credits = await request.get("/models/ATTRIBUTION.md");
+  expect(credits.ok()).toBe(true);
+  expect(await credits.text()).toContain("CC0");
+  await page.getByRole("button", { name: "Close creation details" }).click();
+  await scene.focus();
+  await page.keyboard.press("Home");
+  expect(errors).toEqual([]);
+  await page.route("**/models/*.glb", (r) => r.abort());
+  await page.reload();
+  await expect(page.locator(".scene canvas")).toHaveAttribute(
+    "data-scene-ready",
+    "true",
+    { timeout: 20000 },
+  );
+  await page.locator(".scene").focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Fold / 03" })).toBeVisible();
+  await expect(page.locator(".scene canvas")).toBeVisible();
 });

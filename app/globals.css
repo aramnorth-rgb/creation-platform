@@ -2063,3 +2063,200 @@ footer > span {
   padding: 16px;
   white-space: normal;
 }
+/* Floating exhibition details: never resize the carousel on open/close. */
+.app.gallery-detail-open .stage {
+  height: calc(100svh - 94px);
+  min-height: 480px;
+}
+.creation-panel {
+  position: absolute;
+  z-index: 5;
+  right: 3.5%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 320px;
+  max-width: 32%;
+  max-height: calc(100% - 40px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #576256 transparent;
+  background: linear-gradient(145deg, #1c2425f5, #0c1213f5);
+  border: 1px solid #c5c9b52b;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 20px 70px #0009;
+  backdrop-filter: blur(20px);
+  animation: floating-panel-in 0.35s ease both;
+}
+.creation-panel .detail-heading {
+  gap: 10px;
+  margin-bottom: 17px;
+}
+.creation-panel .detail-heading .fictional-badge {
+  font-size: 5px;
+  letter-spacing: 0.55px;
+  padding: 6px;
+  line-height: 1.7;
+}
+.creation-panel .detail-heading h2 {
+  font-size: 26px;
+  margin-top: 13px;
+}
+.creation-panel .detail-heading > button {
+  font-size: 22px;
+  min-width: 32px;
+  min-height: 36px;
+}
+.creation-panel .detail-grid {
+  grid-template-columns: 1fr;
+  gap: 17px;
+}
+.creation-panel .detail-grid article:not(:first-child) {
+  border-top: 1px solid #ffffff16;
+  padding-top: 16px;
+}
+.creation-panel .detail-grid article > .eyebrow {
+  font-size: 6px;
+  letter-spacing: 1px;
+  margin-bottom: 9px;
+}
+.creation-panel .detail-grid p {
+  font-size: 10px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.creation-panel .designer-motivation {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.creation-panel .detail-grid a {
+  font-size: 9px;
+  margin-top: 3px;
+  gap: 14px;
+  padding-bottom: 6px;
+}
+.creation-panel .detail-grid h3 {
+  font-size: 19px;
+  margin-bottom: 9px;
+}
+.creation-panel .detail-grid article > small {
+  font-size: 7px;
+  margin-bottom: 9px;
+}
+.creation-panel .rating {
+  margin-bottom: 6px;
+  gap: 10px;
+}
+.creation-panel .rating svg {
+  width: 10px;
+  height: 10px;
+}
+.creation-panel .model-provenance {
+  font-size: 8px !important;
+  color: #87998a;
+  line-height: 1.7;
+}
+.creation-panel .asset-credit {
+  font-size: 8px !important;
+  color: #a6b59c;
+}
+.creation-panel .detail-comments blockquote {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.creation-panel .detail-comment-form label {
+  font-size: 9px;
+}
+.creation-panel .detail-comment-form label small {
+  font-size: 4px;
+}
+.creation-panel .comment-input input {
+  font-size: 10px;
+  min-height: 36px;
+}
+.app:not(.workspace-active) .spotlight-beam {
+  left: 5%;
+  width: 90%;
+  top: -55%;
+  height: 150%;
+  opacity: 0.42;
+  clip-path: none;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    #ecdfc31c 0%,
+    #e1d9c10a 40%,
+    transparent 72%
+  );
+  filter: blur(38px);
+}
+@keyframes floating-panel-in {
+  from {
+    opacity: 0;
+    transform: translate(12px, -50%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+@media (max-width: 700px) {
+  .app.gallery-detail-open .stage {
+    height: calc(100svh - 115px);
+    min-height: 430px;
+  }
+  .creation-panel {
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 12px;
+    transform: none;
+    width: auto;
+    max-width: none;
+    max-height: 39svh;
+    padding: 17px;
+    border-radius: 13px;
+    animation: mobile-panel-in 0.3s ease both;
+  }
+  .creation-panel .detail-heading {
+    position: sticky;
+    top: -17px;
+    z-index: 1;
+    background: #151e1ef5;
+    margin: -1px -1px 15px;
+    padding: 3px 0 10px;
+  }
+  .creation-panel .detail-heading h2 {
+    font-size: 24px;
+  }
+  .creation-panel .detail-grid {
+    gap: 15px;
+  }
+  .app:not(.workspace-active) .spotlight-beam {
+    left: -25%;
+    width: 150%;
+  }
+}
+@keyframes mobile-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 700px) {
+  .creation-panel {
+    top: 12px;
+    bottom: auto;
+    max-height: 32svh;
+  }
+  .creation-panel .detail-heading h2 {
+    font-size: 22px;
+  }
+}
