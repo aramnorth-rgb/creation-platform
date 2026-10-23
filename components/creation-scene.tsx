@@ -5,6 +5,8 @@ import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeom
 import type { Group } from "three";
 import GalleryProduct from "./gallery-models";
 import GalleryLighting from "./gallery-lighting";
+import ShowroomFloor from "./showroom-floor";
+import { PromotionMeshes } from "./promotion-panels";
 import { creations, defaults, type Configuration } from "./exhibition-data";
 
 function Box({
@@ -571,7 +573,7 @@ function CarouselItem({
     <group
       position={
         onObjectDown
-          ? [Math.sin(angle) * 12, 0, Math.cos(angle) * 12]
+          ? [Math.sin(angle) * 18, 0, Math.cos(angle) * 18]
           : [0, 0, 0]
       }
       rotation={[0, angle, 0]}
@@ -703,31 +705,17 @@ function Carousel({
   ) : (
     <group
       ref={ring}
-      position={[0, -0.6, -12]}
+      position={[0, -0.6, -18]}
       rotation={reduced ? [0, target, 0] : undefined}
     >
       {creations.map((_, i) => item(i))}
-      <mesh
-        receiveShadow
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -0.02, 0]}
-      >
-        <circleGeometry args={[14, 96]} />
-        <meshStandardMaterial
-          color="#090c0e"
-          roughness={0.9}
-          envMapIntensity={0}
-        />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.015, 0]}>
-        <ringGeometry args={[11.8, 11.83, 96]} />
-        <meshBasicMaterial color="#252a2c" />
-      </mesh>
+      <ShowroomFloor />
     </group>
   );
 }
 export default function CreationScene({
   selected,
+  detailsOpen = false,
   onReady,
   reduced,
   paused,
@@ -739,6 +727,7 @@ export default function CreationScene({
   onObjectDown = () => {},
 }: {
   selected: number;
+  detailsOpen?: boolean;
   onReady?: () => void;
   reduced: boolean;
   paused?: boolean;
@@ -759,7 +748,15 @@ export default function CreationScene({
       aria-hidden="true"
     >
       <CameraRig workspace={workspace} onReady={onReady} />
-      {!workspace && <GalleryLighting />}
+      {!workspace && (
+        <>
+          <GalleryLighting />
+          <PromotionMeshes
+            reduced={reduced || Boolean(paused)}
+            detailsOpen={detailsOpen}
+          />
+        </>
+      )}
       <ambientLight intensity={workspace ? 2 : 0.06} />
       <spotLight
         position={[0, 7, 3]}
@@ -772,7 +769,7 @@ export default function CreationScene({
         shadow-radius={4}
         intensity={workspace ? 150 : 260}
         distance={workspace ? 20 : 24}
-        color="#fff0d2"
+        color={workspace ? "#fff0d2" : "#f9fbff"}
       />
       <directionalLight
         position={[-5, 3, -4]}

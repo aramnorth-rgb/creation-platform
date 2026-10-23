@@ -27,3 +27,7 @@ Source/licence verification: 23 October 2026. Licences exclude associated tradem
 ## Remaining ten creations
 
 Atlas motorhome, Glide scooter, Halo lamp, Mira arm, Orbit ring, Quiet Pavilion, Torque drill, Meridian watch, Aero Seed drone and Tidal Vessel remain original procedural **demo placeholders**, with refined detail geometry and PBR materials. They are not photorealistic scans or production CAD. Procedural stand-ins also appear while a reference asset loads or if it fails to load. SVG illustrations are used when WebGL is unavailable.
+
+## NITORIX V5 original additions
+
+NITORIX is a provisional working name. The V5 foreground panel typography/artwork, electric borders, spark geometry, carbon-weave texture and showroom rings are generated locally by this project. No stock promotional artwork or external fonts are used. Atlas receives further original procedural coachwork/glazing/grille/arch detail. The procedural ring, pavilion and watch were rebuilt with clearer proportions; the drone gains landing rails. These are still placeholders, not photorealistic licensed scans. CC0 sources and binary checksums above are unchanged.

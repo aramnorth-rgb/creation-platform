@@ -14,6 +14,7 @@ import {
   type Configuration,
   type Mode,
 } from "./exhibition-data";
+import { PromotionCopy } from "./promotion-copy";
 const Scene = dynamic(() => import("./creation-scene"), {
   ssr: false,
   loading: () => <div className="scene-loading">Opening the exhibition…</div>,
@@ -194,6 +195,7 @@ export default function Marketplace() {
   const [selectionVersion, setSelectionVersion] = useState(0);
   const [mode, setMode] = useState<Mode>("exhibition");
   const [config, setConfig] = useState<Configuration>(defaults);
+  const [revision, setRevision] = useState(0);
   const [webgl, setWebgl] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
   const [reduced, setReduced] = useState(true);
@@ -310,6 +312,7 @@ export default function Marketplace() {
     value: Configuration[K],
   ) {
     setConfig((current) => ({ ...current, [key]: value }));
+    setRevision((current) => current + 1);
   }
   function choose(delta: number) {
     setSelectionVersion((v) => v + 1);
@@ -488,13 +491,14 @@ export default function Marketplace() {
       <header className="site-header">
         <a
           className="wordmark"
+          title="NITORIX — provisional working name"
           href="#"
           onClick={(e) => {
             e.preventDefault();
             changeMode("exhibition");
           }}
         >
-          form<span>&</span>field<sup>®</sup>
+          NITORIX<sup>V5</sup>
         </a>
         <nav className="mode-nav" aria-label="Creation modes">
           {modes.map((m) => (
@@ -592,6 +596,7 @@ export default function Marketplace() {
       <main id="main">
         <section
           className={`stage ${workshop && workspace ? "workshop" : ""}`}
+          data-configuration-revision={revision}
           aria-label={
             workspace
               ? "Interactive motorhome configurator"
@@ -715,6 +720,7 @@ export default function Marketplace() {
               <SceneBoundary fallback={fallback}>
                 <Scene
                   selected={selected}
+                  detailsOpen={detailsOpen}
                   onReady={() => setSceneReady(true)}
                   reduced={reduced}
                   paused={paused || !visible}
@@ -730,9 +736,10 @@ export default function Marketplace() {
               fallback
             )}
           </div>
+
           {!workspace ? (
             <>
-              <h1 className="sr-only">form&field community carousel</h1>
+              <h1 className="sr-only">NITORIX community showroom</h1>
               <p id="carousel-instructions" className="sr-only">
                 Twelve fictional demo creations. Drag empty space to turn the
                 carousel. Drag the featured object to rotate it; release to
@@ -946,6 +953,7 @@ export default function Marketplace() {
                   <button
                     onClick={() => {
                       setConfig(defaults);
+                      setRevision((current) => current + 1);
                       setNotice("Design reset to the original Atlas concept.");
                     }}
                   >
@@ -956,7 +964,7 @@ export default function Marketplace() {
               </aside>
               <div className="model-spec">
                 <span>ATLAS / 01</span>
-                <strong>
+                <strong key={revision} className="studio-sync">
                   {colors.find((c) => c.hex === config.color)?.name} ·{" "}
                   {config.finish}
                 </strong>
@@ -1073,6 +1081,9 @@ export default function Marketplace() {
             </section>
           )}
         </section>
+        {!workspace && (
+          <PromotionCopy webgl={webgl} detailsOpen={detailsOpen} />
+        )}
         {!workspace && (
           <div className="carousel-access" aria-label="Carousel controls">
             <button onClick={() => choose(-1)} aria-label="Previous creation">
@@ -1192,13 +1203,14 @@ export default function Marketplace() {
       <footer>
         <a
           className="wordmark"
+          title="NITORIX — provisional working name"
           href="#"
           onClick={(e) => {
             e.preventDefault();
             changeMode("exhibition");
           }}
         >
-          form<span>&</span>field
+          NITORIX
         </a>
         <p>Human imagination. Endless possibility.</p>
         <span>

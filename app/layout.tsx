@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "Form & Field — The Community Exhibition",
+  title: "NITORIX — Community Showroom",
   description:
-    "An exhibition of fictional community creations. Explore a cinematic 3D gallery and interactive design studio.",
+    "NITORIX is a provisional working name for a fictional creation showroom. Explore community concepts and three interactive design workshops.",
 };
 export default function RootLayout({
   children,
