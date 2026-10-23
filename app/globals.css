@@ -1716,3 +1716,350 @@ footer > span {
   border-bottom: 4px solid transparent;
   border-left: 6px solid currentColor;
 }
+/* Immersive circular exhibition. Studio styles above remain shared. */
+.app:not(.workspace-active) .stage {
+  height: calc(100svh - 94px);
+  min-height: 480px;
+  transition: height 0.65s cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+.app:not(.workspace-active) .scene {
+  inset: 0;
+  touch-action: none;
+  cursor: grab;
+  outline-offset: -8px;
+  user-select: none;
+}
+.app:not(.workspace-active) .scene:active {
+  cursor: grabbing;
+}
+.app:not(.workspace-active) .showcase-curtain {
+  background: radial-gradient(
+    ellipse at 50% 53%,
+    #111619 0%,
+    #07090b 48%,
+    #020304 85%
+  );
+}
+.app:not(.workspace-active) .spotlight-beam {
+  left: 26%;
+  width: 48%;
+  top: -30%;
+  height: 115%;
+  opacity: 0.65;
+}
+.app.gallery-detail-open .stage {
+  height: 58svh;
+  min-height: 360px;
+}
+.carousel-access {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 20px 6%;
+  border-top: 1px solid #ffffff12;
+  color: #9da9a5;
+  background: #080c0d;
+}
+.carousel-access button {
+  font-size: 10px;
+  min-width: 44px;
+  min-height: 44px;
+  letter-spacing: 0.5px;
+}
+.carousel-access button:first-child,
+.carousel-access button:last-child {
+  font-size: 20px;
+  color: var(--brass);
+}
+.carousel-access button:hover {
+  color: #eee8d7;
+}
+.fallback-object {
+  width: min(80%, 700px);
+  padding: 0;
+  cursor: grab;
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  touch-action: none;
+}
+.fallback-object .still-model {
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 20px 35px #0007);
+}
+.fallback > span {
+  font-size: 7px;
+  bottom: 10%;
+  opacity: 0.65;
+}
+.app:not(.workspace-active) .fallback > span {
+  clip-path: inset(50%);
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+}
+.creation-panel {
+  background: #101617;
+  padding: 30px 5% 36px;
+  border-top: 1px solid #ffffff20;
+  animation: workspace-enter 0.45s ease both;
+}
+.detail-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 26px;
+}
+.detail-heading .fictional-badge {
+  font-size: 6px;
+  display: inline-block;
+  letter-spacing: 1px;
+  color: #a7b4ab;
+}
+.detail-heading h2 {
+  font-size: 34px;
+  letter-spacing: -0.8px;
+  margin-top: 16px;
+  outline: none;
+}
+.detail-heading > button {
+  font-size: 27px;
+  font-weight: 300;
+  min-width: 44px;
+  min-height: 44px;
+  color: #bdb59c;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 0.8fr 1.1fr;
+  gap: 34px;
+}
+.detail-grid article {
+  min-width: 0;
+}
+.detail-grid article > .eyebrow {
+  font-size: 7px;
+  color: #a7b2a9;
+  letter-spacing: 1.3px;
+  margin-bottom: 13px;
+}
+.detail-grid p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: #abb8b0;
+  margin: 0 0 12px;
+}
+.detail-grid a {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 10px;
+  color: #d7c89f;
+  border-bottom: 1px solid #b9ac8040;
+  padding-bottom: 8px;
+  margin-top: 6px;
+}
+.detail-grid h3 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+.detail-grid article > small {
+  font-size: 8px;
+  color: #94a397;
+  display: block;
+  margin-bottom: 22px;
+}
+.rating {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--brass);
+  margin-bottom: 8px;
+}
+.rating svg {
+  width: 12px;
+  height: 12px;
+  margin-right: 3px;
+}
+.rating strong {
+  font-size: 11px;
+  font-weight: 400;
+}
+.detail-comments blockquote {
+  margin: 0 0 17px;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #d7dacf;
+}
+.detail-comments cite {
+  display: block;
+  font:
+    8px Arial,
+    sans-serif;
+  color: #93a395;
+  margin-top: 9px;
+}
+.detail-comment-form label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
+  color: #c4cfc5;
+  line-height: 1.6;
+}
+.detail-comment-form label small {
+  font-size: 5px;
+  letter-spacing: 0.7px;
+  color: #91a18f;
+}
+.detail-comment-form .comment-input {
+  margin: 4px 0 12px;
+}
+.detail-dialog {
+  position: fixed;
+  margin: auto;
+  background: #141c1c;
+  color: #eeede5;
+  border: 1px solid #536259;
+  width: min(680px, calc(100% - 28px));
+  max-height: 85dvh;
+  overflow: auto;
+  padding: 35px;
+  box-shadow: 0 20px 120px #000b;
+}
+.detail-dialog::backdrop {
+  background: #000c;
+  backdrop-filter: blur(8px);
+}
+.detail-close {
+  display: block;
+  margin: 0 0 15px auto;
+  min-height: 44px;
+  font-size: 11px;
+  color: var(--brass);
+}
+.detail-dialog .fictional-badge {
+  font-size: 6px;
+  display: inline-block;
+}
+.detail-dialog h2 {
+  font-size: 38px;
+  line-height: 1.15;
+  margin: 22px 0 28px;
+}
+.detail-dialog h3 {
+  font-family: Georgia, serif;
+  font-size: 24px;
+  font-weight: 400;
+  margin: 26px 0 16px;
+}
+.detail-dialog .eyebrow {
+  color: #b8c1b3;
+  font-size: 8px;
+  margin-bottom: 20px;
+}
+.detail-dialog p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #a9b8ad;
+  margin-bottom: 16px;
+  overflow-wrap: anywhere;
+}
+.full-comments article {
+  border-block-start: 1px solid #ffffff20;
+  margin: 22px 0;
+  padding-top: 20px;
+}
+.full-comments strong {
+  font-size: 10px;
+  font-weight: 400;
+  color: #d7c99f;
+  display: block;
+  margin-bottom: 10px;
+}
+.full-comments .detail-comment-form {
+  margin-top: 26px;
+}
+@media (max-width: 700px) {
+  .app:not(.workspace-active) .stage {
+    height: calc(100svh - 115px);
+    min-height: 430px;
+  }
+  .app.gallery-detail-open .stage {
+    height: 48svh;
+    min-height: 300px;
+  }
+  .app:not(.workspace-active) .scene {
+    inset: 0;
+  }
+  .app:not(.workspace-active) .spotlight-beam {
+    left: 0;
+    width: 100%;
+  }
+  .carousel-access {
+    gap: 12px;
+    padding: 13px 5%;
+  }
+  .carousel-access button {
+    font-size: 8px;
+  }
+  .creation-panel {
+    padding: 24px 6%;
+  }
+  .detail-heading {
+    margin-bottom: 25px;
+    gap: 12px;
+  }
+  .detail-heading .fictional-badge {
+    font-size: 5px;
+    letter-spacing: 0.6px;
+  }
+  .detail-heading h2 {
+    font-size: 30px;
+  }
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .detail-grid article:not(:first-child) {
+    border-top: 1px solid #ffffff18;
+    padding-top: 24px;
+  }
+  .detail-dialog {
+    padding: 24px;
+  }
+  .detail-dialog h2 {
+    font-size: 31px;
+  }
+  .detail-comment-form label small {
+    font-size: 5px;
+  }
+  .carousel-access button:first-child,
+  .carousel-access button:last-child {
+    font-size: 18px;
+  }
+}
+/* Keep the skip link visually hidden until keyboard focus, even when scrolling. */
+.skip-link {
+  top: 0;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  padding: 0;
+  white-space: nowrap;
+}
+.skip-link:focus {
+  top: 15px;
+  clip-path: none;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  padding: 16px;
+  white-space: normal;
+}

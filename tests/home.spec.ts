@@ -1,34 +1,179 @@
 import { expect, test } from "@playwright/test";
 
-test("exhibition cycles every ten seconds, manual selection resets the clock, pause stops cycling", async ({
+test("minimal viewport, twelve-step automatic carousel, keyboard selection and pause", async ({
   page,
 }) => {
   const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.clock.install();
   await page.goto("/");
+  const scene = page.locator(".scene");
+  await expect(scene.locator("canvas")).toHaveAttribute(
+    "data-scene-ready",
+    "true",
+  );
+  // Freeze between explicit advances: software-rendered actions must not consume
+  // the remaining portion of the ten-second interval in real wall-clock time.
+  const virtualNow = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(new Date(virtualNow + 1000));
+  await scene.focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Home");
+  await expect(scene).toHaveAttribute("data-creation", "0");
+
   await expect(
-    page.getByRole("button", { name: "Pause exhibition" }),
+    page.getByRole("button", { name: "Pause carousel" }),
   ).toBeEnabled();
-  await expect(page.locator(".scene canvas")).toBeVisible();
-  await page.clock.fastForward(10010);
-  await expect(page.getByRole("heading", { name: "Glide / 02" })).toBeVisible();
-  await page.getByRole("button", { name: "Feature Halo / 04" }).click();
-  await expect(page.getByRole("heading", { name: "Halo / 04" })).toBeVisible();
-  await expect(page.getByText("Nia Okafor")).toBeVisible();
-  await page.clock.fastForward(9000);
-  await expect(page.getByRole("heading", { name: "Halo / 04" })).toBeVisible();
-  await page.clock.fastForward(1010);
-  await expect(page.getByRole("heading", { name: "Atlas / 01" })).toBeVisible();
-  await page.getByRole("button", { name: "Pause exhibition" }).click();
-  await page.clock.fastForward(30000);
-  await expect(page.getByRole("heading", { name: "Atlas / 01" })).toBeVisible();
+  await expect(page.locator(".creation-panel")).toHaveCount(0);
+  expect(
+    await page
+      .locator(".carousel-access")
+      .evaluate((e) => e.getBoundingClientRect().top),
+  ).toBeGreaterThanOrEqual(999);
   await expect(
-    page.getByRole("button", { name: "Resume exhibition" }),
+    page.locator(".exhibition-heading,.exhibit-index,.exhibit-caption"),
+  ).toHaveCount(0);
+  await page.clock.fastForward(10010);
+  await expect(scene).toHaveAttribute("data-creation", "1");
+  await scene.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(scene).toHaveAttribute("data-creation", "2");
+  await page.clock.fastForward(9000);
+  await expect(scene).toHaveAttribute("data-creation", "2");
+  await page.clock.fastForward(1010);
+  await expect(scene).toHaveAttribute("data-creation", "3");
+  for (let i = 0; i < 9; i++) {
+    await page.clock.fastForward(10010);
+    await expect(scene).toHaveAttribute("data-creation", String((4 + i) % 12));
+  }
+  await page.keyboard.press("p");
+  await page.clock.fastForward(30000);
+  await expect(scene).toHaveAttribute("data-creation", "0");
+  await expect(
+    page.getByRole("button", { name: "Resume carousel" }),
   ).toHaveAttribute("aria-pressed", "true");
   expect(errors).toEqual([]);
 });
 
+test("object drag is isolated, returns smoothly, carousel drag selects, click opens details", async ({
+  page,
+}) => {
+  // Software WebGL plus canvas captures can be slower on shared CI machines.
+  test.setTimeout(60000);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const scene = page.locator(".scene");
+  await expect(scene.locator("canvas")).toHaveAttribute(
+    "data-scene-ready",
+    "true",
+  );
+  // Pause using keyboard, leaving the full-screen canvas in view.
+  await scene.focus();
+  await page.keyboard.press("p");
+  await page.waitForTimeout(500);
+  const box = (await scene.boundingBox())!;
+  const x = box.x + box.width * 0.5,
+    y = box.y + box.height * 0.48;
+  const before = await scene.locator("canvas").screenshot();
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 160, y - 90, { steps: 12 });
+  await expect(scene).toHaveAttribute("data-object-dragging", "true");
+  await expect(scene).toHaveAttribute("data-creation", "0");
+  const heldDrag = await scene.locator("canvas").screenshot();
+  expect(heldDrag.equals(before)).toBe(false);
+  await page.mouse.up();
+  await expect(scene).toHaveAttribute("data-object-dragging", "false");
+  await expect(page.locator(".creation-panel")).toHaveCount(0);
+  await expect(scene).toHaveAttribute("data-creation", "0");
+  await page.waitForTimeout(1300);
+  expect((await scene.locator("canvas").screenshot()).equals(heldDrag)).toBe(
+    false,
+  );
+  // Empty upper canvas belongs to the carousel, independently of the object.
+  await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.12);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.55, box.y + box.height * 0.12, {
+    steps: 12,
+  });
+  await page.mouse.up();
+  await expect(scene).not.toHaveAttribute("data-creation", "0");
+  await expect(page.locator(".creation-panel")).toHaveCount(0);
+  await scene.focus();
+  await page.keyboard.press("Home");
+  await page.waitForTimeout(900);
+  await page.mouse.click(x, y);
+  await expect(page.locator(".creation-panel")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Atlas / 01" })).toBeVisible();
+});
+
+test("on-demand information, fictional designer profile, rating and full local comments", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const scene = page.locator(".scene");
+  await expect(scene.locator("canvas")).toHaveAttribute(
+    "data-scene-ready",
+    "true",
+  );
+  await scene.focus();
+  await page.keyboard.down("Shift");
+  await page.keyboard.down("ArrowUp");
+  await expect(scene).toHaveAttribute("data-object-dragging", "true");
+  await page.keyboard.up("ArrowUp");
+  await page.keyboard.up("Shift");
+  await expect(scene).toHaveAttribute("data-object-dragging", "false");
+  await expect(scene).toHaveAttribute("data-creation", "0");
+  await page.keyboard.press("Enter");
+  const panel = page.locator(".creation-panel");
+  await expect(panel).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Atlas / 01" })).toBeFocused();
+  await expect(
+    panel.getByLabel(/Fictional manufacturer rating: 4.4/),
+  ).toBeVisible();
+  const profile = page.getByRole("link", { name: /Full designer profile/ });
+  await profile.click();
+  const dialog = page.locator(".detail-dialog");
+  await expect(dialog).toBeVisible();
+  await expect(
+    dialog.getByRole("heading", { name: "Elio Mercer" }),
+  ).toBeVisible();
+  await expect(
+    dialog.getByText(/fictional independent designer/),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(profile).toBeFocused();
+  await page
+    .getByRole("textbox", { name: /Add a comment/ })
+    .fill("A quiet adventure, imagined beautifully.");
+  await page.getByRole("button", { name: "Add local comment" }).click();
+  await expect(page.getByRole("status")).toContainText("Not published");
+  await expect(
+    panel.getByText("A quiet adventure, imagined beautifully."),
+  ).toBeVisible();
+  await page.getByRole("link", { name: /Full comments/ }).click();
+  await expect(
+    dialog.getByText("A quiet adventure, imagined beautifully."),
+  ).toBeVisible();
+  await dialog
+    .getByRole("textbox", { name: /Add a comment/ })
+    .fill("A second local thought.");
+  await dialog.getByRole("button", { name: "Add local comment" }).click();
+  await expect(dialog.getByText("A second local thought.")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Close creation details" }).click();
+  await expect(panel).toHaveCount(0);
+  await expect(scene).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Glide / 02" })).toBeVisible();
+  await page.getByRole("link", { name: /Full comments/ }).click();
+  await expect(
+    dialog.getByText("A quiet adventure, imagined beautifully."),
+  ).toHaveCount(0);
+});
 test("three studio modes update the model, retain options and reset", async ({
   page,
 }) => {
@@ -92,60 +237,16 @@ test("three studio modes update the model, retain options and reset", async ({
   );
   await page.getByRole("button", { name: /Back to exhibition/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Extraordinary",
+    "form&field community carousel",
   );
   expect(errors).toEqual([]);
 });
 
-test("accessible menu, local community interactions and fictional disclosures", async ({
+test("mobile touch gestures, cancellation, reduced motion, fallback and configurators", async ({
   page,
 }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
-  const trigger = page.getByRole("button", { name: "Open navigation menu" });
-  await trigger.click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog).toBeVisible();
-  await page.keyboard.press("Shift+Tab");
-  await expect(
-    dialog.getByRole("link", { name: /How it works/ }),
-  ).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(
-    dialog.getByRole("button", { name: "Close navigation menu" }),
-  ).toBeFocused();
-  await page.keyboard.press("Escape");
-  await expect(trigger).toBeFocused();
-  await trigger.click();
-  await dialog.getByRole("button", { name: "Assemble" }).click();
-  await expect(dialog).not.toBeVisible();
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Build your possibilities",
-  );
-  await page.getByRole("button", { name: /Back to exhibition/ }).click();
-  await page.getByRole("button", { name: /Appreciate this idea/ }).click();
-  await expect(
-    page.getByRole("button", { name: /Appreciated/ }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await page
-    .getByRole("textbox", { name: /Add to the conversation/ })
-    .fill("A beautiful concept for a slower adventure.");
-  await page.getByRole("button", { name: "Add local comment" }).click();
-  await expect(
-    page.getByText("A beautiful concept for a slower adventure."),
-  ).toBeVisible();
-  await expect(page.getByRole("status")).toContainText("not published");
-  await page.getByRole("button", { name: "Feature Glide / 02" }).click();
-  await expect(
-    page.getByText("A beautiful concept for a slower adventure."),
-  ).not.toBeVisible();
-  await page.getByText("Is this a real marketplace?").click();
-  await expect(page.getByText(/There are no real customers/)).toBeVisible();
-});
-
-test("mobile no-WebGL fallback, reduced motion and all workspace controls", async ({
-  page,
-}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
   await page.setViewportSize({ width: 375, height: 812 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.addInitScript(() => {
@@ -158,25 +259,55 @@ test("mobile no-WebGL fallback, reduced motion and all workspace controls", asyn
       return original.apply(this, args);
     } as typeof original;
   });
-  await page.goto("/");
-  await expect(
-    page.getByText("Illustrated preview · WebGL unavailable"),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", {
-      name: "Motion disabled by reduced-motion preference",
-    }),
-  ).toBeDisabled();
   await page.clock.install();
+  await page.goto("/");
+  const scene = page.locator(".scene");
+  await expect(scene.locator(".fallback-object")).toBeVisible();
   await page.clock.fastForward(30000);
-  await expect(page.getByRole("heading", { name: "Atlas / 01" })).toBeVisible();
-  await page.getByRole("button", { name: "Feature Fold / 03" }).click();
-  await expect(page.getByRole("heading", { name: "Fold / 03" })).toBeVisible();
+  await expect(scene).toHaveAttribute("data-creation", "0");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+  // Real Chromium touch input verifies pointer capture and cancellation.
+  const box = (await scene.boundingBox())!;
+  const objectBox = (await scene.locator(".fallback-object").boundingBox())!;
+  const client = await page.context().newCDPSession(page);
+  await client.send("Emulation.setTouchEmulationEnabled", {
+    enabled: true,
+    maxTouchPoints: 1,
+  });
+  const touch = async (
+    type: "touchStart" | "touchMove" | "touchEnd" | "touchCancel",
+    x = 0,
+    y = 0,
+  ) =>
+    client.send("Input.dispatchTouchEvent", {
+      type,
+      touchPoints:
+        type === "touchEnd" || type === "touchCancel" ? [] : [{ x, y }],
+    });
+  const x = objectBox.x + objectBox.width / 2,
+    y = objectBox.y + objectBox.height / 2;
+  await touch("touchStart", x, y);
+  await touch("touchMove", x + 65, y + 40);
+  await expect(scene).toHaveAttribute("data-object-dragging", "true");
+  await touch("touchEnd");
+  await expect(scene).toHaveAttribute("data-creation", "0");
+  await expect(page.locator(".creation-panel")).toHaveCount(0);
+  await touch("touchStart", 330, box.y + 35);
+  await touch("touchMove", 230, box.y + 35);
+  await touch("touchCancel");
+  await expect(scene).toHaveAttribute("data-creation", "0");
+  await touch("touchStart", 330, box.y + 35);
+  await touch("touchMove", 230, box.y + 35);
+  await touch("touchEnd");
+  await expect(scene).not.toHaveAttribute("data-creation", "0");
+  await scene.focus();
+  await page.keyboard.press("Home");
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Atlas / 01" })).toBeVisible();
   const nav = page.getByRole("navigation", { name: "Creation modes" });
   for (const mode of ["customise", "assemble", "engineer"]) {
     await nav.getByRole("button", { name: new RegExp(mode, "i") }).click();
@@ -194,4 +325,77 @@ test("mobile no-WebGL fallback, reduced motion and all workspace controls", asyn
   expect(
     await page.locator(".still-model g").first().getAttribute("transform"),
   ).toContain("scale(1.176");
+  expect(errors).toEqual([]);
+});
+
+test("navigation modal retains keyboard focus and opens all studio modes", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const trigger = page.getByRole("button", { name: "Open navigation menu" });
+  await trigger.click();
+  const dialog = page.locator(".menu-dialog");
+  await page.keyboard.press("Shift+Tab");
+  await expect(
+    dialog.getByRole("button", { name: "How to explore" }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    dialog.getByRole("button", { name: "Close navigation menu" }),
+  ).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await dialog.getByRole("button", { name: "Engineer" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Think in the details." }),
+  ).toBeFocused();
+});
+
+test("mobile WebGL object touch rotates without choosing or opening, tap opens", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const scene = page.locator(".scene");
+  await expect(scene.locator("canvas")).toHaveAttribute(
+    "data-scene-ready",
+    "true",
+  );
+  const client = await page.context().newCDPSession(page);
+  await client.send("Emulation.setTouchEmulationEnabled", {
+    enabled: true,
+    maxTouchPoints: 1,
+  });
+  const box = (await scene.boundingBox())!;
+  const x = box.width / 2,
+    y = box.y + box.height * 0.48;
+  await client.send("Input.dispatchTouchEvent", {
+    type: "touchStart",
+    touchPoints: [{ x, y }],
+  });
+  await client.send("Input.dispatchTouchEvent", {
+    type: "touchMove",
+    touchPoints: [{ x: x + 75, y: y - 60 }],
+  });
+  await expect(scene).toHaveAttribute("data-object-dragging", "true");
+  await client.send("Input.dispatchTouchEvent", {
+    type: "touchEnd",
+    touchPoints: [],
+  });
+  await expect(scene).toHaveAttribute("data-creation", "0");
+  await expect(page.locator(".creation-panel")).toHaveCount(0);
+  await client.send("Input.dispatchTouchEvent", {
+    type: "touchStart",
+    touchPoints: [{ x, y }],
+  });
+  await client.send("Input.dispatchTouchEvent", {
+    type: "touchEnd",
+    touchPoints: [],
+  });
+  await expect(page.locator(".creation-panel")).toBeVisible();
+  expect(errors).toEqual([]);
 });

@@ -1,4 +1,4 @@
-export const creations = [
+const concepts = [
   {
     name: "Atlas / 01",
     category: "A home beyond the horizon",
@@ -59,7 +59,124 @@ export const creations = [
     author: "Leo Park",
     material: "Satin brass · Opal diffuser",
   },
+  {
+    name: "Mira Arm",
+    category: "Robotics with a gentler touch",
+    kind: "robot",
+    creator: "Samira Vale",
+    initials: "SV",
+    maker: "Soft Machine Lab",
+    location: "Imagined in Lisbon",
+    story:
+      "Samira imagined a patient studio assistant that helps people make more with less strain.",
+    comment: "The open joints make the mechanism feel understandable.",
+    author: "Rae Cole",
+    material: "Ceramic shell · Anodised joints",
+  },
+  {
+    name: "Orbit Ring",
+    category: "A small world, held close",
+    kind: "ring",
+    creator: "Ivo Marin",
+    initials: "IM",
+    maker: "Little Orbit Atelier",
+    location: "Imagined in Milan",
+    story:
+      "Ivo translated an orbit into a sculptural ring, balancing a crisp stone against a continuous gold band.",
+    comment: "Such a playful balance of geometry and sparkle.",
+    author: "Bea Stone",
+    material: "Brushed gold concept · Crystal placeholder",
+  },
+  {
+    name: "Quiet Pavilion",
+    category: "A room for the landscape",
+    kind: "pavilion",
+    creator: "Lina Sol",
+    initials: "LS",
+    maker: "Common Sky Structures",
+    location: "Imagined in Oslo",
+    story:
+      "Lina imagined a small pavilion where the landscape is the main exhibit and the roof is a quiet frame.",
+    comment: "I would love to sit here through a rainstorm.",
+    author: "Otis Lane",
+    material: "Timber ribs · Mineral base",
+  },
+  {
+    name: "Torque One",
+    category: "Better tools for curious hands",
+    kind: "drill",
+    creator: "Theo Moss",
+    initials: "TM",
+    maker: "Fieldwork Tools",
+    location: "Imagined in Sheffield",
+    story:
+      "Theo wanted a compact tool that feels considered enough to keep, maintain and pass along.",
+    comment: "That clear silhouette makes it feel purposeful.",
+    author: "Ari Fox",
+    material: "Graphite polymer · Brushed steel",
+  },
+  {
+    name: "Meridian",
+    category: "Time, with a different rhythm",
+    kind: "watch",
+    creator: "Sana Bell",
+    initials: "SB",
+    maker: "Hour House",
+    location: "Imagined in Geneva",
+    story:
+      "Sana imagined a watch with a single, calm visual language: a bright face and a generous sculpted strap.",
+    comment: "A lovely idea for a quieter daily ritual.",
+    author: "Max Reed",
+    material: "Satin alloy · Soft strap",
+  },
+  {
+    name: "Aero Seed",
+    category: "A new view on familiar ground",
+    kind: "drone",
+    creator: "Ren Sato",
+    initials: "RS",
+    maker: "Cloudform Studio",
+    location: "Imagined in Kyoto",
+    story:
+      "Ren sketched a small aerial companion inspired by seed pods and the lightest possible structure.",
+    comment: "Those four little rings have so much character.",
+    author: "Zoe Grey",
+    material: "Composite concept · Open rotor guards",
+  },
+  {
+    name: "Resonance",
+    category: "Sound you can see",
+    kind: "speaker",
+    creator: "Amara West",
+    initials: "AW",
+    maker: "Wave & Wood",
+    location: "Imagined in Accra",
+    story:
+      "Amara imagined an audio object that feels as at home on a shelf as a favourite piece of furniture.",
+    comment: "The warm frame is such a good counterpoint to the drivers.",
+    author: "Kit Rowan",
+    material: "Oak frame · Fabric grille",
+  },
+  {
+    name: "Tidal Vessel",
+    category: "An object shaped by the current",
+    kind: "vase",
+    creator: "Pia North",
+    initials: "PN",
+    maker: "Shoreline Objects",
+    location: "Imagined in Reykjavik",
+    story:
+      "Pia built a rhythm of soft layers into a vessel, holding a little of the sea in an everyday object.",
+    comment: "The silhouette feels like a small landscape.",
+    author: "Eden Hart",
+    material: "Glazed ceramic · Layered form",
+  },
 ] as const;
+export const creations = concepts.map((concept, index) => ({
+  ...concept,
+  biography: `${concept.creator} is a fictional independent designer exploring the relationship between thoughtful materials, useful objects and everyday imagination.`,
+  rating: (4.4 + (index % 5) * 0.1).toFixed(1),
+}));
 export type Mode = "exhibition" | "customise" | "assemble" | "engineer";
 export type Configuration = {
   color: string;

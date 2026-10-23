@@ -1,6 +1,13 @@
 "use client";
 import dynamic from "next/dynamic";
-import { Component, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Component,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import {
   creations,
   defaults,
@@ -82,13 +89,92 @@ function Still({
           <path d="m230 195 130 15 55-40-134-16Z" />
           <path d="m230 195 5 62m125-47 5 47m50-87 4 67" fill="none" />
         </g>
-      ) : (
+      ) : selected === 3 ? (
         <g stroke="#bda878" strokeWidth="8" fill="none">
           <ellipse cx="300" cy="108" rx="76" ry="73" />
           <path d="M300 183v69m-55 0h110" />
         </g>
+      ) : (
+        <OtherStill selected={selected} />
       )}
     </svg>
+  );
+}
+function OtherStill({ selected }: { selected: number }) {
+  return (
+    <g fill="#a7b4aa" stroke="#687e77" strokeWidth="7" strokeLinejoin="round">
+      {selected === 4 ? (
+        <>
+          <path d="M235 250h120l-25-35h-70Z" />
+          <path d="m295 210-35-65 65-65 55 30" fill="none" strokeWidth="25" />
+          <circle cx="260" cy="145" r="18" />
+          <path d="m365 110 35-20m-20 35 35-5" />
+        </>
+      ) : selected === 5 ? (
+        <>
+          <circle
+            cx="300"
+            cy="165"
+            r="72"
+            fill="none"
+            stroke="#cfb477"
+            strokeWidth="18"
+          />
+          <path d="m300 45 36 32-36 35-36-35Z" fill="#c6dfe0" />
+        </>
+      ) : selected === 6 ? (
+        <>
+          <path d="M125 245h350v15H125Z" />
+          <path
+            d="M155 245V115l145-70 145 70v130M155 115h290M220 245V82m160 163V82"
+            fill="none"
+            stroke="#c1a37c"
+          />
+        </>
+      ) : selected === 7 ? (
+        <>
+          <path d="M170 80h210v70h-85v85h-60v-85h-65Z" fill="#b3aa69" />
+          <path d="M380 100h65v25h-65M220 235h85v25h-85Z" />
+        </>
+      ) : selected === 8 ? (
+        <>
+          <path d="M260 40h80v210h-80Z" fill="#a38871" />
+          <circle cx="300" cy="145" r="62" fill="#e5dfc8" />
+          <path d="M300 105v40l30 20" fill="none" />
+        </>
+      ) : selected === 9 ? (
+        <>
+          <ellipse cx="300" cy="150" rx="42" ry="24" />
+          <path d="m265 140-75-50m145 50 75-50m-145 70-75 50m145-50 75 50" />
+          {[
+            [180, 85],
+            [420, 85],
+            [180, 215],
+            [420, 215],
+          ].map(([x, y]) => (
+            <ellipse
+              key={`${x}${y}`}
+              cx={x}
+              cy={y}
+              rx="48"
+              ry="19"
+              fill="none"
+            />
+          ))}
+        </>
+      ) : selected === 10 ? (
+        <>
+          <path d="M235 45h130v215H235Z" fill="#b1906d" />
+          <circle cx="300" cy="105" r="30" fill="#344943" />
+          <circle cx="300" cy="195" r="42" fill="#344943" />
+        </>
+      ) : (
+        <path
+          d="M275 40h50v45c80 40 75 110 35 165H240c-40-55-45-125 35-165Z"
+          fill="#7ba49b"
+        />
+      )}
+    </g>
   );
 }
 class SceneBoundary extends Component<
@@ -105,6 +191,7 @@ class SceneBoundary extends Component<
 }
 export default function Marketplace() {
   const [selected, setSelected] = useState(0);
+  const [selectionVersion, setSelectionVersion] = useState(0);
   const [mode, setMode] = useState<Mode>("exhibition");
   const [config, setConfig] = useState<Configuration>(defaults);
   const [webgl, setWebgl] = useState(false);
@@ -112,7 +199,33 @@ export default function Marketplace() {
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(true);
   const [workshop, setWorkshop] = useState(false);
-  const [liked, setLiked] = useState<number[]>([]);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailView, setDetailView] = useState<"profile" | "comments">(
+    "profile",
+  );
+  const [offset, setOffset] = useState(0);
+  const [rotation, setRotation] = useState({
+    x: 0,
+    y: -0.45,
+    dragging: false,
+    returning: false,
+  });
+  const [interacting, setInteracting] = useState(false);
+  const gesture = useRef<{
+    id: number;
+    kind: "carousel" | "object";
+    x: number;
+    y: number;
+    lastX: number;
+    lastY: number;
+    moved: boolean;
+    pitch: number;
+    yaw: number;
+  } | null>(null);
+  const sceneRoot = useRef<HTMLDivElement>(null);
+  const panelTitle = useRef<HTMLHeadingElement>(null);
+  const detailDialog = useRef<HTMLDialogElement>(null);
+  const detailOpener = useRef<HTMLElement | null>(null);
   const [draft, setDraft] = useState("");
   const [comments, setComments] = useState<
     { creation: number; text: string }[]
@@ -121,9 +234,12 @@ export default function Marketplace() {
   const menu = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const workspaceTitle = useRef<HTMLHeadingElement>(null);
-  const exhibitionTitle = useRef<HTMLHeadingElement>(null);
+
   const workspace = mode !== "exhibition";
   const item = creations[selected];
+  const recentComment = comments
+    .filter((comment) => comment.creation === selected)
+    .at(-1);
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setReduced(media.matches);
@@ -150,19 +266,38 @@ export default function Marketplace() {
     };
   }, []);
   useEffect(() => {
-    if (workspace || paused || reduced || !visible) return;
-    const timer = setInterval(
-      () => setSelected((current) => (current + 1) % creations.length),
-      10000,
-    );
+    if (
+      workspace ||
+      paused ||
+      reduced ||
+      !visible ||
+      interacting ||
+      detailsOpen
+    )
+      return;
+    const timer = setInterval(() => {
+      setSelected((current) => (current + 1) % creations.length);
+      setRotation({ x: 0, y: -0.45, dragging: false, returning: true });
+    }, 10000);
     return () => clearInterval(timer);
-  }, [workspace, paused, reduced, visible, selected]);
+  }, [
+    workspace,
+    paused,
+    reduced,
+    visible,
+    selected,
+    selectionVersion,
+    interacting,
+    detailsOpen,
+  ]);
   function changeMode(next: Mode) {
     setMode(next);
+    setDetailsOpen(false);
+    setOffset(0);
     setNotice("");
     menu.current?.close();
     requestAnimationFrame(() => {
-      if (next === "exhibition") exhibitionTitle.current?.focus();
+      if (next === "exhibition") sceneRoot.current?.focus();
       else workspaceTitle.current?.focus();
     });
   }
@@ -172,17 +307,181 @@ export default function Marketplace() {
   ) {
     setConfig((current) => ({ ...current, [key]: value }));
   }
+  function choose(delta: number) {
+    setSelectionVersion((v) => v + 1);
+    setSelected(
+      (current) =>
+        (current + delta + creations.length * 100) % creations.length,
+    );
+    setDetailsOpen(false);
+    setDraft("");
+    setNotice("");
+    setOffset(0);
+    setRotation({ x: 0, y: -0.45, dragging: false, returning: true });
+  }
+  function reveal() {
+    setDetailsOpen(true);
+    requestAnimationFrame(() => {
+      panelTitle.current?.focus({ preventScroll: true });
+      panelTitle.current?.scrollIntoView({
+        block: "nearest",
+        behavior: reduced ? "instant" : "smooth",
+      });
+    });
+  }
+  function startObject(event: PointerEvent, orientation = { x: 0, y: -0.45 }) {
+    if (workspace || gesture.current || !event.isPrimary || event.button !== 0)
+      return;
+    gesture.current = {
+      id: event.pointerId,
+      kind: "object",
+      x: event.clientX,
+      y: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      moved: false,
+      pitch: orientation.x,
+      yaw: orientation.y,
+    };
+    setInteracting(true);
+  }
+  function pointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (workspace || !event.isPrimary || event.button !== 0) return;
+    if (!gesture.current)
+      gesture.current = {
+        id: event.pointerId,
+        kind: "carousel",
+        x: event.clientX,
+        y: event.clientY,
+        lastX: event.clientX,
+        lastY: event.clientY,
+        moved: false,
+        pitch: 0,
+        yaw: -0.45,
+      };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setInteracting(true);
+  }
+  function pointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const g = gesture.current;
+    if (!g || g.id !== event.pointerId) return;
+    const dx = event.clientX - g.x,
+      dy = event.clientY - g.y;
+    if (Math.hypot(dx, dy) > 8) g.moved = true;
+    if (g.moved) {
+      if (g.kind === "object")
+        setRotation({
+          x: g.pitch + dy * 0.012,
+          y: g.yaw + dx * 0.012,
+          dragging: true,
+          returning: false,
+        });
+      else
+        setOffset(
+          (dx / Math.max(240, event.currentTarget.clientWidth)) * Math.PI * 1.5,
+        );
+    }
+    g.lastX = event.clientX;
+    g.lastY = event.clientY;
+  }
+  function finishPointer(
+    event: ReactPointerEvent<HTMLDivElement>,
+    cancelled = false,
+  ) {
+    const g = gesture.current;
+    if (!g || g.id !== event.pointerId) return;
+    gesture.current = null;
+    setInteracting(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    if (g.kind === "object") {
+      setRotation({ x: 0, y: -0.45, dragging: false, returning: true });
+      if (!g.moved && !cancelled) reveal();
+    } else if (g.moved && !cancelled) {
+      const distance = g.lastX - g.x;
+      const turns =
+        (distance / Math.max(240, event.currentTarget.clientWidth)) *
+        Math.PI *
+        1.5;
+      choose(
+        -Math.round(turns / ((Math.PI * 2) / creations.length)) ||
+          (distance > 0 ? -1 : 1),
+      );
+    }
+    setOffset(0);
+  }
+  function openDetail(view: "profile" | "comments", opener: HTMLElement) {
+    setDetailView(view);
+    detailOpener.current = opener;
+    detailDialog.current?.showModal();
+  }
+  function commentForm(id: string) {
+    return (
+      <form
+        className="detail-comment-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!draft.trim()) return;
+          setComments((current) => [
+            ...current,
+            { creation: selected, text: draft.trim() },
+          ]);
+          setDraft("");
+          setNotice("Comment added locally. Not published; resets on refresh.");
+        }}
+      >
+        <label htmlFor={id}>
+          Add a comment <small>LOCAL PREVIEW · NOT PUBLISHED</small>
+        </label>
+        <div className="comment-input">
+          <input
+            id={id}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            maxLength={500}
+            required
+            placeholder="What does this inspire?"
+          />
+          <button type="submit" aria-label="Add local comment">
+            <Arrow />
+          </button>
+        </div>
+      </form>
+    );
+  }
   const fallback = (
     <div className="fallback">
-      <Still
-        selected={workspace ? 0 : selected}
-        config={workspace ? config : defaults}
-      />
+      {workspace ? (
+        <Still selected={0} config={config} />
+      ) : (
+        <button
+          className="fallback-object"
+          aria-label={`Open ${item.name} details`}
+          onPointerDown={(e) => startObject(e.nativeEvent)}
+          onClick={(e) => {
+            if (e.detail === 0) reveal();
+          }}
+          style={{
+            transition: rotation.dragging ? "none" : undefined,
+            transform: `perspective(800px) rotateX(${rotation.x}rad) rotateY(${rotation.y + 0.45}rad)`,
+          }}
+        >
+          <Still selected={selected} />
+        </button>
+      )}
       <span>Illustrated preview · WebGL unavailable</span>
     </div>
   );
   return (
-    <div className={workspace ? "app workspace-active" : "app"}>
+    <div
+      className={
+        workspace
+          ? "app workspace-active"
+          : detailsOpen
+            ? "app gallery-detail-open"
+            : "app"
+      }
+    >
       <a className="skip-link" href="#main">
         Skip to content
       </a>
@@ -272,13 +571,21 @@ export default function Marketplace() {
             href="#community"
             onClick={() => {
               changeMode("exhibition");
+              reveal();
             }}
           >
             Community <Arrow />
           </a>
-          <a href="#faq" onClick={() => changeMode("exhibition")}>
-            How it works & FAQ <Arrow />
-          </a>
+          <button
+            onClick={() => {
+              menu.current?.close();
+              setNotice(
+                "Drag the surrounding space to turn the carousel; drag the object to rotate it. Tap or press Enter for details. All creations are fictional demos.",
+              );
+            }}
+          >
+            How to explore <Arrow />
+          </button>
         </nav>
         <p>Fictional concepts. Shared imagination.</p>
       </dialog>
@@ -292,19 +599,6 @@ export default function Marketplace() {
           }
         >
           <div className="showcase-curtain" />
-          {!workspace && (
-            <div className="exhibition-heading">
-              <span className="eyebrow">
-                <i /> THE COMMUNITY EXHIBITION — VOL. 001
-              </span>
-              <h1 ref={exhibitionTitle} tabIndex={-1}>
-                Extraordinary starts
-                <br />
-                with <em>someone.</em>
-              </h1>
-              <p>A spark of imagination. A world waiting to be made.</p>
-            </div>
-          )}
           {workspace && (
             <div className="workspace-heading">
               <button
@@ -327,7 +621,90 @@ export default function Marketplace() {
           <div className="spotlight-beam" aria-hidden="true" />
           <div
             className="scene"
-            role="img"
+            ref={sceneRoot}
+            role={workspace ? "img" : "group"}
+            tabIndex={workspace ? undefined : 0}
+            aria-roledescription={workspace ? undefined : "3D carousel"}
+            aria-describedby={workspace ? undefined : "carousel-instructions"}
+            data-creation={selected}
+            data-object-dragging={rotation.dragging}
+            onPointerDown={pointerDown}
+            onPointerMove={pointerMove}
+            onPointerUp={(e) => finishPointer(e)}
+            onPointerCancel={(e) => finishPointer(e, true)}
+            onLostPointerCapture={(e) => {
+              if (gesture.current) finishPointer(e, true);
+            }}
+            onKeyDown={(e) => {
+              if (workspace || e.target !== e.currentTarget) return;
+              if (
+                e.shiftKey &&
+                ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(
+                  e.key,
+                )
+              ) {
+                e.preventDefault();
+                setInteracting(true);
+                setRotation((current) => ({
+                  x:
+                    current.x +
+                    (e.key === "ArrowUp"
+                      ? -0.18
+                      : e.key === "ArrowDown"
+                        ? 0.18
+                        : 0),
+                  y:
+                    current.y +
+                    (e.key === "ArrowLeft"
+                      ? -0.18
+                      : e.key === "ArrowRight"
+                        ? 0.18
+                        : 0),
+                  dragging: true,
+                  returning: false,
+                }));
+                return;
+              }
+              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                e.preventDefault();
+                choose(e.key === "ArrowRight" ? 1 : -1);
+              }
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                reveal();
+              }
+              if (e.key === "p" || e.key === "P") setPaused((p) => !p);
+              if (e.key === "Home") {
+                e.preventDefault();
+                choose(-selected);
+              }
+            }}
+            onKeyUp={(e) => {
+              if (
+                e.key.startsWith("Arrow") &&
+                rotation.dragging &&
+                !gesture.current
+              ) {
+                setRotation({
+                  x: 0,
+                  y: -0.45,
+                  dragging: false,
+                  returning: true,
+                });
+                setInteracting(false);
+              }
+            }}
+            onBlur={() => {
+              if (rotation.dragging && !gesture.current) {
+                setRotation({
+                  x: 0,
+                  y: -0.45,
+                  dragging: false,
+                  returning: true,
+                });
+                setInteracting(false);
+              }
+            }}
             aria-label={
               workspace
                 ? `Atlas motorhome preview: ${colors.find((c) => c.hex === config.color)?.name}, ${config.finish}, ${config.length} metres, ${config.clearance} millimetres clearance, ${config.wheelSize} inch wheels, solar ${config.solar ? "on" : "off"}, awning ${config.awning ? "on" : "off"}, storage ${config.storage ? "on" : "off"}, wireframe ${config.wireframe ? "on" : "off"}`
@@ -338,10 +715,14 @@ export default function Marketplace() {
               <SceneBoundary fallback={fallback}>
                 <Scene
                   selected={selected}
-                  reduced={reduced || paused || !visible}
+                  reduced={reduced}
+                  paused={paused || !visible}
                   workspace={workspace}
                   workshop={workshop}
                   config={config}
+                  offset={offset}
+                  rotation={rotation}
+                  onObjectDown={startObject}
                 />
               </SceneBoundary>
             ) : (
@@ -350,74 +731,15 @@ export default function Marketplace() {
           </div>
           {!workspace ? (
             <>
-              <div className="exhibit-index">
-                <span>
-                  IN THE SHADOWS.
-                  <br />
-                  UNTIL IT’S THEIR MOMENT.
-                </span>
-                {creations.map((c, i) => (
-                  <button
-                    key={c.name}
-                    onClick={() => {
-                      setSelected(i);
-                      setDraft("");
-                      setNotice("");
-                    }}
-                    aria-label={`Feature ${c.name}`}
-                    aria-pressed={selected === i}
-                  >
-                    <small>0{i + 1}</small>
-                    <span>{c.name.split(" /")[0]}</span>
-                    <i />
-                  </button>
-                ))}
-              </div>
-              <div
-                className="exhibit-caption"
-                aria-live={paused || reduced ? "polite" : "off"}
-              >
-                <span className="eyebrow">
-                  {String(selected + 1).padStart(2, "0")} / 04 · {item.material}
-                </span>
-                <h2>{item.name}</h2>
-                <p>{item.category}</p>
-                <button
-                  className="text-link"
-                  onClick={() => changeMode("customise")}
-                >
-                  Enter the design studio <Arrow />
-                </button>
-              </div>
-              <div className="exhibition-controls">
-                <span className="live-label">
-                  <i />{" "}
-                  {reduced
-                    ? "REDUCED MOTION · MANUAL EXPLORATION"
-                    : paused
-                      ? "EXHIBITION PAUSED"
-                      : "A NEW PERSPECTIVE, EVERY 10 SECONDS"}
-                </span>
-                <button
-                  onClick={() => setPaused(!paused)}
-                  disabled={reduced}
-                  aria-label={
-                    reduced
-                      ? "Motion disabled by reduced-motion preference"
-                      : paused
-                        ? "Resume exhibition"
-                        : "Pause exhibition"
-                  }
-                  aria-pressed={paused || reduced}
-                >
-                  {reduced ? "Motion off" : paused ? "Play" : "Pause"}
-                  <span
-                    className={paused || reduced ? "play-icon" : "pause-icon"}
-                    aria-hidden="true"
-                  />
-                </button>
-                <span className="demo-tag">FICTIONAL DEMO · PROCEDURAL 3D</span>
-              </div>
+              <h1 className="sr-only">form&field community carousel</h1>
+              <p id="carousel-instructions" className="sr-only">
+                Twelve fictional demo creations. Drag empty space to turn the
+                carousel. Drag the featured object to rotate it; release to
+                return. Tap the object or press Enter to view details. Left and
+                right arrow keys choose creations. Shift plus arrow keys rotate
+                the object; release to return. P pauses automatic movement.
+                Reduced motion disables automatic cycling.
+              </p>
             </>
           ) : (
             <>
@@ -644,170 +966,125 @@ export default function Marketplace() {
             </>
           )}
         </section>
-        {!workspace ? (
-          <>
-            <section id="community" className="community">
-              <div className="community-top">
-                <span className="eyebrow">
-                  BEHIND EVERY CREATION, A HUMAN SPARK.
-                </span>
+        {!workspace && (
+          <div className="carousel-access" aria-label="Carousel controls">
+            <button onClick={() => choose(-1)} aria-label="Previous creation">
+              ←
+            </button>
+            <span className="sr-only" aria-live="polite">
+              {item.name}, creation {selected + 1} of {creations.length}
+            </span>
+            <button
+              onClick={() => reveal()}
+              aria-label={`Open ${item.name} details`}
+            >
+              Explore creation
+            </button>
+            <button
+              disabled={reduced}
+              aria-pressed={paused || reduced}
+              onClick={() => setPaused((p) => !p)}
+              aria-label={paused ? "Resume carousel" : "Pause carousel"}
+            >
+              {reduced ? "Reduced motion" : paused ? "Play" : "Pause"}
+            </button>
+            <button onClick={() => choose(1)} aria-label="Next creation">
+              →
+            </button>
+          </div>
+        )}
+        {!workspace && detailsOpen && (
+          <section
+            className="creation-panel"
+            id="community"
+            aria-labelledby="creation-panel-title"
+          >
+            <div className="detail-heading">
+              <div>
                 <span className="fictional-badge">
-                  ALL PEOPLE, MAKERS & STORIES ARE FICTIONAL DEMO CONTENT
+                  FICTIONAL DEMO · PROFILES, RATINGS & COMMENTS ARE INVENTED
                 </span>
+                <h2 id="creation-panel-title" ref={panelTitle} tabIndex={-1}>
+                  {item.name}
+                </h2>
               </div>
-              <div className="story-grid">
-                <div className="creator-column">
-                  <span className="section-number">01 / THE PEOPLE</span>
-                  <div className="creator">
-                    <span className="avatar">{item.initials}</span>
-                    <div>
-                      <small>CONCEPT CREATOR · FICTIONAL</small>
-                      <h3>{item.creator}</h3>
-                      <span>{item.location}</span>
-                    </div>
-                  </div>
-                  <div className="manufacturer">
-                    <small>MANUFACTURING PARTNER · FICTIONAL</small>
-                    <h3>{item.maker}</h3>
-                    <p>
-                      An imagined collaboration between creative ambition and
-                      thoughtful manufacturing.
-                    </p>
-                  </div>
-                </div>
-                <article className="creation-story">
-                  <span className="section-number">02 / THE IDEA</span>
-                  <h2>{item.category}.</h2>
-                  <p>{item.story}</p>
-                  <button
-                    className={`appreciate ${liked.includes(selected) ? "liked" : ""}`}
-                    aria-pressed={liked.includes(selected)}
-                    onClick={() =>
-                      setLiked((current) =>
-                        current.includes(selected)
-                          ? current.filter((n) => n !== selected)
-                          : [...current, selected],
-                      )
-                    }
-                  >
-                    <span>♡</span>{" "}
-                    {liked.includes(selected)
-                      ? "Appreciated"
-                      : "Appreciate this idea"}{" "}
-                    <small>LOCAL DEMO</small>
-                  </button>
-                </article>
-                <div className="comments">
-                  <span className="section-number">03 / THE CONVERSATION</span>
-                  <article>
-                    <span className="comment-avatar">
-                      {item.author
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </span>
-                    <div>
-                      <h3>
-                        {item.author} <small>FICTIONAL DEMO COMMENT</small>
-                      </h3>
-                      <p>{item.comment}</p>
-                    </div>
-                  </article>
-                  {comments
-                    .filter((c) => c.creation === selected)
-                    .map((c, i) => (
-                      <article key={i}>
-                        <span className="comment-avatar">YOU</span>
-                        <div>
-                          <h3>
-                            You <small>LOCAL PREVIEW · NOT PUBLISHED</small>
-                          </h3>
-                          <p>{c.text}</p>
-                        </div>
-                      </article>
-                    ))}
-                  <form
-                    onFocus={() => setPaused(true)}
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const text = draft.trim();
-                      if (!text) {
-                        setNotice("Write a comment before adding it.");
-                        return;
-                      }
-                      setComments((current) => [
-                        ...current,
-                        { creation: selected, text },
-                      ]);
-                      setDraft("");
-                      setNotice(
-                        "Comment added locally. It is not published and will disappear on refresh.",
-                      );
-                    }}
-                  >
-                    <label htmlFor="comment">
-                      Add to the conversation <small>LOCAL PREVIEW ONLY</small>
-                    </label>
-                    <div className="comment-input">
-                      <input
-                        id="comment"
-                        maxLength={500}
-                        value={draft}
-                        onChange={(e) => setDraft(e.target.value)}
-                        placeholder="What does this inspire?"
-                        required
-                      />
-                      <button type="submit" aria-label="Add local comment">
-                        <Arrow />
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </section>
-            <section className="invitation">
-              <span className="eyebrow">IMAGINE. EXPLORE. MAKE IT YOURS.</span>
-              <h2>
-                The next extraordinary thing
-                <br />
-                could start <em>with you.</em>
-              </h2>
-              <button onClick={() => changeMode("customise")}>
-                Step inside the studio <Arrow />
+              <button
+                aria-label="Close creation details"
+                onClick={() => {
+                  setDetailsOpen(false);
+                  sceneRoot.current?.focus({ preventScroll: true });
+                }}
+              >
+                ×
               </button>
-            </section>
-            <section id="faq" className="faq">
-              <span className="eyebrow">A LITTLE CLARITY</span>
-              <h2>Behind the possibility.</h2>
-              {[
-                [
-                  "Is this a real marketplace?",
-                  "No. Every creation, creator, manufacturer, story and seeded comment is fictional demo content. There are no real customers, orders, payments or external AI integrations.",
-                ],
-                [
-                  "What can I do in the studio?",
-                  "Customise changes the Atlas motorhome’s colour, finish and length. Assemble toggles solar panels, an awning and rear storage. Engineer adjusts visual dimensions, clearance, wheel size and wireframe. These are interactive prototypes, not CAD or validated engineering tools.",
-                ],
-                [
-                  "Are my comments and designs saved?",
-                  "Your settings, appreciations and comments exist only in this browser session’s page state. Nothing is sent to a server or published. Refreshing resets them.",
-                ],
-                [
-                  "How does the exhibition move?",
-                  "A different creation moves into the spotlight every 10 seconds. Select any creation manually, or pause the exhibition. Reduced-motion preferences turn off automatic rotation, transitions and cycling; manual selection remains available.",
-                ],
-              ].map(([q, a]) => (
-                <details key={q}>
-                  <summary>
-                    {q}
-                    <span>+</span>
-                  </summary>
-                  <p>{a}</p>
-                </details>
-              ))}
-            </section>
-          </>
-        ) : (
+            </div>
+            <div className="detail-grid">
+              <article>
+                <span className="eyebrow">DESIGNED BY {item.creator}</span>
+                <p>{item.biography}</p>
+                <p>{item.story}</p>
+                <a
+                  href={`#designer-${selected}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openDetail("profile", e.currentTarget);
+                  }}
+                >
+                  Full designer profile & story <Arrow />
+                </a>
+              </article>
+              <article>
+                <span className="eyebrow">FICTIONAL MANUFACTURER</span>
+                <h3>{item.maker}</h3>
+                <div
+                  className="rating"
+                  aria-label={`Fictional manufacturer rating: ${item.rating} out of 5 stars`}
+                >
+                  <span aria-hidden="true">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <svg key={i} viewBox="0 0 20 20">
+                        <path
+                          d="m10 1 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L10 15.3l-5.6 2.9 1.1-6.2L1 7.6l6.2-.9Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    ))}
+                  </span>
+                  <strong>{item.rating} / 5</strong>
+                </div>
+                <small>Illustrative demo rating. No real reviews.</small>
+                <p>{item.material}</p>
+              </article>
+              <article className="detail-comments">
+                <span className="eyebrow">COMMUNITY · FICTIONAL PREVIEW</span>
+                <blockquote>
+                  {recentComment
+                    ? recentComment.text.slice(0, 160) +
+                      (recentComment.text.length > 160 ? "…" : "")
+                    : item.comment}
+                  <cite>
+                    {recentComment
+                      ? "You · Local preview, not published"
+                      : `${item.author} · Fictional`}
+                  </cite>
+                </blockquote>
+                {commentForm("preview-comment")}
+                <a
+                  href={`#comments-${selected}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openDetail("comments", e.currentTarget);
+                  }}
+                >
+                  Full comments (
+                  {1 + comments.filter((c) => c.creation === selected).length}){" "}
+                  <Arrow />
+                </a>
+              </article>
+            </div>
+          </section>
+        )}
+        {workspace && (
           <section className="workspace-disclaimer">
             <span>EXPLORATION, NOT CERTIFICATION.</span>
             <p>
@@ -817,6 +1094,81 @@ export default function Marketplace() {
             </p>
           </section>
         )}
+        <dialog
+          ref={detailDialog}
+          className="detail-dialog"
+          aria-labelledby="full-detail-title"
+          onClose={() => detailOpener.current?.focus({ preventScroll: true })}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) detailDialog.current?.close();
+          }}
+          onKeyDown={(e) => {
+            if (e.key !== "Tab") return;
+            const nodes = e.currentTarget.querySelectorAll<HTMLElement>(
+              "button, a[href], input",
+            );
+            const first = nodes[0],
+              last = nodes[nodes.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }}
+        >
+          <button
+            autoFocus
+            className="detail-close"
+            aria-label="Close full detail view"
+            onClick={() => detailDialog.current?.close()}
+          >
+            Close ×
+          </button>
+          <span className="fictional-badge">FICTIONAL DEMO CONTENT</span>
+          <h2 id="full-detail-title">
+            {detailView === "profile"
+              ? item.creator
+              : `Conversation / ${item.name}`}
+          </h2>
+          {detailView === "profile" ? (
+            <article id={`designer-${selected}`}>
+              <span className="eyebrow">FICTIONAL DESIGNER PROFILE</span>
+              <p>{item.biography}</p>
+              <p>
+                {item.location}. This biography and collaboration are invented
+                for this interactive exhibition.
+              </p>
+              <h3>The story behind {item.name}</h3>
+              <p>{item.story}</p>
+              <p>
+                Materials explored: {item.material}. Imagined manufacturing
+                partner: {item.maker}.
+              </p>
+            </article>
+          ) : (
+            <div id={`comments-${selected}`} className="full-comments">
+              <p>
+                Seeded comments are fictional. Your additions are local,
+                unpublished and reset on refresh.
+              </p>
+              <article>
+                <strong>{item.author} · Fictional demo comment</strong>
+                <p>{item.comment}</p>
+              </article>
+              {comments
+                .filter((c) => c.creation === selected)
+                .map((c, i) => (
+                  <article key={i}>
+                    <strong>You · Local preview, not published</strong>
+                    <p>{c.text}</p>
+                  </article>
+                ))}
+              {commentForm("full-comment")}
+            </div>
+          )}
+        </dialog>
         <div className="status-message" role="status">
           {notice}
         </div>
