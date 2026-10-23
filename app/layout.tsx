@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "Form & Field — Extraordinary, by design",
+  title: "Form & Field — The Community Exhibition",
   description:
-    "A fictional AI-assisted manufacturing marketplace. Explore thoughtfully imagined objects and the makers who could bring them to life.",
+    "An exhibition of fictional community creations. Explore a cinematic 3D gallery and interactive design studio.",
 };
 export default function RootLayout({
   children,
