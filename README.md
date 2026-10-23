@@ -1,6 +1,6 @@
-# form&field — Community Carousel
+# NITORIX — Homepage V5
 
-A visual, nearly black 3D exhibition built with **Next.js App Router, TypeScript, Tailwind CSS v4 and React Three Fiber**. The existing form&field name is a placeholder. The bright Customise, Assemble and Engineer prototypes are preserved.
+A visual, nearly black 3D exhibition built with **Next.js App Router, TypeScript, Tailwind CSS v4 and React Three Fiber**. NITORIX is a provisional working name, not a registered-brand claim. The bright Customise, Assemble and Engineer prototypes are preserved.
 
 **All creations, designers, biographies, motivations, manufacturers, manufacturer ratings, attributed locations and seeded comments are explicitly fictional demo content.** This is not evidence of real customers, manufacturers or reviews. No payments, orders, external AI services, production engineering or backend persistence are integrated.
 
@@ -24,9 +24,9 @@ The npm cache uses `/tmp` for restricted cloud home directories. Models, illustr
 
 ## Carousel interactions
 
-The initial viewport contains the header/mode navigation and the visual carousel, without a hero headline or creation list. A compact floating information card appears beside the selected creation only after selection; on mobile it becomes a scrollable floating card above the lowered creation. Opening or closing it does not resize the canvas, scroll the page or reset the carousel. Additional accessible controls sit **below** the initial viewport.
+The initial viewport contains the header/mode navigation and the visual carousel, without a hero headline or creation list. Two narrow foreground promotional panels overlap the outer carousel on wide screens; on compact screens they move below the exhibition to keep the featured object clear. A compact floating information card appears beside the selected creation only after selection; on mobile it becomes a scrollable floating card above the lowered creation. Opening or closing it does not resize the canvas, scroll the page or reset the carousel. Additional accessible controls sit **below** the initial viewport.
 
-Twelve distinct procedural demo creations sit around a large circular platform: an Atlas motorhome, Glide scooter, Fold chair, Halo light, Mira robotic arm, Orbit ring, Quiet Pavilion, Torque drill, Meridian watch, Aero Seed drone, Resonance speaker and Tidal Vessel. A fixed spotlight illuminates the front position; the other creations remain shadow silhouettes.
+Twelve distinct demo creations sit around a large circular platform (radius increased from 12 to 18 units in V5, 50% wider): an Atlas motorhome, Glide scooter, Fold chair, Halo light, Mira robotic arm, Orbit ring, Quiet Pavilion, Torque drill, Meridian watch, Aero Seed drone, Resonance speaker and Tidal Vessel. A fixed spotlight illuminates the front position; the other creations remain shadow silhouettes.
 
 - **Automatic:** every 10 seconds the circular group turns to feature the next creation, including a smooth last-to-first wrap. The featured object rotates very slowly about its own axis. Auto advancement stops while interacting, while details are open, when paused or when the tab is hidden. Manual selection starts a fresh 10-second interval.
 - **Carousel drag:** drag the surrounding space horizontally, then release to snap to a creation. The angular distance determines how many positions move. Pointer cancellation restores the current selection.
@@ -37,7 +37,7 @@ Twelve distinct procedural demo creations sit around a large circular platform: 
 
 ## Three preserved studio modes
 
-The black exhibition slides away into a white Atlas motorhome workspace. All three modes deliberately configure Atlas regardless of which gallery object was selected.
+The black exhibition slides away into a predominantly white Atlas motorhome workspace. V5 adds brushed trims, frosted control cards, dimensional selected states, tactile hover/press feedback and a revision pulse when options change. All three modes deliberately configure Atlas regardless of which gallery object was selected.
 
 - **Customise:** exterior colour, satin/polished finish and body length.
 - **Assemble:** optional solar roof, outdoor awning and rear storage geometry.
@@ -69,7 +69,7 @@ If system Chromium exists:
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
 ```
 
-Playwright starts a dedicated **production server on port 3100**, leaving a dev server on 3000 undisturbed. Build first. Browser coverage includes the 12-position timer/wrap, manual selection and pause, isolated object/carousel dragging, object return, on-demand information, fictional profile and rating, local comments, keyboard navigation, all three configurators, mobile real touch input, pointer cancellation, reduced motion and SVG fallback. WebGL checks work with software rendering.
+Playwright starts a dedicated **production server on port 3100**, leaving a dev server on 3000 undisturbed. Build first. The 10 browser tests cover promotional-panel copy, dimensions, responsive placement and non-blocking input, NITORIX branding, the 12-position timer/wrap, manual selection and pause, isolated object/carousel dragging, object return, on-demand information, fictional profile and rating, local comments, keyboard navigation, all three configurators, mobile real touch input, pointer cancellation, reduced motion and SVG fallback. WebGL checks work with software rendering.
 
 ## Structure
 
@@ -87,4 +87,17 @@ Two detailed **CC0** Khronos reference GLBs are shipped locally: **Sheen Chair**
 
 Full upstream sources, licences, modifications and SHA-256 checksums are recorded in [public/models/ATTRIBUTION.md](public/models/ATTRIBUTION.md), with retained licence notices beside the binaries. These real asset authors are separate from the exhibition's fictional designer/manufacturer stories. Source trademarks do not imply affiliation or endorsement.
 
-The other ten creations remain **procedural demo placeholders**, with gallery-only additions such as tyre/hub detail, mirrors and lights, scooter brakes and grips, lamp diffuser, robot hardware, jewellery facets, pavilion decking and glass, drill vents/grip, watch dial/strap, drone camera/rotors and a smooth glazed vessel. They are not photorealistic scans or production CAD. Procedural stand-ins are also used during GLB loading or failure; SVGs remain the no-WebGL fallback.
+The other ten creations remain **procedural demo placeholders**. V5 prioritises Atlas with additional coachwork, grille slats, recessed glazing, rubber seals, wheel arches, roof hardware, carbon sill trim and lighting. The ring, pavilion and watch have new recognisable gallery models with faceted stone/prongs, a pitched roof and frosted walls, and a correctly oriented detailed dial/strap respectively. Other gallery details include scooter brakes/grips, lamp diffuser, robot hardware, drill vents, drone landing rails/camera/rotors and a smooth glazed vessel. They are not photorealistic scans or production CAD. Procedural stand-ins are also used during GLB loading or failure; SVGs remain the no-WebGL fallback.
+
+## V5 showroom and promotional panels
+
+- Desktop uses two real bevelled 3D plaques in the foreground, with original locally generated text textures: **YOUR IMAGINATION. MADE REAL. / Design it. Make it yours.** and **THE NEXT BIG THING? YOURS. / Discover what our creators are building.**
+- Width is fixed at 1.12 world units; height is 3.64 units, exactly 40% taller than the 2.6-unit baseline without widening. Text is vertically centred. Cherry metallic bodywork, gloss, electric-red border motion and three tiny yellow sparks per plaque provide depth without a bloom pass.
+- Plaque meshes opt out of raycasting. The right plaque moves away when the creator card opens, leaving details clear. Accessible DOM copy supplies screen-reader content and a matching CSS 3D fallback. Below 1000px or in portrait, compact plaques sit below the canvas and never cover the object or its controls.
+- A carbon-grain lacquer platform, brushed reflective rings, thin red perimeter illumination and sparse yellow index marks complete the showroom. Product key lighting is neutral soft white; panel emission does not cast a red light onto the product.
+- Workshop controls remain fully functional and bright. Colour, finish, dimensions, modules, wireframe, workshop background, reset, local comments and profile dialogs remain available.
+- Reduced motion freezes neon/spark motion and removes decorative transitions. Pause also stops WebGL promotional animation. No remote fonts, advertising service, tracking, AI API or commerce integration was added.
+
+Performance choices: only the featured creation receives detailed geometry / licensed GLBs, a single 1024px spotlight map supplies shadows, the pixel ratio is capped at 1.5, and the generated grain texture is 64×64. Reflections use a local prefiltered studio environment; there are no live raytraced/planar product reflections or postprocessing bloom. Tests run with software Chromium, not a physical Windows hardware benchmark.
+
+Model-source/licence details remain in `public/models/ATTRIBUTION.md`: two verified CC0 reference models, ten explicitly labelled procedural placeholders. The new panels, carbon grain and additional geometry are generated within this project and use no third-party artwork.

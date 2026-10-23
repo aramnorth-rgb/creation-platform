@@ -71,7 +71,7 @@ test("object drag is isolated, returns smoothly, carousel drag selects, click op
 }) => {
   // Software WebGL plus canvas captures can be slower on shared CI machines.
   test.setTimeout(60000);
-  await page.setViewportSize({ width: 960, height: 720 });
+  await page.setViewportSize({ width: 720, height: 600 });
   await page.goto("/");
   const scene = page.locator(".scene");
   await expect(scene.locator("canvas")).toHaveAttribute(
@@ -89,7 +89,7 @@ test("object drag is isolated, returns smoothly, carousel drag selects, click op
   const before = await scene.locator("canvas").screenshot();
   await page.mouse.move(x, y);
   await page.mouse.down();
-  await page.mouse.move(x + 160, y - 90, { steps: 6 });
+  await page.mouse.move(x + 160, y - 90, { steps: 4 });
   await expect(scene).toHaveAttribute("data-object-dragging", "true");
   await expect(scene).toHaveAttribute("data-creation", "0");
   const heldDrag = await scene.locator("canvas").screenshot();
@@ -106,7 +106,7 @@ test("object drag is isolated, returns smoothly, carousel drag selects, click op
   await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.12);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.67, box.y + box.height * 0.12, {
-    steps: 6,
+    steps: 4,
   });
   await page.mouse.up();
   await expect(scene).not.toHaveAttribute("data-creation", "0");
@@ -266,7 +266,7 @@ test("three studio modes update the model, retain options and reset", async ({
   );
   await page.getByRole("button", { name: /Back to exhibition/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "form&field community carousel",
+    "NITORIX community showroom",
   );
   expect(errors).toEqual([]);
 });
@@ -480,4 +480,137 @@ test("local CC0 assets load, credits are available and missing assets fall back"
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: "Fold / 03" })).toBeVisible();
   await expect(page.locator(".scene canvas")).toBeVisible();
+});
+
+test("NITORIX foreground promotional panels: tall, readable, responsive and non-blocking", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      ...args: Parameters<typeof original>
+    ) {
+      return String(args[0]).includes("webgl")
+        ? null
+        : original.apply(this, args);
+    } as typeof original;
+  });
+  await page.goto("/");
+  await expect(page).toHaveTitle(/NITORIX/);
+  await expect(page.locator("header .wordmark")).toContainText("NITORIX");
+  await expect(page.locator("body")).not.toContainText("form&field");
+  const pair = page.locator(".promotion-pair"),
+    left = page.locator(".promotion-left"),
+    right = page.locator(".promotion-right");
+  await expect(
+    left.getByRole("heading", { name: "YOUR IMAGINATION. MADE REAL." }),
+  ).toBeVisible();
+  await expect(
+    right.getByRole("heading", { name: "THE NEXT BIG THING? YOURS." }),
+  ).toBeVisible();
+  await expect(left.getByText("Design it. Make it yours.")).toBeVisible();
+  await expect(
+    right.getByText("Discover what our creators are building."),
+  ).toBeVisible();
+  await expect(pair).toHaveAttribute("data-height-ratio", "1.4");
+  const stage = (await page.locator(".stage").boundingBox())!,
+    l = (await left.boundingBox())!,
+    r = (await right.boundingBox())!;
+  expect(l.width).toBeLessThan(170);
+  expect(l.height).toBeGreaterThan(l.width * 3);
+  expect(Math.abs(l.height - 360 * 1.4)).toBeLessThan(12);
+  expect(l.x).toBeLessThan(stage.width * 0.12);
+  expect(r.x).toBeGreaterThan(stage.width * 0.84);
+  expect(l.y + l.height / 2).toBeGreaterThan(stage.y + stage.height * 0.4);
+  expect(l.y + l.height / 2).toBeLessThan(stage.y + stage.height * 0.6);
+  expect(await left.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe(
+    "none",
+  );
+  expect(
+    await left
+      .locator(".promo-spark")
+      .first()
+      .evaluate((e) => getComputedStyle(e).animationName),
+  ).toBe("none");
+  const scene = page.locator(".scene");
+  await page.mouse.move(l.x + l.width / 2, l.y + l.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(l.x + l.width / 2 + 180, l.y + l.height / 2, {
+    steps: 4,
+  });
+  await page.mouse.up();
+  await expect(scene).not.toHaveAttribute("data-creation", "0");
+  await expect(page.locator(".creation-panel")).toHaveCount(0);
+  await scene.focus();
+  await page.keyboard.press("Home");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".creation-panel")).toBeVisible();
+  expect((await right.boundingBox())!.x).toBeGreaterThan(1400);
+  await page.setViewportSize({ width: 375, height: 812 });
+  const mobileLeft = (await left.boundingBox())!,
+    mobileRight = (await right.boundingBox())!,
+    info = (await page.locator(".creation-panel").boundingBox())!;
+  expect(mobileLeft.height).toBeLessThan(120);
+  expect(mobileLeft.x + mobileLeft.width).toBeLessThan(mobileRight.x);
+  expect(mobileLeft.y).toBeGreaterThan(info.y + info.height);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page
+    .getByRole("navigation", { name: "Creation modes" })
+    .getByRole("button", { name: /customise/i })
+    .click();
+  await expect(pair).toHaveCount(0);
+  const revisionBefore = Number(
+    await page.locator(".stage").getAttribute("data-configuration-revision"),
+  );
+  await page.getByRole("button", { name: "Forest exterior" }).click();
+  expect(
+    Number(
+      await page.locator(".stage").getAttribute("data-configuration-revision"),
+    ),
+  ).toBe(revisionBefore + 1);
+  await expect(page.getByRole("img", { name: /Forest/ })).toBeVisible();
+});
+
+test("WebGL showroom foreground panels leave central object and side drag controls usable", async ({
+  page,
+}) => {
+  test.setTimeout(60000);
+  await page.setViewportSize({ width: 1200, height: 850 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  const scene = page.locator(".scene");
+  await expect(scene.locator("canvas")).toHaveAttribute(
+    "data-scene-ready",
+    "true",
+    { timeout: 20000 },
+  );
+  const box = (await scene.boundingBox())!;
+  await page.mouse.move(65, box.y + box.height * 0.5);
+  await page.mouse.down();
+  await page.mouse.move(235, box.y + box.height * 0.5, { steps: 4 });
+  await page.mouse.up();
+  await expect(scene).not.toHaveAttribute("data-creation", "0");
+  await scene.focus();
+  await page.keyboard.press("Home");
+  const x = box.width / 2,
+    y = box.y + box.height * 0.62;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 80, y - 50, { steps: 4 });
+  await expect(scene).toHaveAttribute("data-object-dragging", "true");
+  await page.mouse.up();
+  await expect(page.locator(".creation-panel")).toHaveCount(0);
+  await expect(scene).toHaveAttribute("data-creation", "0");
+  await page.mouse.click(x, y);
+  await expect(page.locator(".creation-panel")).toBeVisible();
+  expect(errors).toEqual([]);
 });

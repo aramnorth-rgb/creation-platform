@@ -17,6 +17,12 @@ import {
   Vector3,
 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import {
+  RefinedRing,
+  RefinedPavilion,
+  RefinedWatch,
+} from "./refined-creations";
+import HeroCoachwork from "./hero-coachwork";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
 class AssetBoundary extends Component<
@@ -101,7 +107,13 @@ function Part({
   return (
     <mesh position={position}>
       <primitive object={geometry} attach="geometry" />
-      <meshStandardMaterial color={color} metalness={metal} roughness={0.29} />
+      <meshPhysicalMaterial
+        color={color}
+        metalness={metal}
+        roughness={0.27}
+        clearcoat={0.4}
+        clearcoatRoughness={0.22}
+      />
     </mesh>
   );
 }
@@ -405,6 +417,24 @@ function Details({ index }: { index: number }) {
   if (index === 9)
     return (
       <group position={[0, 1.15, 0]}>
+        {[-0.36, 0.36].flatMap((x) =>
+          [-0.3, 0.3].map((z) => (
+            <Part
+              key={`${x}${z}`}
+              position={[x, -0.72, z]}
+              size={[0.035, 0.78, 0.035]}
+              color="#737e7d"
+            />
+          )),
+        )}
+        {[-0.36, 0.36].map((x) => (
+          <Part
+            key={x}
+            position={[x, -1.1, 0]}
+            size={[0.07, 0.05, 0.95]}
+            color="#4f605a"
+          />
+        ))}
         {[-1, 1].flatMap((x) =>
           [-1, 1].map((z) => (
             <group key={`${x}${z}`}>
@@ -514,12 +544,23 @@ export default function GalleryProduct({
             />
           </Suspense>
         </AssetBoundary>
+      ) : index === 5 ? (
+        <RefinedRing />
+      ) : index === 6 ? (
+        <RefinedPavilion />
+      ) : index === 8 ? (
+        <RefinedWatch />
       ) : index === 11 ? (
         <Vessel />
       ) : (
         children
       )}
-      {active && <Details index={index} />}
+      {active && (
+        <>
+          {![5, 6, 8].includes(index) && <Details index={index} />}
+          {index === 0 && <HeroCoachwork />}
+        </>
+      )}
     </group>
   );
 }
