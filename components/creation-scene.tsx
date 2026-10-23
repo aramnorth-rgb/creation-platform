@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import type { Group } from "three";
-import { defaults, type Configuration } from "./exhibition-data";
+import { creations, defaults, type Configuration } from "./exhibition-data";
 
 function Box({
   position,
@@ -272,6 +272,7 @@ function Product({ index, config }: { index: number; config: Configuration }) {
         />
       </group>
     );
+  if (index >= 4) return <OtherProduct index={index} />;
   return (
     <group>
       <mesh position={[0, 1.6, 0]}>
@@ -296,116 +297,472 @@ function Product({ index, config }: { index: number; config: Configuration }) {
     </group>
   );
 }
-function Exhibit({
+function OtherProduct({ index }: { index: number }) {
+  if (index === 4)
+    return (
+      <group>
+        <mesh position={[0, 0.1, 0]}>
+          <cylinderGeometry args={[0.75, 0.9, 0.2, 24]} />
+          <meshStandardMaterial color="#697783" metalness={0.6} />
+        </mesh>
+        <Box position={[0, 0.7, 0]} size={[0.48, 1.2, 0.48]} color="#d6dbd5" />
+        <group position={[0, 1.2, 0]} rotation={[0, 0, -0.6]}>
+          <Box
+            position={[0, 0.48, 0]}
+            size={[0.35, 1.15, 0.35]}
+            color="#dbded5"
+          />
+          <mesh>
+            <sphereGeometry args={[0.3, 16, 12]} />
+            <meshStandardMaterial color="#d9a76c" metalness={0.5} />
+          </mesh>
+          <group position={[0, 1, 0]} rotation={[0, 0, -0.75]}>
+            <Box
+              position={[0, 0.4, 0]}
+              size={[0.25, 0.85, 0.25]}
+              color="#a8b6b3"
+            />
+            <Box
+              position={[-0.18, 0.9, 0]}
+              size={[0.12, 0.4, 0.12]}
+              color="#b0b9b3"
+            />
+            <Box
+              position={[0.18, 0.9, 0]}
+              size={[0.12, 0.4, 0.12]}
+              color="#b0b9b3"
+            />
+          </group>
+        </group>
+      </group>
+    );
+  if (index === 5)
+    return (
+      <group position={[0, 1, 0]}>
+        <mesh>
+          <torusGeometry args={[0.72, 0.12, 12, 48]} />
+          <meshStandardMaterial
+            color="#d7b36c"
+            metalness={0.85}
+            roughness={0.2}
+          />
+        </mesh>
+        <mesh position={[0, 0.85, 0]} rotation={[0, 0.6, 0]}>
+          <octahedronGeometry args={[0.4, 0]} />
+          <meshStandardMaterial
+            color="#bce1e5"
+            metalness={0.4}
+            roughness={0.1}
+          />
+        </mesh>
+      </group>
+    );
+  if (index === 6)
+    return (
+      <group>
+        <Box position={[0, 0.09, 0]} size={[3.2, 0.18, 2.2]} color="#a1a396" />
+        {[-1.35, 0, 1.35].map((x) => (
+          <group key={x}>
+            <Box
+              position={[x, 1, -0.85]}
+              size={[0.09, 1.8, 0.09]}
+              color="#b5936d"
+            />
+            <Box
+              position={[x, 1, 0.85]}
+              size={[0.09, 1.8, 0.09]}
+              color="#b5936d"
+            />
+            <mesh position={[x, 2.05, 0]} rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[1.18, 1.18, 0.08, 3]} />
+              <meshStandardMaterial color="#bc9a72" />
+            </mesh>
+          </group>
+        ))}
+      </group>
+    );
+  if (index === 7)
+    return (
+      <group rotation={[0, 0, -0.2]}>
+        <Box
+          position={[-0.2, 1.55, 0]}
+          size={[1.65, 0.65, 0.65]}
+          color="#b3aa69"
+        />
+        <Box position={[0, 0.8, 0]} size={[0.42, 1.1, 0.48]} color="#6c756b" />
+        <Box position={[0, 0.25, 0]} size={[0.8, 0.35, 0.75]} color="#303b39" />
+        <mesh position={[0.85, 1.55, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.13, 0.22, 0.55, 20]} />
+          <meshStandardMaterial color="#aab7b6" metalness={0.8} />
+        </mesh>
+        <Box
+          position={[1.3, 1.55, 0]}
+          size={[0.55, 0.06, 0.06]}
+          color="#c2c8c4"
+        />
+      </group>
+    );
+  if (index === 8)
+    return (
+      <group rotation={[-0.35, 0, 0.15]} position={[0, 1.2, 0]}>
+        <Box
+          position={[0, -0.95, 0]}
+          size={[0.65, 1.3, 0.12]}
+          color="#977a5d"
+        />
+        <Box position={[0, 0.95, 0]} size={[0.65, 1.3, 0.12]} color="#977a5d" />
+        <mesh>
+          <cylinderGeometry args={[0.68, 0.68, 0.24, 40]} />
+          <meshStandardMaterial color="#c2c3b5" metalness={0.7} />
+        </mesh>
+        <mesh position={[0, 0.14, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.56, 40]} />
+          <meshStandardMaterial color="#f0e8cb" />
+        </mesh>
+        <Box
+          position={[0, 0.16, 0.18]}
+          size={[0.035, 0.03, 0.4]}
+          color="#313d3a"
+        />
+      </group>
+    );
+  if (index === 9)
+    return (
+      <group position={[0, 1.15, 0]}>
+        <mesh>
+          <sphereGeometry args={[0.5, 20, 12]} />
+          <meshStandardMaterial color="#b5b4a9" metalness={0.4} />
+        </mesh>
+        {[-1, 1].flatMap((x) =>
+          [-1, 1].map((z) => (
+            <group key={`${x}${z}`}>
+              <Box
+                position={[x * 0.48, 0, z * 0.48]}
+                size={[1.2, 0.09, 0.1]}
+                color="#6f827c"
+              />
+              <mesh
+                position={[x * 0.95, 0, z * 0.8]}
+                rotation={[Math.PI / 2, 0, 0]}
+              >
+                <torusGeometry args={[0.48, 0.035, 8, 32]} />
+                <meshStandardMaterial color="#c2d0c9" metalness={0.4} />
+              </mesh>
+              <Box
+                position={[x * 0.95, 0, z * 0.8]}
+                size={[0.8, 0.035, 0.06]}
+                color="#73877b"
+              />
+            </group>
+          )),
+        )}
+      </group>
+    );
+  if (index === 10)
+    return (
+      <group>
+        <Box position={[0, 1.2, 0]} size={[1.35, 2.4, 0.9]} color="#a57f59" />
+        {[0.65, 1.6].map((y) => (
+          <mesh key={y} position={[0, y, 0.47]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry
+              args={[y < 1 ? 0.4 : 0.26, y < 1 ? 0.4 : 0.26, 0.045, 32]}
+            />
+            <meshStandardMaterial color="#223432" roughness={0.85} />
+          </mesh>
+        ))}
+      </group>
+    );
+  return (
+    <group>
+      {Array.from({ length: 10 }, (_, i) => (
+        <mesh key={i} position={[0, 0.15 + i * 0.19, 0]}>
+          <cylinderGeometry
+            args={[
+              0.5 + Math.sin(i * 0.4) * 0.25,
+              0.5 + Math.sin((i + 1) * 0.4) * 0.25,
+              0.2,
+              32,
+            ]}
+          />
+          <meshStandardMaterial
+            color={i % 2 ? "#6d9e9d" : "#9dbbb1"}
+            roughness={0.3}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+type ObjectDown = (
+  event: PointerEvent,
+  orientation?: { x: number; y: number },
+) => void;
+export type ObjectRotation = {
+  x: number;
+  y: number;
+  dragging: boolean;
+  returning: boolean;
+};
+function CameraRig({ workspace }: { workspace: boolean }) {
+  const { camera, invalidate } = useThree();
+  const ready = useRef(false);
+  useFrame(({ gl }) => {
+    if (!ready.current) {
+      gl.domElement.dataset.sceneReady = "true";
+      ready.current = true;
+    }
+  });
+  useEffect(() => {
+    if (workspace) camera.position.set(6.6, 3.8, 8.8);
+    else camera.position.set(0, 4.5, 13);
+    camera.lookAt(0, workspace ? 0 : 1, -1);
+    camera.updateProjectionMatrix();
+    invalidate();
+  }, [camera, invalidate, workspace]);
+  return null;
+}
+function CarouselItem({
   index,
-  selected,
+  active,
   reduced,
-  workspace,
+  scale,
+  turn,
+  rotation,
   config,
+  onObjectDown,
+  angle,
 }: {
   index: number;
-  selected: number;
+  active: boolean;
   reduced: boolean;
-  workspace: boolean;
+  scale: number;
+  turn: React.RefObject<Group | null>;
+  rotation: ObjectRotation;
   config: Configuration;
+  onObjectDown?: ObjectDown;
+  angle: number;
 }) {
   const root = useRef<Group>(null);
-  const turn = useRef<Group>(null);
-  const active = index === selected;
-  const slot = (index - selected + 4) % 4;
-  const target: [number, number, number] = workspace
-    ? [0, 0, 0]
-    : active
-      ? [0, 0, 0]
-      : slot === 1
-        ? [-5, 0, 1]
-        : slot === 2
-          ? [-5.6, 0, -3.3]
-          : [3.5, 0, -3.5];
-  const { viewport } = useThree();
-  const responsiveScale = viewport.aspect < 1 ? 0.66 : 1;
+  const { invalidate } = useThree();
   useFrame((_, delta) => {
-    if (!root.current || !turn.current) return;
-    const step = Math.min(delta, 0.05);
-    const t = 1 - Math.exp(-step * 9);
-    root.current.position.x += (target[0] - root.current.position.x) * t;
-    root.current.position.z += (target[2] - root.current.position.z) * t;
-    const desired = (active ? 1.4 : 0.7) * responsiveScale;
-    root.current.scale.setScalar(
-      root.current.scale.x + (desired - root.current.scale.x) * t,
-    );
-    if (active && !reduced)
-      turn.current.rotation.y += step * (workspace ? 0.035 : 0.045);
+    if (
+      root.current &&
+      !reduced &&
+      Math.abs(root.current.scale.x - scale) > 0.001
+    ) {
+      invalidate();
+      root.current.scale.setScalar(
+        root.current.scale.x +
+          (scale - root.current.scale.x) *
+            (1 - Math.exp(-Math.min(delta, 0.05) * 6)),
+      );
+    }
   });
   return (
     <group
-      ref={root}
-      position={reduced ? target : undefined}
-      scale={reduced ? (active ? 1.4 : 0.7) * responsiveScale : undefined}
-      visible={!workspace || index === 0}
+      position={
+        onObjectDown
+          ? [Math.sin(angle) * 12, 0, Math.cos(angle) * 12]
+          : [0, 0, 0]
+      }
+      rotation={[0, angle, 0]}
     >
-      <group ref={turn} rotation={[0, -0.25, 0]}>
-        <Product index={index} config={config} />
+      <group ref={root} scale={reduced ? scale : undefined}>
+        <group
+          ref={active ? turn : undefined}
+          rotation={
+            reduced && active
+              ? [
+                  rotation.dragging ? rotation.x : 0,
+                  rotation.dragging ? rotation.y : -0.45,
+                  0,
+                ]
+              : [0, -0.45, 0]
+          }
+          onPointerDown={(e) => {
+            if (active && onObjectDown) {
+              e.stopPropagation();
+              onObjectDown(e.nativeEvent, {
+                x: turn.current?.rotation.x ?? 0,
+                y: turn.current?.rotation.y ?? -0.45,
+              });
+            }
+          }}
+        >
+          <Product index={index} config={config} />
+        </group>
       </group>
+    </group>
+  );
+}
+function Carousel({
+  selected,
+  offset,
+  reduced,
+  paused,
+  workspace,
+  config,
+  rotation,
+  onObjectDown,
+}: {
+  selected: number;
+  offset: number;
+  reduced: boolean;
+  paused?: boolean;
+  workspace: boolean;
+  config: Configuration;
+  rotation: ObjectRotation;
+  onObjectDown: ObjectDown;
+}) {
+  const ring = useRef<Group>(null);
+  const turn = useRef<Group>(null);
+  const returning = useRef(false);
+  const { size, invalidate } = useThree();
+  const step = (Math.PI * 2) / creations.length;
+  const target = -selected * step + offset;
+  const activeScale = workspace
+    ? 1.4
+    : size.width / size.height < 1
+      ? 0.86
+      : 1.4;
+  useEffect(() => {
+    if (rotation.returning) {
+      returning.current = true;
+      invalidate();
+    }
+  }, [rotation.returning, invalidate, selected]);
+  useFrame((_, delta) => {
+    const dt = Math.min(delta, 0.05),
+      t = 1 - Math.exp(-dt * 7);
+    if (ring.current) {
+      const diff = Math.atan2(
+        Math.sin(target - ring.current.rotation.y),
+        Math.cos(target - ring.current.rotation.y),
+      );
+      ring.current.rotation.y += diff * t;
+      if (!reduced && Math.abs(diff) > 0.001) invalidate();
+    }
+    if (!turn.current) return;
+    if (rotation.dragging) {
+      turn.current.rotation.set(rotation.x, rotation.y, 0);
+      return;
+    }
+    if (returning.current) {
+      if (reduced) {
+        turn.current.rotation.set(0, -0.45, 0);
+        returning.current = false;
+        return;
+      }
+      invalidate();
+      turn.current.rotation.x += (0 - turn.current.rotation.x) * t;
+      const dy = Math.atan2(
+        Math.sin(-0.45 - turn.current.rotation.y),
+        Math.cos(-0.45 - turn.current.rotation.y),
+      );
+      turn.current.rotation.y += dy * t;
+      turn.current.rotation.z *= 1 - t;
+      if (Math.abs(turn.current.rotation.x) < 0.003 && Math.abs(dy) < 0.003) {
+        turn.current.rotation.set(0, -0.45, 0);
+        returning.current = false;
+      }
+    } else if (!reduced && !paused) {
+      turn.current.rotation.y += dt * 0.035;
+    }
+  });
+  const item = (i: number) => (
+    <CarouselItem
+      key={i}
+      index={i}
+      active={workspace || i === selected}
+      reduced={reduced}
+      scale={workspace || i === selected ? activeScale : 0.7}
+      turn={turn}
+      rotation={rotation}
+      config={workspace ? config : defaults}
+      onObjectDown={workspace ? undefined : onObjectDown}
+      angle={workspace ? 0 : i * step}
+    />
+  );
+  return workspace ? (
+    item(0)
+  ) : (
+    <group
+      ref={ring}
+      position={[0, 0, -12]}
+      rotation={reduced ? [0, target, 0] : undefined}
+    >
+      {creations.map((_, i) => item(i))}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 0]}>
+        <circleGeometry args={[14, 96]} />
+        <meshStandardMaterial color="#090c0e" roughness={0.9} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.025, 0]}>
+        <ringGeometry args={[11.8, 11.83, 96]} />
+        <meshBasicMaterial color="#252a2c" />
+      </mesh>
     </group>
   );
 }
 export default function CreationScene({
   selected,
   reduced,
+  paused,
   workspace,
   workshop,
   config,
+  offset = 0,
+  rotation = { x: 0, y: -0.45, dragging: false, returning: false },
+  onObjectDown = () => {},
 }: {
   selected: number;
   reduced: boolean;
+  paused?: boolean;
   workspace: boolean;
   workshop: boolean;
   config: Configuration;
+  offset?: number;
+  rotation?: ObjectRotation;
+  onObjectDown?: ObjectDown;
 }) {
   return (
     <Canvas
       dpr={[1, 1.5]}
-      camera={{ position: [6.6, 3.8, 8.8], fov: 39 }}
+      camera={{ position: [0, 4.5, 13], fov: 39 }}
       gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
-      frameloop={reduced ? "demand" : "always"}
+      frameloop={reduced || paused ? "demand" : "always"}
       aria-hidden="true"
     >
-      <ambientLight intensity={workspace ? 2 : 0.22} />
+      <CameraRig workspace={workspace} />
+      <ambientLight intensity={workspace ? 2 : 0.085} />
       <spotLight
-        position={[1, 7, 3]}
-        angle={0.47}
-        penumbra={0.75}
-        intensity={170}
-        distance={18}
-        color="#fff2d3"
+        position={[0, 7, 3]}
+        angle={0.43}
+        penumbra={0.7}
+        intensity={workspace ? 150 : 230}
+        distance={20}
+        color="#fff0d2"
       />
       <directionalLight
-        position={[-4, 2, -3]}
-        intensity={workspace ? 3 : 1.4}
-        color={workspace ? "#ffffff" : "#6f879d"}
+        position={[-5, 3, -4]}
+        intensity={workspace ? 3 : 0.32}
+        color={workspace ? "#ffffff" : "#7a8b9b"}
       />
-      <directionalLight position={[4, 3, 1]} intensity={workspace ? 2 : 0.5} />
-      {[0, 1, 2, 3].map((index) => (
-        <Exhibit
-          key={index}
-          index={index}
-          selected={workspace ? 0 : selected}
-          reduced={reduced}
-          workspace={workspace}
-          config={workspace ? config : defaults}
-        />
-      ))}
+      {workspace && <directionalLight position={[4, 3, 1]} intensity={2} />}
+      <Carousel
+        selected={selected}
+        offset={offset}
+        reduced={reduced}
+        paused={paused}
+        workspace={workspace}
+        config={config}
+        rotation={rotation}
+        onObjectDown={onObjectDown}
+      />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, 0]}>
-        {workspace ? (
-          <planeGeometry args={[200, 200]} />
-        ) : (
-          <circleGeometry args={[4.4, 64]} />
-        )}
+        <planeGeometry args={[200, 200]} />
         <meshStandardMaterial
-          color={workspace ? "#f0f1ed" : "#080b0d"}
-          roughness={0.8}
-          metalness={0.05}
+          color={workspace ? "#f0f1ed" : "#050708"}
+          roughness={0.9}
         />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.008, 0]}>
@@ -413,8 +770,8 @@ export default function CreationScene({
         <shaderMaterial
           transparent
           depthWrite={false}
-          vertexShader="varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }"
-          fragmentShader="varying vec2 vUv; void main(){ float a=1.0-smoothstep(0.05,0.5,length(vUv-0.5)); gl_FragColor=vec4(0.0,0.0,0.0,a*0.45); }"
+          vertexShader="varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}"
+          fragmentShader="varying vec2 vUv;void main(){float a=1.0-smoothstep(0.05,0.5,length(vUv-0.5));gl_FragColor=vec4(0.,0.,0.,a*.45);}"
         />
       </mesh>
       {workspace && workshop && (
