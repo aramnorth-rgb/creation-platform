@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("one desk configuration and price persists across modes, exhibition and product switching", async ({
   page,
 }) => {
-  test.setTimeout(60000);
+  test.setTimeout(90000);
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -32,24 +32,45 @@ test("one desk configuration and price persists across modes, exhibition and pro
   ).toBeVisible();
   const changed = await canvas.screenshot();
   expect(changed.equals(before)).toBe(false);
+  const expansivePrice = await total.textContent();
+  await page.getByRole("button", { name: /Undo/ }).click();
+  await expect(
+    page.getByRole("img", { name: /Desk organiser preview: 360 × 240 mm/ }),
+  ).toBeVisible();
+  expect((await canvas.screenshot()).equals(changed)).toBe(false);
+  expect(await total.textContent()).not.toBe(expansivePrice);
+  await page.getByRole("button", { name: /Redo/ }).click();
+  await expect(total).toHaveText(expansivePrice!);
+
   expect(await total.textContent()).not.toBe(initialPrice);
   await nav.getByRole("button", { name: /assemble/i }).click();
   await page
-    .getByRole("combobox", { name: "Module type" })
-    .selectOption("phone");
-  await page
-    .getByRole("combobox", { name: "Connection point", exact: true })
-    .selectOption("front-left");
-  await expect(page.getByRole("button", { name: "Add module" })).toBeDisabled();
-  await page
-    .getByRole("combobox", { name: "Connection point", exact: true })
-    .selectOption("rear-centre");
+    .getByRole("radiogroup", { name: "Module catalogue" })
+    .getByRole("radio", { name: /^Phone rest/ })
+    .click();
+  await expect(
+    page
+      .getByRole("radiogroup", { name: "Connection points", exact: true })
+      .getByRole("radio", { name: /^front-left/ }),
+  ).toBeDisabled();
+  await expect(
+    page
+      .getByRole("radiogroup", { name: "Connection points", exact: true })
+      .getByRole("radio", { name: /^rear-centre/ }),
+  ).toHaveAttribute("aria-checked", "true");
   await page.getByRole("button", { name: "Add module" }).click();
   await expect(page.getByRole("button", { name: "Add module" })).toBeDisabled();
   const withPhone = await total.textContent();
   await page
-    .getByRole("combobox", { name: /Position for Phone rest/ })
-    .selectOption("rear-right");
+    .getByText("Reposition Phone rest at rear-centre", { exact: true })
+    .click();
+  await page
+    .getByRole("radiogroup", {
+      name: "Position for Phone rest at rear-centre",
+      exact: true,
+    })
+    .getByRole("radio", { name: /^rear-right/ })
+    .click();
   await expect(total).toHaveText(withPhone!);
   await nav.getByRole("button", { name: /engineer/i }).click();
   await expect(
@@ -91,8 +112,8 @@ test("one desk configuration and price persists across modes, exhibition and pro
   await page.getByRole("button", { name: /Back to exhibition/ }).click();
   await nav.getByRole("button", { name: /assemble/i }).click();
   await expect(
-    page.getByRole("combobox", { name: /Position for Phone rest/ }),
-  ).toHaveValue("rear-right");
+    page.getByText("Reposition Phone rest at rear-right", { exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Remove Phone rest at rear-right" })
     .click();
@@ -127,8 +148,9 @@ test("standalone engine is responsive, keyboard-operable and uses a geometry-dri
   await expect(page.getByRole("img", { name: /forest/ })).toBeVisible();
   await page.getByRole("button", { name: "assemble", exact: true }).click();
   await page
-    .getByRole("combobox", { name: "Module type" })
-    .selectOption("tray");
+    .getByRole("radiogroup", { name: "Module catalogue" })
+    .getByRole("radio", { name: /^Small-parts tray/ })
+    .click();
   await page.getByRole("button", { name: "Add module" }).click();
   await expect(page.getByTestId("desk-summary")).toContainText("3 modules");
   await page.getByRole("button", { name: "engineer", exact: true }).click();

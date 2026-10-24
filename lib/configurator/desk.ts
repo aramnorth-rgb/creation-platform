@@ -95,19 +95,35 @@ export function connections(c: DeskConfiguration) {
     z: ((i < 3 ? 1 : -1) * c.depth) / 4,
   }));
 }
+export const moduleCatalogue = Object.keys(deskProduct.modules) as ModuleKind[];
+export function connectionIssue(
+  c: DeskConfiguration,
+  kind: ModuleKind,
+  slot: Slot,
+  except?: Slot,
+): string | null {
+  if (!Object.hasOwn(deskProduct.modules, kind))
+    return "Module unavailable in this catalogue.";
+  if (!slots.includes(slot)) return "Connection point unavailable.";
+  if (deskProduct.modules[kind].rearOnly && !slot.startsWith("rear-"))
+    return "Rear connections only.";
+  if (c.modules.some((m) => m.slot === slot && m.slot !== except))
+    return "Occupied — move or remove the installed module.";
+  return null;
+}
+export function availableConnections(c: DeskConfiguration, kind: ModuleKind) {
+  return connections(c).filter((p) => !connectionIssue(c, kind, p.id));
+}
 export function canConnect(
   c: DeskConfiguration,
   kind: ModuleKind,
   slot: Slot,
   except?: Slot,
 ) {
-  return (
-    slots.includes(slot) &&
-    (!deskProduct.modules[kind].rearOnly || slot.startsWith("rear-")) &&
-    !c.modules.some((m) => m.slot === slot && m.slot !== except)
-  );
+  return connectionIssue(c, kind, slot, except) === null;
 }
 export type DeskAction =
+  | { type: "footprint"; width: number; depth: number }
   | {
       type: "set";
       key:
@@ -141,6 +157,11 @@ export function deskReducer(
   a: DeskAction,
 ): DeskConfiguration {
   switch (a.type) {
+    case "footprint":
+      return deskReducer(
+        deskReducer(c, { type: "set", key: "width", value: a.width }),
+        { type: "set", key: "depth", value: a.depth },
+      );
     case "set": {
       if (!Number.isFinite(a.value)) return c;
       const [min, max] = limits[a.key];

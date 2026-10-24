@@ -6,7 +6,8 @@ import type { Group } from "three";
 import GalleryProduct from "./gallery-models";
 import GalleryLighting from "./gallery-lighting";
 import DeskModel from "./desk-model";
-import type { DeskConfiguration } from "@/lib/configurator/desk";
+import { environments, type EnvironmentId } from "./workshop-environment";
+import type { DeskConfiguration, Slot } from "@/lib/configurator/desk";
 import ShowroomFloor from "./showroom-floor";
 import { PromotionMeshes } from "./promotion-panels";
 import { creations, defaults, type Configuration } from "./exhibition-data";
@@ -726,6 +727,8 @@ export default function CreationScene({
   selected,
   desk,
   detailsOpen = false,
+  highlightSlot,
+  environment,
   onReady,
   reduced,
   paused,
@@ -738,6 +741,8 @@ export default function CreationScene({
 }: {
   selected: number;
   desk?: DeskConfiguration;
+  highlightSlot?: Slot;
+  environment?: EnvironmentId;
   detailsOpen?: boolean;
   onReady?: () => void;
   reduced: boolean;
@@ -749,6 +754,7 @@ export default function CreationScene({
   rotation?: ObjectRotation;
   onObjectDown?: ObjectDown;
 }) {
+  const room = environments.find((e) => e.id === environment);
   return (
     <Canvas
       dpr={[1, 1.5]}
@@ -769,30 +775,42 @@ export default function CreationScene({
         </>
       )}
       {workspace && desk && <GalleryLighting intensity={0.45} />}
-      <ambientLight intensity={workspace ? (desk ? 0.55 : 2) : 0.06} />
+      <ambientLight intensity={workspace ? (desk ? 0.3 : 2) : 0.06} />
       <spotLight
-        position={[0, 7, 3]}
-        angle={workspace ? 0.43 : 0.85}
-        penumbra={workspace ? 0.7 : 1}
+        position={workspace && desk ? [-3, 6, 5] : [0, 7, 3]}
+        angle={workspace ? (desk ? 0.55 : 0.43) : 0.85}
+        penumbra={workspace && !desk ? 0.7 : 1}
         castShadow={!workspace || Boolean(desk)}
         shadow-mapSize={[1024, 1024]}
-        shadow-normalBias={0.035}
+        shadow-normalBias={workspace && desk ? 0.012 : 0.035}
         shadow-bias={-0.00015}
         shadow-radius={4}
-        intensity={workspace ? (desk ? 65 : 150) : 260}
+        intensity={workspace ? (desk ? 80 : 150) : 260}
         distance={workspace ? 20 : 24}
-        color={workspace ? "#fff0d2" : "#f9fbff"}
+        color={workspace && !desk ? "#fff0d2" : "#f9fbff"}
       />
       <directionalLight
         position={[-5, 3, -4]}
-        intensity={workspace ? (desk ? 1.5 : 3) : 0.2}
+        intensity={workspace ? (desk ? 0.7 : 3) : 0.2}
         color={workspace ? "#ffffff" : "#7a8b9b"}
       />
       {workspace && (
         <directionalLight position={[4, 3, 1]} intensity={desk ? 0.8 : 2} />
       )}
+      {workspace && desk && (
+        <directionalLight
+          position={[-3, 4, -5]}
+          intensity={1.25}
+          color="#f3f7ff"
+        />
+      )}
       {workspace && desk ? (
-        <DeskModel config={desk} reduced={reduced} paused={paused} />
+        <DeskModel
+          config={desk}
+          reduced={reduced}
+          paused={paused}
+          highlightSlot={highlightSlot}
+        />
       ) : (
         <Carousel
           selected={selected}
@@ -812,7 +830,13 @@ export default function CreationScene({
       >
         <planeGeometry args={[200, 200]} />
         <meshStandardMaterial
-          color={workspace ? "#f0f1ed" : "#050708"}
+          color={
+            workspace
+              ? desk && workshop && room
+                ? room.floor
+                : "#f0f1ed"
+              : "#050708"
+          }
           envMapIntensity={workspace ? 1 : 0}
           roughness={0.9}
         />
@@ -831,7 +855,7 @@ export default function CreationScene({
       </mesh>
       {workspace && workshop && (
         <gridHelper
-          args={[24, 24, "#a7a89e", "#c9ccc4"]}
+          args={[24, 24, "#b3bcb6", "#cbd1cb"]}
           position={[0, -0.02, 0]}
         />
       )}
