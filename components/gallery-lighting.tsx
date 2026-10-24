@@ -4,8 +4,12 @@ import { useThree } from "@react-three/fiber";
 import { PMREMGenerator } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-/** Local studio reflections; no HDR download, and no changes to studio mode. */
-export default function GalleryLighting() {
+/** Local studio reflections; no HDR download. Restores the prior environment on exit. */
+export default function GalleryLighting({
+  intensity: level = 0.18,
+}: {
+  intensity?: number;
+}) {
   const get = useThree((state) => state.get);
   useEffect(() => {
     const { gl, scene, invalidate } = get();
@@ -15,7 +19,7 @@ export default function GalleryLighting() {
     const room = new RoomEnvironment();
     const target = generator.fromScene(room, 0.04);
     scene.environment = target.texture;
-    scene.environmentIntensity = 0.18;
+    scene.environmentIntensity = level;
     invalidate();
     return () => {
       scene.environment = previous;
@@ -25,6 +29,6 @@ export default function GalleryLighting() {
       generator.dispose();
       invalidate();
     };
-  }, [get]);
+  }, [get, level]);
   return null;
 }
