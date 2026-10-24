@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useReducer,
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -14,6 +15,14 @@ import {
   type Configuration,
   type Mode,
 } from "./exhibition-data";
+import {
+  deskReducer,
+  initialDesk,
+  deskDescription,
+  deskProduct,
+  type DeskAction,
+} from "@/lib/configurator/desk";
+import { DeskControls, DeskFallback } from "./desk-controls";
 import { PromotionCopy } from "./promotion-copy";
 const Scene = dynamic(() => import("./creation-scene"), {
   ssr: false,
@@ -195,6 +204,12 @@ export default function Marketplace() {
   const [selectionVersion, setSelectionVersion] = useState(0);
   const [mode, setMode] = useState<Mode>("exhibition");
   const [config, setConfig] = useState<Configuration>(defaults);
+  const [product, setProduct] = useState<"desk" | "atlas">("desk");
+  const [desk, deskDispatch] = useReducer(deskReducer, initialDesk);
+  function changeDesk(action: DeskAction) {
+    deskDispatch(action);
+    setRevision((v) => v + 1);
+  }
   const [revision, setRevision] = useState(0);
   const [webgl, setWebgl] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
@@ -455,7 +470,11 @@ export default function Marketplace() {
   const fallback = (
     <div className="fallback">
       {workspace ? (
-        <Still selected={0} config={config} />
+        product === "desk" ? (
+          <DeskFallback config={desk} />
+        ) : (
+          <Still selected={0} config={config} />
+        )
       ) : (
         <button
           className="fallback-object"
@@ -599,7 +618,9 @@ export default function Marketplace() {
           data-configuration-revision={revision}
           aria-label={
             workspace
-              ? "Interactive motorhome configurator"
+              ? product === "desk"
+                ? "Shared desk organiser configurator"
+                : "Interactive motorhome configurator"
               : "Community creation exhibition"
           }
         >
@@ -612,7 +633,11 @@ export default function Marketplace() {
               >
                 ← Back to exhibition
               </button>
-              <span className="eyebrow">ATLAS / 01 · INTERACTIVE CONCEPT</span>
+              <span className="eyebrow">
+                {product === "desk"
+                  ? "CONTOUR / SHARED PRODUCT ENGINE"
+                  : "ATLAS / 01 · INTERACTIVE CONCEPT"}
+              </span>
               <h1 ref={workspaceTitle} tabIndex={-1}>
                 {mode === "customise"
                   ? "Make it yours."
@@ -620,7 +645,11 @@ export default function Marketplace() {
                     ? "Build your possibilities."
                     : "Think in the details."}
               </h1>
-              <p>One imagined motorhome. Your next iteration.</p>
+              <p>
+                {product === "desk"
+                  ? "One design, from first idea to precise assembly."
+                  : "One imagined motorhome. Your next iteration."}
+              </p>
             </div>
           )}
           <div className="spotlight-beam" aria-hidden="true" />
@@ -712,7 +741,9 @@ export default function Marketplace() {
             }}
             aria-label={
               workspace
-                ? `Atlas motorhome preview: ${colors.find((c) => c.hex === config.color)?.name}, ${config.finish}, ${config.length} metres, ${config.clearance} millimetres clearance, ${config.wheelSize} inch wheels, solar ${config.solar ? "on" : "off"}, awning ${config.awning ? "on" : "off"}, storage ${config.storage ? "on" : "off"}, wireframe ${config.wireframe ? "on" : "off"}`
+                ? product === "desk"
+                  ? deskDescription(desk)
+                  : `Atlas motorhome preview: ${colors.find((c) => c.hex === config.color)?.name}, ${config.finish}, ${config.length} metres, ${config.clearance} millimetres clearance, ${config.wheelSize} inch wheels, solar ${config.solar ? "on" : "off"}, awning ${config.awning ? "on" : "off"}, storage ${config.storage ? "on" : "off"}, wireframe ${config.wireframe ? "on" : "off"}`
                 : `${item.name}, featured 3D concept with other community creations in the shadows`
             }
           >
@@ -727,6 +758,7 @@ export default function Marketplace() {
                   workspace={workspace}
                   workshop={workshop}
                   config={config}
+                  desk={workspace && product === "desk" ? desk : undefined}
                   offset={offset}
                   rotation={rotation}
                   onObjectDown={startObject}
@@ -788,190 +820,240 @@ export default function Marketplace() {
                     </button>
                   ))}
                 </div>
-                {mode === "customise" && (
-                  <div className="panel-content">
-                    <h2>A different kind of escape.</h2>
-                    <p>Refine the character of your Atlas.</p>
-                    <fieldset>
-                      <legend>01 / Exterior colour</legend>
-                      <div className="color-options">
-                        {colors.map((c) => (
-                          <button
-                            key={c.name}
-                            onClick={() => update("color", c.hex)}
-                            aria-label={`${c.name} exterior`}
-                            aria-pressed={config.color === c.hex}
-                          >
-                            <i style={{ background: c.hex }} />
-                            <span>{c.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </fieldset>
-                    <fieldset>
-                      <legend>02 / Surface finish</legend>
-                      <div className="segmented">
-                        {(["satin", "polished"] as const).map((f) => (
-                          <button
-                            key={f}
-                            aria-pressed={config.finish === f}
-                            onClick={() => update("finish", f)}
-                          >
-                            {f}
-                          </button>
-                        ))}
-                      </div>
-                    </fieldset>
-                    <label className="range-label">
-                      03 / Body length{" "}
-                      <output>{config.length.toFixed(1)} m</output>
-                      <input
-                        aria-label="Body length"
-                        type="range"
-                        min="5.5"
-                        max="8"
-                        step="0.1"
-                        value={config.length}
-                        onChange={(e) =>
-                          update("length", Number(e.target.value))
-                        }
-                      />
-                    </label>
-                  </div>
-                )}
-                {mode === "assemble" && (
-                  <div className="panel-content">
-                    <h2>More than the sum.</h2>
-                    <p>Add or remove modules. Watch your concept take shape.</p>
-                    {(
-                      [
-                        {
-                          key: "solar",
-                          name: "Solar roof",
-                          detail: "Two low-profile panel modules",
-                          number: "01",
-                        },
-                        {
-                          key: "awning",
-                          name: "Outdoor awning",
-                          detail: "A sheltered space beyond the cabin",
-                          number: "02",
-                        },
-                        {
-                          key: "storage",
-                          name: "Rear storage",
-                          detail: "Room for the things you take along",
-                          number: "03",
-                        },
-                      ] as const
-                    ).map((module) => (
-                      <label className="module-row" key={module.key}>
-                        <span className="module-icon">{module.number}</span>
-                        <span>
-                          <strong>{module.name}</strong>
-                          <small>{module.detail}</small>
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={config[module.key]}
-                          onChange={(e) => update(module.key, e.target.checked)}
-                        />
-                      </label>
-                    ))}
-                    <div className="assembly-count">
-                      {Number(config.solar) +
-                        Number(config.awning) +
-                        Number(config.storage)}{" "}
-                      / 3 optional modules installed
-                    </div>
-                  </div>
-                )}
-                {mode === "engineer" && (
-                  <div className="panel-content">
-                    <h2>Precision meets possibility.</h2>
-                    <p>
-                      Explore geometry. These are visual parameters, not
-                      validated engineering calculations.
-                    </p>
-                    <label className="range-label">
-                      Body length <output>{config.length.toFixed(1)} m</output>
-                      <input
-                        aria-label="Body length"
-                        type="range"
-                        min="5.5"
-                        max="8"
-                        step="0.1"
-                        value={config.length}
-                        onChange={(e) =>
-                          update("length", Number(e.target.value))
-                        }
-                      />
-                    </label>
-                    <label className="range-label">
-                      Ground clearance <output>{config.clearance} mm</output>
-                      <input
-                        aria-label="Ground clearance"
-                        type="range"
-                        min="180"
-                        max="450"
-                        step="10"
-                        value={config.clearance}
-                        onChange={(e) =>
-                          update("clearance", Number(e.target.value))
-                        }
-                      />
-                    </label>
-                    <label className="range-label">
-                      Wheel diameter <output>{config.wheelSize} in</output>
-                      <input
-                        aria-label="Wheel diameter"
-                        type="range"
-                        min="16"
-                        max="26"
-                        value={config.wheelSize}
-                        onChange={(e) =>
-                          update("wheelSize", Number(e.target.value))
-                        }
-                      />
-                    </label>
-                    <label className="check-row">
-                      <input
-                        type="checkbox"
-                        checked={config.wireframe}
-                        onChange={(e) => update("wireframe", e.target.checked)}
-                      />{" "}
-                      Show body wireframe
-                    </label>
-                    <div className="engineering-note">
-                      CONCEPT GEOMETRY ONLY
-                      <br />
-                      No structural, safety or roadworthiness assessment.
-                    </div>
-                  </div>
-                )}
-                <div className="panel-footer">
-                  <button
-                    onClick={() => {
-                      setConfig(defaults);
-                      setRevision((current) => current + 1);
-                      setNotice("Design reset to the original Atlas concept.");
-                    }}
+                <label className="product-picker">
+                  Workshop product
+                  <select
+                    aria-label="Workshop product"
+                    value={product}
+                    onChange={(e) =>
+                      setProduct(e.target.value as "desk" | "atlas")
+                    }
                   >
-                    Reset design <span>↺</span>
-                  </button>
-                  <p>Local prototype only. No manufacturing files or orders.</p>
-                </div>
+                    <option value="desk">Contour desk organiser</option>
+                    <option value="atlas">
+                      Atlas motorhome · legacy prototype
+                    </option>
+                  </select>
+                </label>
+                {product === "desk" ? (
+                  <DeskControls
+                    config={desk}
+                    dispatch={changeDesk}
+                    mode={mode as "customise" | "assemble" | "engineer"}
+                  />
+                ) : (
+                  <>
+                    {mode === "customise" && (
+                      <div className="panel-content">
+                        <h2>A different kind of escape.</h2>
+                        <p>Refine the character of your Atlas.</p>
+                        <fieldset>
+                          <legend>01 / Exterior colour</legend>
+                          <div className="color-options">
+                            {colors.map((c) => (
+                              <button
+                                key={c.name}
+                                onClick={() => update("color", c.hex)}
+                                aria-label={`${c.name} exterior`}
+                                aria-pressed={config.color === c.hex}
+                              >
+                                <i style={{ background: c.hex }} />
+                                <span>{c.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </fieldset>
+                        <fieldset>
+                          <legend>02 / Surface finish</legend>
+                          <div className="segmented">
+                            {(["satin", "polished"] as const).map((f) => (
+                              <button
+                                key={f}
+                                aria-pressed={config.finish === f}
+                                onClick={() => update("finish", f)}
+                              >
+                                {f}
+                              </button>
+                            ))}
+                          </div>
+                        </fieldset>
+                        <label className="range-label">
+                          03 / Body length{" "}
+                          <output>{config.length.toFixed(1)} m</output>
+                          <input
+                            aria-label="Body length"
+                            type="range"
+                            min="5.5"
+                            max="8"
+                            step="0.1"
+                            value={config.length}
+                            onChange={(e) =>
+                              update("length", Number(e.target.value))
+                            }
+                          />
+                        </label>
+                      </div>
+                    )}
+                    {mode === "assemble" && (
+                      <div className="panel-content">
+                        <h2>More than the sum.</h2>
+                        <p>
+                          Add or remove modules. Watch your concept take shape.
+                        </p>
+                        {(
+                          [
+                            {
+                              key: "solar",
+                              name: "Solar roof",
+                              detail: "Two low-profile panel modules",
+                              number: "01",
+                            },
+                            {
+                              key: "awning",
+                              name: "Outdoor awning",
+                              detail: "A sheltered space beyond the cabin",
+                              number: "02",
+                            },
+                            {
+                              key: "storage",
+                              name: "Rear storage",
+                              detail: "Room for the things you take along",
+                              number: "03",
+                            },
+                          ] as const
+                        ).map((module) => (
+                          <label className="module-row" key={module.key}>
+                            <span className="module-icon">{module.number}</span>
+                            <span>
+                              <strong>{module.name}</strong>
+                              <small>{module.detail}</small>
+                            </span>
+                            <input
+                              type="checkbox"
+                              checked={config[module.key]}
+                              onChange={(e) =>
+                                update(module.key, e.target.checked)
+                              }
+                            />
+                          </label>
+                        ))}
+                        <div className="assembly-count">
+                          {Number(config.solar) +
+                            Number(config.awning) +
+                            Number(config.storage)}{" "}
+                          / 3 optional modules installed
+                        </div>
+                      </div>
+                    )}
+                    {mode === "engineer" && (
+                      <div className="panel-content">
+                        <h2>Precision meets possibility.</h2>
+                        <p>
+                          Explore geometry. These are visual parameters, not
+                          validated engineering calculations.
+                        </p>
+                        <label className="range-label">
+                          Body length{" "}
+                          <output>{config.length.toFixed(1)} m</output>
+                          <input
+                            aria-label="Body length"
+                            type="range"
+                            min="5.5"
+                            max="8"
+                            step="0.1"
+                            value={config.length}
+                            onChange={(e) =>
+                              update("length", Number(e.target.value))
+                            }
+                          />
+                        </label>
+                        <label className="range-label">
+                          Ground clearance{" "}
+                          <output>{config.clearance} mm</output>
+                          <input
+                            aria-label="Ground clearance"
+                            type="range"
+                            min="180"
+                            max="450"
+                            step="10"
+                            value={config.clearance}
+                            onChange={(e) =>
+                              update("clearance", Number(e.target.value))
+                            }
+                          />
+                        </label>
+                        <label className="range-label">
+                          Wheel diameter <output>{config.wheelSize} in</output>
+                          <input
+                            aria-label="Wheel diameter"
+                            type="range"
+                            min="16"
+                            max="26"
+                            value={config.wheelSize}
+                            onChange={(e) =>
+                              update("wheelSize", Number(e.target.value))
+                            }
+                          />
+                        </label>
+                        <label className="check-row">
+                          <input
+                            type="checkbox"
+                            checked={config.wireframe}
+                            onChange={(e) =>
+                              update("wireframe", e.target.checked)
+                            }
+                          />{" "}
+                          Show body wireframe
+                        </label>
+                        <div className="engineering-note">
+                          CONCEPT GEOMETRY ONLY
+                          <br />
+                          No structural, safety or roadworthiness assessment.
+                        </div>
+                      </div>
+                    )}
+                    <div className="panel-footer">
+                      <button
+                        onClick={() => {
+                          setConfig(defaults);
+                          setRevision((current) => current + 1);
+                          setNotice(
+                            "Design reset to the original Atlas concept.",
+                          );
+                        }}
+                      >
+                        Reset design <span>↺</span>
+                      </button>
+                      <p>
+                        Local prototype only. No manufacturing files or orders.
+                      </p>
+                    </div>
+                  </>
+                )}
               </aside>
-              <div className="model-spec">
-                <span>ATLAS / 01</span>
-                <strong key={revision} className="studio-sync">
-                  {colors.find((c) => c.hex === config.color)?.name} ·{" "}
-                  {config.finish}
-                </strong>
-                <span>
-                  {config.length.toFixed(1)} M / {config.wheelSize} IN WHEELS
-                </span>
-              </div>
+              {product === "desk" ? (
+                <div className="model-spec">
+                  <span>CONTOUR / 01</span>
+                  <strong key={revision} className="studio-sync">
+                    {deskProduct.materials[desk.material].label} · {desk.colour}
+                  </strong>
+                  <span>
+                    {desk.width} × {desk.depth} MM / {desk.modules.length}{" "}
+                    MODULES
+                  </span>
+                </div>
+              ) : (
+                <div className="model-spec">
+                  <span>ATLAS / 01</span>
+                  <strong key={revision} className="studio-sync">
+                    {colors.find((c) => c.hex === config.color)?.name} ·{" "}
+                    {config.finish}
+                  </strong>
+                  <span>
+                    {config.length.toFixed(1)} M / {config.wheelSize} IN WHEELS
+                  </span>
+                </div>
+              )}
             </>
           )}
           {!workspace && detailsOpen && (
@@ -1115,9 +1197,12 @@ export default function Marketplace() {
           <section className="workspace-disclaimer">
             <span>EXPLORATION, NOT CERTIFICATION.</span>
             <p>
-              This Atlas motorhome is a procedural placeholder. All creators and
-              manufacturers are fictional. Options are visual demonstrations; no
-              real engineering, ordering or production services are provided.
+              {product === "desk"
+                ? "This desk organiser is an original procedural visual prototype."
+                : "This Atlas motorhome is a procedural placeholder."}{" "}
+              All creators and manufacturers are fictional. Options are visual
+              demonstrations; no real engineering, ordering or production
+              services are provided.
             </p>
           </section>
         )}

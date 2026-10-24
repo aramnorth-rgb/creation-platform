@@ -70,7 +70,7 @@ test("object drag is isolated, returns smoothly, carousel drag selects, click op
   page,
 }) => {
   // Software WebGL plus canvas captures can be slower on shared CI machines.
-  test.setTimeout(60000);
+  test.setTimeout(90000);
   await page.setViewportSize({ width: 720, height: 600 });
   await page.goto("/");
   const scene = page.locator(".scene");
@@ -113,7 +113,12 @@ test("object drag is isolated, returns smoothly, carousel drag selects, click op
   await expect(page.locator(".creation-panel")).toHaveCount(0);
   await scene.focus();
   await page.keyboard.press("Home");
-  await page.waitForTimeout(900);
+  // Wait for the actual snap to settle; software WebGL may need more than 900ms.
+  await expect(scene.locator("canvas")).toHaveAttribute(
+    "data-carousel-settled",
+    "true",
+    { timeout: 20000 },
+  );
   await page.mouse.click(x, y);
   await expect(page.locator(".creation-panel")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Atlas / 01" })).toBeVisible();
@@ -216,6 +221,9 @@ test("three studio modes update the model, retain options and reset", async ({
     page.getByRole("heading", { name: "Make it yours." }),
   ).toBeFocused();
   await expect(page.locator(".scene canvas")).toBeVisible();
+  await page
+    .getByRole("combobox", { name: "Workshop product" })
+    .selectOption("atlas");
   const before = await page.locator(".scene canvas").screenshot();
   await page.getByRole("button", { name: "Forest exterior" }).click();
   await expect(
@@ -349,6 +357,9 @@ test("mobile touch gestures, cancellation, reduced motion, fallback and configur
       ),
     ).toBe(true);
   }
+  await page
+    .getByRole("combobox", { name: "Workshop product" })
+    .selectOption("atlas");
   await page.getByRole("slider", { name: "Body length" }).fill("8");
   await expect(page.getByRole("img", { name: /8 metres/ })).toBeVisible();
   expect(
@@ -566,6 +577,9 @@ test("NITORIX foreground promotional panels: tall, readable, responsive and non-
     .getByRole("button", { name: /customise/i })
     .click();
   await expect(pair).toHaveCount(0);
+  await page
+    .getByRole("combobox", { name: "Workshop product" })
+    .selectOption("atlas");
   const revisionBefore = Number(
     await page.locator(".stage").getAttribute("data-configuration-revision"),
   );

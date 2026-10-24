@@ -5,6 +5,8 @@ import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeom
 import type { Group } from "three";
 import GalleryProduct from "./gallery-models";
 import GalleryLighting from "./gallery-lighting";
+import DeskModel from "./desk-model";
+import type { DeskConfiguration } from "@/lib/configurator/desk";
 import ShowroomFloor from "./showroom-floor";
 import { PromotionMeshes } from "./promotion-panels";
 import { creations, defaults, type Configuration } from "./exhibition-data";
@@ -634,9 +636,13 @@ function Carousel({
   const ring = useRef<Group>(null);
   const turn = useRef<Group>(null);
   const returning = useRef(false);
-  const { size, invalidate } = useThree();
+  const { size, invalidate, get } = useThree();
   const step = (Math.PI * 2) / creations.length;
   const target = -selected * step + offset;
+  useEffect(() => {
+    get().gl.domElement.dataset.carouselSettled = "false";
+    invalidate();
+  }, [target, get, invalidate]);
   const activeScale = workspace
     ? 1.4
     : size.width / size.height < 1
@@ -648,7 +654,7 @@ function Carousel({
       invalidate();
     }
   }, [rotation.returning, invalidate, selected]);
-  useFrame((_, delta) => {
+  useFrame(({ gl }, delta) => {
     const dt = Math.min(delta, 0.05),
       t = 1 - Math.exp(-dt * 7);
     if (ring.current) {
@@ -657,6 +663,9 @@ function Carousel({
         Math.cos(target - ring.current.rotation.y),
       );
       ring.current.rotation.y += diff * t;
+      gl.domElement.dataset.carouselSettled = String(
+        reduced || Math.abs(diff) < 0.003,
+      );
       if (!reduced && Math.abs(diff) > 0.001) invalidate();
     }
     if (!turn.current) return;
@@ -715,6 +724,7 @@ function Carousel({
 }
 export default function CreationScene({
   selected,
+  desk,
   detailsOpen = false,
   onReady,
   reduced,
@@ -727,6 +737,7 @@ export default function CreationScene({
   onObjectDown = () => {},
 }: {
   selected: number;
+  desk?: DeskConfiguration;
   detailsOpen?: boolean;
   onReady?: () => void;
   reduced: boolean;
@@ -757,38 +768,45 @@ export default function CreationScene({
           />
         </>
       )}
-      <ambientLight intensity={workspace ? 2 : 0.06} />
+      {workspace && desk && <GalleryLighting intensity={0.45} />}
+      <ambientLight intensity={workspace ? (desk ? 0.55 : 2) : 0.06} />
       <spotLight
         position={[0, 7, 3]}
         angle={workspace ? 0.43 : 0.85}
         penumbra={workspace ? 0.7 : 1}
-        castShadow={!workspace}
+        castShadow={!workspace || Boolean(desk)}
         shadow-mapSize={[1024, 1024]}
         shadow-normalBias={0.035}
         shadow-bias={-0.00015}
         shadow-radius={4}
-        intensity={workspace ? 150 : 260}
+        intensity={workspace ? (desk ? 65 : 150) : 260}
         distance={workspace ? 20 : 24}
         color={workspace ? "#fff0d2" : "#f9fbff"}
       />
       <directionalLight
         position={[-5, 3, -4]}
-        intensity={workspace ? 3 : 0.2}
+        intensity={workspace ? (desk ? 1.5 : 3) : 0.2}
         color={workspace ? "#ffffff" : "#7a8b9b"}
       />
-      {workspace && <directionalLight position={[4, 3, 1]} intensity={2} />}
-      <Carousel
-        selected={selected}
-        offset={offset}
-        reduced={reduced}
-        paused={paused}
-        workspace={workspace}
-        config={config}
-        rotation={rotation}
-        onObjectDown={onObjectDown}
-      />
+      {workspace && (
+        <directionalLight position={[4, 3, 1]} intensity={desk ? 0.8 : 2} />
+      )}
+      {workspace && desk ? (
+        <DeskModel config={desk} reduced={reduced} paused={paused} />
+      ) : (
+        <Carousel
+          selected={selected}
+          offset={offset}
+          reduced={reduced}
+          paused={paused}
+          workspace={workspace}
+          config={config}
+          rotation={rotation}
+          onObjectDown={onObjectDown}
+        />
+      )}
       <mesh
-        receiveShadow={!workspace}
+        receiveShadow={!workspace || Boolean(desk)}
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, workspace ? -0.03 : -0.63, 0]}
       >

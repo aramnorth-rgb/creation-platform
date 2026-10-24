@@ -2496,7 +2496,7 @@ footer > span {
 }
 .promotion-words h2 {
   font:
-    900 clamp(13px, 1.1vw, 18px)/1.15 Arial,
+    900 clamp(13px, 1.1vw, 18px) / 1.15 Arial,
     Helvetica,
     sans-serif;
   letter-spacing: -0.6px;
@@ -2886,5 +2886,206 @@ main {
 @media (max-width: 380px) {
   .promotion-pair {
     margin-inline: 12px;
+  }
+}
+
+/* Shared product engine: the same controls and state in every studio. */
+.product-picker {
+  display: grid;
+  gap: 7px;
+  font-size: 11px;
+  margin-top: 16px;
+}
+.product-picker select,
+.desk-controls select,
+.desk-controls input[type="number"] {
+  width: 100%;
+  border: 1px solid #bfc7c3;
+  border-radius: 7px;
+  padding: 10px;
+  min-height: 44px;
+  background: linear-gradient(#fff, #f2f4f2);
+  color: #20332b;
+  font: inherit;
+}
+.desk-controls {
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 25px;
+}
+.desk-controls > label {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+  font-size: 12px;
+}
+.desk-controls > .check-row {
+  display: flex;
+}
+.desk-controls button:not(.color-options button) {
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid #bac3be;
+  border-radius: 6px;
+  background: linear-gradient(#fff, #ecf0ed);
+}
+.desk-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.desk-controls .desk-primary {
+  width: 100%;
+  background: #3d1421 !important;
+  color: #fff;
+}
+.desk-controls .color-options {
+  gap: 9px;
+}
+.desk-controls .color-options button {
+  width: 53px;
+}
+.desk-controls .color-options i {
+  width: 32px;
+  height: 32px;
+}
+.desk-controls .segmented {
+  flex-wrap: wrap;
+}
+.desk-modules {
+  padding: 0;
+  list-style: none;
+}
+.desk-modules li {
+  padding: 14px;
+  background: #f1f4f1;
+  border: 1px solid #d0d8d3;
+  border-radius: 8px;
+  margin: 12px 0;
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.desk-modules label {
+  display: grid;
+  gap: 7px;
+}
+.desk-measurements {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.desk-measure {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+}
+.desk-hint,
+.desk-summary {
+  font-size: 11px !important;
+  line-height: 1.6;
+}
+.desk-price {
+  background: #f1f4f1;
+  border: 1px solid #bfcac2;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 20px 0;
+}
+.desk-price > span {
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+.desk-price > output {
+  display: block;
+  font-size: 28px;
+  margin: 8px 0;
+}
+.desk-price p {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  margin: 12px 0;
+}
+.desk-price small {
+  display: block;
+  line-height: 1.5;
+  font-size: 10px;
+  margin-top: 10px;
+}
+.desk-controls details {
+  font-size: 12px;
+  margin: 16px 0;
+  line-height: 1.7;
+}
+.desk-controls summary {
+  cursor: pointer;
+  min-height: 30px;
+}
+.desk-fallback {
+  width: 85%;
+  max-height: 90%;
+}
+@media (max-width: 700px) {
+  .desk-controls {
+    overflow: visible;
+  }
+}
+.desk-embed {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  background: #f4f5f2;
+  color: #20332b;
+}
+.embed-preview {
+  padding: 30px;
+  min-width: 0;
+}
+.embed-preview a {
+  font-size: 11px;
+}
+.embed-preview h1 {
+  margin: 30px 0 12px;
+  font-size: clamp(25px, 3vw, 42px);
+}
+.embed-preview p {
+  font-size: 13px;
+}
+.embed-preview > div {
+  height: 65svh;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.embed-controls {
+  padding: 25px;
+  background: #fff;
+  border-left: 1px solid #d2d7d2;
+}
+.embed-controls nav {
+  display: flex;
+  gap: 8px;
+}
+.embed-controls nav button {
+  padding: 12px 8px;
+  min-height: 44px;
+  border-bottom: 2px solid transparent;
+  text-transform: capitalize;
+}
+.embed-controls nav button[aria-pressed="true"] {
+  border-color: #7d2639;
+}
+@media (max-width: 760px) {
+  .desk-embed {
+    grid-template-columns: 1fr;
+  }
+  .embed-preview > div {
+    height: 300px;
+  }
+  .embed-controls {
+    border-left: 0;
+    border-top: 1px solid #d2d7d2;
   }
 }

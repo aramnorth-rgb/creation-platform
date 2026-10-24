@@ -1,6 +1,6 @@
 # NITORIX — Homepage V5
 
-A visual, nearly black 3D exhibition built with **Next.js App Router, TypeScript, Tailwind CSS v4 and React Three Fiber**. NITORIX is a provisional working name, not a registered-brand claim. The bright Customise, Assemble and Engineer prototypes are preserved.
+A visual, nearly black 3D exhibition built with **Next.js App Router, TypeScript, Tailwind CSS v4 and React Three Fiber**. NITORIX is a provisional working name, not a registered-brand claim. Customise, Assemble and Engineer now expose one shared Contour desk-organiser engine. The original Atlas prototype remains available through the workshop product selector.
 
 **All creations, designers, biographies, motivations, manufacturers, manufacturer ratings, attributed locations and seeded comments are explicitly fictional demo content.** This is not evidence of real customers, manufacturers or reviews. No payments, orders, external AI services, production engineering or backend persistence are integrated.
 
@@ -35,9 +35,29 @@ Twelve distinct demo creations sit around a large circular platform (radius incr
 - **Details:** click/tap the featured object to reveal a compact floating panel beside it. It contains the chosen object name, designer biography/motivation, fictional manufacturer and numeric star rating, a comments preview and a local comment-entry control. Full profile/story and full comments links open working accessible demo dialogs. Close with Escape or the labelled close buttons; focus returns to the opener.
 - **Local comments:** additions belong to the selected creation, appear in its full comments view and are never sent to a server. Everything resets on refresh. Clear fictional and unpublished labels remain visible in all detail views.
 
-## Three preserved studio modes
+## Shared desk-organiser engine
 
-The black exhibition slides away into a predominantly white Atlas motorhome workspace. V5 adds brushed trims, frosted control cards, dimensional selected states, tactile hover/press feedback and a revision pulse when options change. All three modes deliberately configure Atlas regardless of which gallery object was selected.
+The workshop opens on **Contour**, an original procedural modular desk organiser. All three modes consume the same `DeskConfiguration`, reducer, product definition, `deskGeometry()` and `priceDesk()`; mode switching does not copy or reset the design. Returning to the exhibition or selecting Atlas and back also retains the desk configuration during the page session.
+
+- **Customise:** customer-friendly material families (recycled polymer, brushed aluminium, oak composite), four colours and compact/everyday/expansive footprints.
+- **Assemble:** add/remove pen cups, small-parts trays and phone rests. Position modules by selecting one of six named connection points. Each accepts one module; phone rests require rear points. Repositioning snaps to the shared connection coordinates, including after resizing the base. Incompatible/occupied destinations are disabled and rejected by the reducer. This is discrete point placement, not drag-and-drop or a physics solver.
+- **Engineer:** precise whole-millimetre width, depth, base/wall thickness, rim height and edge radius; wireframe, connection markers, coordinates and demonstration rail specification. Numeric edits commit on blur or Enter and clamp to supported ranges. JSON export contains the versioned product configuration, not manufacturing CAD.
+- **Shared view controls:** preview rotation and connection markers. Existing workshop background and pause remain available. Reduced motion renders on demand.
+- **One demo price:** fabrication + volume-based base material + module line items, calculated centrally in integer GBP pence. Colour and presentation changes do not affect price; geometry, material and attachments do. Prices are illustrative, excluding tax/delivery, and are never a manufacturer quote.
+
+The same millimetre-based part description drives both the rounded PBR WebGL model and the projected SVG fallback. Rubber feet, tray walls, module floors, six rails and phone support/lip are generated locally. These are visual demo parts, not licensed scans or validated manufacturing geometry. Material families use lightweight PBR parameters; no high-resolution wood textures or CAD kernel are included. Rounding is capped per part thickness. SVG is an approximate projection and does not reproduce bevels, tilted surfaces or lighting exactly.
+
+### Reuse and future embedding
+
+`lib/configurator/desk.ts` contains the framework-independent product contract, versioned serialisable configuration, pure reducer, compatibility rules, geometry builder, descriptions and pricing. `components/desk-controls.tsx` and `desk-model.tsx` are controlled views: pass configuration and dispatch from any host. The definition is the first product adapter, not a complete arbitrary-product schema interpreter. All lengths are mm; money is GBP pence.
+
+Open **http://localhost:3000/configure** for a minimal standalone host using exactly the same reducer, controls and rendering. It can serve as an iframe proof of concept on a trusted manufacturer site (for example `<iframe src="https://YOUR-DEPLOYMENT/configure" title="NITORIX desk organiser" width="100%" height="900"></iframe>`). The host layout adapts to its container viewport. No cross-origin messaging, account sharing, quote submission, embed authentication or marketplace API is implemented. Do not treat exported JSON as trusted server input: future ingestion needs schema validation/version migration and server-side repricing.
+
+Each mounted host owns its configuration. State persists across mode changes, but not refreshes or separate pages/iframes. There is no localStorage, backend, CAD export, collision/strength/tolerance solver or real supplier quote. Footprints and connection spacing are bounded so supported module envelopes fit; this is not engineering certification. No new dependencies or remote assets were added.
+
+## Preserved Atlas studio modes
+
+The black exhibition slides away into a predominantly white Atlas motorhome workspace. V5 adds brushed trims, frosted control cards, dimensional selected states, tactile hover/press feedback and a revision pulse when options change. Select **Atlas motorhome · legacy prototype** in the workshop product selector to access the original Atlas controls. They retain their separate legacy state and are not part of the new desk product contract.
 
 - **Customise:** exterior colour, satin/polished finish and body length.
 - **Assemble:** optional solar roof, outdoor awning and rear storage geometry.
@@ -69,7 +89,7 @@ If system Chromium exists:
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
 ```
 
-Playwright starts a dedicated **production server on port 3100**, leaving a dev server on 3000 undisturbed. Build first. The 10 browser tests cover promotional-panel copy, dimensions, responsive placement and non-blocking input, NITORIX branding, the 12-position timer/wrap, manual selection and pause, isolated object/carousel dragging, object return, on-demand information, fictional profile and rating, local comments, keyboard navigation, all three configurators, mobile real touch input, pointer cancellation, reduced motion and SVG fallback. WebGL checks work with software rendering.
+Playwright starts a dedicated **production server on port 3100**, leaving a dev server on 3000 undisturbed. Build first. The browser suite and pure engine rule tests cover shared desk state across all modes, price invariants, compatible/occupied connections, geometry bounds, module repositioning, JSON export, standalone mobile fallback, plus promotional-panel copy, dimensions, responsive placement and non-blocking input, NITORIX branding, the 12-position timer/wrap, manual selection and pause, isolated object/carousel dragging, object return, on-demand information, fictional profile and rating, local comments, keyboard navigation, all three configurators, mobile real touch input, pointer cancellation, reduced motion and SVG fallback. WebGL checks work with software rendering.
 
 ## Structure
 
@@ -79,7 +99,9 @@ Playwright starts a dedicated **production server on port 3100**, leaving a dev 
 - `components/gallery-models.tsx`: gallery-only PBR details, licensed GLB loading and procedural fallbacks.
 - `components/gallery-lighting.tsx`: local studio reflections, restored on leaving the exhibition.
 - `components/exhibition-data.ts`: explicitly fictional concepts, profiles, ratings and configuration defaults.
-- `tests/home.spec.ts`: browser integration checks.
+- `lib/configurator/desk.ts`: shared desk product engine and demonstration price calculation.
+- `components/desk-controls.tsx`, `desk-model.tsx`: controlled desk views; `desk-embed.tsx` / `app/configure/`: standalone host.
+- `tests/home.spec.ts`, `desk.spec.ts`, `desk-engine.spec.ts`: exhibition/legacy, shared desk integration, and pure product rules.
 
 ## Assets and visual limitations
 
