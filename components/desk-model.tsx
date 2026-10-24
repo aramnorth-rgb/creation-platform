@@ -9,6 +9,7 @@ import {
   deskProduct,
   type DeskConfiguration,
   type DeskPart,
+  type Slot,
 } from "@/lib/configurator/desk";
 function Part({ part, config }: { part: DeskPart; config: DeskConfiguration }) {
   const geometry = useMemo(
@@ -43,10 +44,12 @@ export default function DeskModel({
   config,
   reduced,
   paused,
+  highlightSlot,
 }: {
   config: DeskConfiguration;
   reduced: boolean;
   paused?: boolean;
+  highlightSlot?: Slot;
 }) {
   const group = useRef<Group>(null);
   const parts = useMemo(() => deskGeometry(config), [config]);
@@ -60,19 +63,25 @@ export default function DeskModel({
         {parts.map((part) => (
           <Part key={part.id} part={part} config={config} />
         ))}
-        {config.showConnections &&
+        {(config.showConnections || highlightSlot) &&
           connections(config).map((p) => (
             <mesh
               key={p.id}
-              position={[p.x / 100, (config.thickness + 2) / 100, p.z / 100]}
+              position={[p.x / 100, (config.thickness + 4) / 100, p.z / 100]}
               rotation={[-Math.PI / 2, 0, 0]}
             >
-              <ringGeometry args={[0.06, 0.09, 20]} />
+              <ringGeometry
+                args={
+                  p.id === highlightSlot ? [0.15, 0.18, 24] : [0.06, 0.09, 20]
+                }
+              />
               <meshBasicMaterial
                 color={
-                  config.modules.some((m) => m.slot === p.id)
-                    ? "#c36736"
-                    : "#16866c"
+                  p.id === highlightSlot
+                    ? "#e02653"
+                    : config.modules.some((m) => m.slot === p.id)
+                      ? "#c36736"
+                      : "#16866c"
                 }
               />
             </mesh>

@@ -1,5 +1,5 @@
 "use client";
-import { useState, type Dispatch } from "react";
+import { useState } from "react";
 import {
   connections,
   deskGeometry,
@@ -7,11 +7,15 @@ import {
   formatPrice,
   priceDesk,
   canConnect,
-  type DeskAction,
+  availableConnections,
+  connectionIssue,
+  moduleCatalogue,
   type DeskConfiguration,
   type ModuleKind,
   type Slot,
 } from "@/lib/configurator/desk";
+import { VisualPicker, PickerThumbnail } from "./visual-picker";
+import type { DeskEngine } from "./use-desk-engine";
 function Measurement({
   label,
   value,
@@ -53,16 +57,13 @@ function Measurement({
   );
 }
 export function DeskControls({
-  config: c,
-  dispatch,
+  engine,
   mode,
 }: {
-  config: DeskConfiguration;
-  dispatch: Dispatch<DeskAction>;
+  engine: DeskEngine;
   mode: "customise" | "assemble" | "engineer";
 }) {
-  const [kind, setKind] = useState<ModuleKind>("cup");
-  const [slot, setSlot] = useState<Slot>("front-left");
+  const { config: c, dispatch, kind, slot, chooseKind, chooseSlot } = engine;
   const [message, setMessage] = useState("");
   const price = priceDesk(c);
   const measure = (
@@ -81,9 +82,39 @@ export function DeskControls({
     />
   );
   return (
-    <div className="panel-content desk-controls">
+    <div className="panel-content desk-controls" data-mode={mode}>
+      <div
+        className="desk-history"
+        role="group"
+        aria-label="Configuration history"
+      >
+        <button
+          disabled={!engine.canUndo}
+          onClick={() => {
+            engine.undo();
+            setMessage("Configuration undone.");
+          }}
+          aria-keyshortcuts="Control+Z Meta+Z"
+        >
+          ↶ Undo
+        </button>
+        <button
+          disabled={!engine.canRedo}
+          onClick={() => {
+            engine.redo();
+            setMessage("Configuration redone.");
+          }}
+          aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z"
+        >
+          ↷ Redo
+        </button>
+        <small>Ctrl / ⌘ Z · Shift to redo</small>
+      </div>
+      <p className="desk-feedback" role="status">
+        {engine.historyMessage || message}
+      </p>
       <h2>Contour / desk organiser</h2>
-      <p>
+      <p className="desk-intro">
         One product. One shared design.{" "}
         {mode === "customise"
           ? "Start with the essentials."
@@ -162,8 +193,11 @@ export function DeskControls({
                   key={s.label}
                   aria-pressed={c.width === s.width && c.depth === s.depth}
                   onClick={() => {
-                    dispatch({ type: "set", key: "width", value: s.width });
-                    dispatch({ type: "set", key: "depth", value: s.depth });
+                    dispatch({
+                      type: "footprint",
+                      width: s.width,
+                      depth: s.depth,
+                    });
                   }}
                 >
                   {s.label}
@@ -175,35 +209,43 @@ export function DeskControls({
       )}
       {mode === "assemble" && (
         <>
-          <label>
-            Module type
-            <select
-              value={kind}
-              onChange={(e) => setKind(e.target.value as ModuleKind)}
-            >
-              {Object.entries(deskProduct.modules).map(([id, m]) => (
-                <option key={id} value={id}>
-                  {m.name}
-                  {m.rearOnly ? " · rear points only" : ""}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Connection point
-            <select
-              value={slot}
-              onChange={(e) => setSlot(e.target.value as Slot)}
-            >
-              {connections(c).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.id}
-                  {c.modules.some((m) => m.slot === p.id) ? " · occupied" : ""}
-                  {!canConnect(c, kind, p.id) ? " · unavailable" : ""}
-                </option>
-              ))}
-            </select>
-          </label>
+          <VisualPicker
+            label="Module catalogue"
+            value={kind}
+            change={(id) => {
+              chooseKind(id as ModuleKind);
+              setMessage(
+                `${deskProduct.modules[id as ModuleKind].name} selected. A compatible empty connection is chosen when available.`,
+              );
+            }}
+            options={moduleCatalogue.map((id) => {
+              const available = availableConnections(c, id);
+              return {
+                id,
+                name: deskProduct.modules[id].name,
+                detail: available.length
+                  ? `${available.length} compatible points${deskProduct.modules[id].rearOnly ? " · rear only" : ""}`
+                  : "Unavailable — no empty compatible connection.",
+                disabled: !available.length,
+                preview: <PickerThumbnail kind={id} config={c} />,
+              };
+            })}
+          />
+          <VisualPicker
+            label="Connection points"
+            value={slot}
+            change={(id) => {
+              chooseSlot(id as Slot);
+              setMessage(`Selected ${id}.`);
+            }}
+            options={connections(c).map((p) => ({
+              id: p.id,
+              name: p.id,
+              detail: connectionIssue(c, kind, p.id) ?? "Available · rail-v1",
+              disabled: !canConnect(c, kind, p.id),
+              preview: <PickerThumbnail slot={p.id} config={c} />,
+            }))}
+          />
           <button
             className="desk-primary"
             disabled={!canConnect(c, kind, slot)}
@@ -218,38 +260,36 @@ export function DeskControls({
           </button>
           {!canConnect(c, kind, slot) && (
             <p className="desk-hint">
-              Choose an empty compatible point. Phone rests require a rear
-              point.
+              {connectionIssue(c, kind, slot)} Choose another available
+              connection or remove a module.
             </p>
           )}
           <ul className="desk-modules">
             {c.modules.map((m) => (
               <li key={m.slot}>
                 <strong>{deskProduct.modules[m.kind].name}</strong>
-                <label>
-                  Position for {deskProduct.modules[m.kind].name} at {m.slot}
-                  <select
+                <details>
+                  <summary>
+                    Reposition {deskProduct.modules[m.kind].name} at {m.slot}
+                  </summary>
+                  <VisualPicker
+                    label={`Position for ${deskProduct.modules[m.kind].name} at ${m.slot}`}
                     value={m.slot}
-                    onChange={(e) => {
-                      dispatch({
-                        type: "move",
-                        from: m.slot,
-                        to: e.target.value as Slot,
-                      });
-                      setMessage(`Module moved to ${e.target.value}.`);
+                    change={(id) => {
+                      dispatch({ type: "move", from: m.slot, to: id as Slot });
+                      setMessage(`Module moved to ${id}.`);
                     }}
-                  >
-                    {connections(c).map((p) => (
-                      <option
-                        key={p.id}
-                        value={p.id}
-                        disabled={!canConnect(c, m.kind, p.id, m.slot)}
-                      >
-                        {p.id}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    options={connections(c).map((p) => ({
+                      id: p.id,
+                      name: p.id,
+                      detail:
+                        connectionIssue(c, m.kind, p.id, m.slot) ??
+                        "Compatible · rail-v1",
+                      disabled: !canConnect(c, m.kind, p.id, m.slot),
+                      preview: <PickerThumbnail slot={p.id} config={c} />,
+                    }))}
+                  />
+                </details>
                 <button
                   onClick={() => {
                     dispatch({ type: "remove", slot: m.slot });
@@ -263,7 +303,6 @@ export function DeskControls({
             ))}
           </ul>
           <p>{c.modules.length} / 6 connection points occupied</p>
-          <p role="status">{message}</p>
         </>
       )}
       {mode === "engineer" && (
@@ -365,7 +404,13 @@ export function DeskControls({
     </div>
   );
 }
-export function DeskFallback({ config: c }: { config: DeskConfiguration }) {
+export function DeskFallback({
+  config: c,
+  highlightSlot,
+}: {
+  config: DeskConfiguration;
+  highlightSlot?: Slot;
+}) {
   const parts = deskGeometry(c);
   // Same millimetre geometry projected into an isometric SVG; no independent product model.
   return (
@@ -403,14 +448,14 @@ export function DeskFallback({ config: c }: { config: DeskConfiguration }) {
             </g>
           );
         })}
-        {c.showConnections &&
+        {(c.showConnections || highlightSlot) &&
           connections(c).map((p) => (
             <circle
               key={p.id}
               cx={p.x * 0.8 - p.z * 0.65}
               cy={p.x * 0.22 + p.z * 0.3 - c.thickness - 5}
-              r="6"
-              fill="#16866c"
+              r={p.id === highlightSlot ? 12 : 6}
+              fill={p.id === highlightSlot ? "#b12646" : "#16866c"}
             />
           ))}
       </g>

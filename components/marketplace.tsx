@@ -5,7 +5,6 @@ import {
   useEffect,
   useRef,
   useState,
-  useReducer,
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -15,13 +14,13 @@ import {
   type Configuration,
   type Mode,
 } from "./exhibition-data";
+import { deskDescription, deskProduct } from "@/lib/configurator/desk";
+import { useDeskEngine } from "./use-desk-engine";
 import {
-  deskReducer,
-  initialDesk,
-  deskDescription,
-  deskProduct,
-  type DeskAction,
-} from "@/lib/configurator/desk";
+  useWorkshopEnvironment,
+  EnvironmentSwitcher,
+  WorkshopBackdrop,
+} from "./workshop-environment";
 import { DeskControls, DeskFallback } from "./desk-controls";
 import { PromotionCopy } from "./promotion-copy";
 const Scene = dynamic(() => import("./creation-scene"), {
@@ -205,18 +204,17 @@ export default function Marketplace() {
   const [mode, setMode] = useState<Mode>("exhibition");
   const [config, setConfig] = useState<Configuration>(defaults);
   const [product, setProduct] = useState<"desk" | "atlas">("desk");
-  const [desk, deskDispatch] = useReducer(deskReducer, initialDesk);
-  function changeDesk(action: DeskAction) {
-    deskDispatch(action);
-    setRevision((v) => v + 1);
-  }
+  const deskEngine = useDeskEngine(mode !== "exhibition" && product === "desk");
+  const desk = deskEngine.config;
+  const room = useWorkshopEnvironment();
   const [revision, setRevision] = useState(0);
   const [webgl, setWebgl] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
   const [reduced, setReduced] = useState(true);
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(true);
-  const [workshop, setWorkshop] = useState(false);
+  const workshop = room.enabled;
+  const setWorkshop = room.setEnabled;
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailView, setDetailView] = useState<"profile" | "comments">(
     "profile",
@@ -471,7 +469,10 @@ export default function Marketplace() {
     <div className="fallback">
       {workspace ? (
         product === "desk" ? (
-          <DeskFallback config={desk} />
+          <DeskFallback
+            config={desk}
+            highlightSlot={mode === "assemble" ? deskEngine.slot : undefined}
+          />
         ) : (
           <Still selected={0} config={config} />
         )
@@ -615,7 +616,10 @@ export default function Marketplace() {
       <main id="main">
         <section
           className={`stage ${workshop && workspace ? "workshop" : ""}`}
-          data-configuration-revision={revision}
+          data-environment={room.environment}
+          data-configuration-revision={
+            workspace && product === "desk" ? JSON.stringify(desk) : revision
+          }
           aria-label={
             workspace
               ? product === "desk"
@@ -642,7 +646,7 @@ export default function Marketplace() {
                 {mode === "customise"
                   ? "Make it yours."
                   : mode === "assemble"
-                    ? "Build your possibilities."
+                    ? "Assembly studio."
                     : "Think in the details."}
               </h1>
               <p>
@@ -747,6 +751,9 @@ export default function Marketplace() {
                 : `${item.name}, featured 3D concept with other community creations in the shadows`
             }
           >
+            {workspace && workshop && (
+              <WorkshopBackdrop environment={room.environment} />
+            )}
             {webgl ? (
               <SceneBoundary fallback={fallback}>
                 <Scene
@@ -759,6 +766,12 @@ export default function Marketplace() {
                   workshop={workshop}
                   config={config}
                   desk={workspace && product === "desk" ? desk : undefined}
+                  highlightSlot={
+                    workspace && mode === "assemble" && product === "desk"
+                      ? deskEngine.slot
+                      : undefined
+                  }
+                  environment={workshop ? room.environment : undefined}
                   offset={offset}
                   rotation={rotation}
                   onObjectDown={startObject}
@@ -784,6 +797,11 @@ export default function Marketplace() {
           ) : (
             <>
               <div className="workspace-tools">
+                <EnvironmentSwitcher
+                  value={room.environment}
+                  change={room.setEnvironment}
+                  disabled={!workshop}
+                />
                 <label>
                   <input
                     type="checkbox"
@@ -837,8 +855,7 @@ export default function Marketplace() {
                 </label>
                 {product === "desk" ? (
                   <DeskControls
-                    config={desk}
-                    dispatch={changeDesk}
+                    engine={deskEngine}
                     mode={mode as "customise" | "assemble" | "engineer"}
                   />
                 ) : (
@@ -1034,7 +1051,7 @@ export default function Marketplace() {
               {product === "desk" ? (
                 <div className="model-spec">
                   <span>CONTOUR / 01</span>
-                  <strong key={revision} className="studio-sync">
+                  <strong key={JSON.stringify(desk)} className="studio-sync">
                     {deskProduct.materials[desk.material].label} · {desk.colour}
                   </strong>
                   <span>
