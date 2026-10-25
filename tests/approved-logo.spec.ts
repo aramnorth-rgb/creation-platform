@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 
 const originalHash =
   "07affe16a544709628bd482ceaab2af5eaf4753ab58975c2ade12c48ce7f2ac7";
-test("V2 preserves the PNG master and serves a lossless responsive web logo", async ({
+test("V2 preserves approved assets and serves the responsive pastel header logo", async ({
   page,
   request,
 }) => {
@@ -15,6 +15,14 @@ test("V2 preserves the PNG master and serves a lossless responsive web logo", as
       .update(await response.body())
       .digest("hex"),
   ).toBe(originalHash);
+  const pastel = await request.get("/brand/nitorix-logo-pastel.webp");
+  expect(pastel.ok()).toBe(true);
+  expect((await pastel.body()).length).toBeLessThan(200000);
+  expect(
+    createHash("sha256")
+      .update(await pastel.body())
+      .digest("hex"),
+  ).toBe("c5371a36f2f3e33c391a5cfed0e61516c17b4260d74dd3eb956ecd161e38c887");
   const web = await request.get("/brand/nitorix-logo.webp");
   expect(
     createHash("sha256")
@@ -74,7 +82,10 @@ test("V2 preserves the PNG master and serves a lossless responsive web logo", as
       await page.goto(route);
       const logo = page.locator(".nx-header .nx-approved-logo");
       await expect(logo).toBeVisible();
-      await expect(logo).toHaveAttribute("src", "/brand/nitorix-logo.webp");
+      await expect(logo).toHaveAttribute(
+        "src",
+        "/brand/nitorix-logo-pastel.webp",
+      );
       await expect(logo).not.toHaveAttribute("srcset", /.+/);
       const result = await logo.evaluate((img: HTMLImageElement) => {
         const b = img.getBoundingClientRect(),
@@ -85,15 +96,23 @@ test("V2 preserves the PNG master and serves a lossless responsive web logo", as
           right: b.right,
           left: b.left,
           filter: s.filter,
+          blend: s.mixBlendMode,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight,
           fit: s.objectFit,
           transform: s.transform,
         };
       });
-      expect(Math.abs(result.ratio - 1175 / 439)).toBeLessThan(0.002);
-      expect(result.width).toBeGreaterThanOrEqual(199);
+      expect(Math.abs(result.ratio - 1137 / 300)).toBeLessThan(0.002);
+      expect(result.width).toBeGreaterThanOrEqual(175);
+      expect(result.width).toBeLessThanOrEqual(230);
+      expect(result.left).toBeCloseTo(width * 0.055, 0);
       expect(result.left).toBeGreaterThanOrEqual(0);
       expect(result.right).toBeLessThanOrEqual(width);
       expect(result.filter).toBe("none");
+      expect(result.blend).toBe("darken");
+      expect(result.naturalWidth).toBe(1137);
+      expect(result.naturalHeight).toBe(300);
       expect(result.fit).toBe("contain");
       expect(result.transform).toBe("none");
       expect(
@@ -104,6 +123,11 @@ test("V2 preserves the PNG master and serves a lossless responsive web logo", as
       const count =
         route === "/studio" ? 1 : route === "/manufacturers" ? 3 : 2;
       await expect(page.locator(".nx-approved-logo")).toHaveCount(count);
+      if (route !== "/studio") {
+        await expect(
+          page.locator(".nx-footer .nx-approved-logo"),
+        ).toHaveAttribute("src", "/brand/nitorix-logo.webp");
+      }
     }
   }
   await page.goto("/exhibition");

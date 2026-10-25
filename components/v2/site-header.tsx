@@ -18,7 +18,7 @@ export function SiteHeader({ studio = false }: { studio?: boolean }) {
       </a>
       <header className="nx-header">
         <Link className="nx-wordmark" href="/" aria-label="NITORIX home">
-          <BrandLogo eager />
+          <BrandLogo eager header />
           {studio && <span>STUDIO</span>}
         </Link>
         <nav className="nx-desktop-nav" aria-label="Main navigation">

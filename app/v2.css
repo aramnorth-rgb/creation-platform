@@ -2143,3 +2143,20 @@ body:has(.nx) {
 .nx-dashboard-illustration:has(.nx-approved-logo) {
   transform: none;
 }
+
+/* Header-only refinement. Tight artwork bounds align the visible border with content. */
+.nx-header .nx-approved-logo {
+  width: clamp(195px, 18vw, 230px);
+  mix-blend-mode: darken;
+}
+.nx .nx-header {
+  min-height: 100px;
+}
+@media (max-width: 700px) {
+  .nx .nx-header {
+    min-height: 88px;
+  }
+  .nx-header .nx-approved-logo {
+    width: clamp(175px, 52vw, 205px);
+  }
+}
