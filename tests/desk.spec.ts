@@ -7,7 +7,7 @@ test("one desk configuration and price persists across modes, exhibition and pro
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/exhibition");
   const nav = page.getByRole("navigation", { name: "Creation modes" });
   await nav.getByRole("button", { name: /customise/i }).click();
   await expect(

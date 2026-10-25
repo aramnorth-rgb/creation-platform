@@ -219,7 +219,7 @@ test("homepage workshop keeps the catalogue visible and mobile environment contr
   await fallback(page);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
+  await page.goto("/exhibition");
   await page
     .getByRole("navigation", { name: "Creation modes" })
     .getByRole("button", { name: /assemble/i })

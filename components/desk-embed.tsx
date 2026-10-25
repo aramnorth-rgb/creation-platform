@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { defaults } from "./exhibition-data";
@@ -13,12 +12,21 @@ import {
 } from "./workshop-environment";
 const Scene = dynamic(() => import("./creation-scene"), { ssr: false });
 /** Minimal standalone host. No marketplace/account dependency or external services. */
-export default function DeskEmbed() {
-  const engine = useDeskEngine();
+import { type ProductDraft, type CreationMode } from "@/lib/studio/product";
+export default function DeskEmbed({
+  policy,
+  initialMode = "customise",
+}: {
+  policy?: ProductDraft;
+  initialMode?: CreationMode;
+}) {
+  const engine = useDeskEngine(true, policy);
   const config = engine.config;
   const room = useWorkshopEnvironment();
   const [mode, setMode] = useState<"customise" | "assemble" | "engineer">(
-    "customise",
+    policy && !policy.modes.includes(initialMode)
+      ? policy.modes[0]
+      : initialMode,
   );
   const [webgl, setWebgl] = useState(false);
   useEffect(() => {
@@ -31,9 +39,11 @@ export default function DeskEmbed() {
   return (
     <main className="desk-embed">
       <section className="embed-preview">
-        <Link href="/">NITORIX / provisional working name</Link>
-        <h1>Contour desk organiser</h1>
-        <p>Shared configuration engine · standalone demo</p>
+        <span className="nx-eyebrow">
+          NITORIX CREATE · TRY WITHOUT AN ACCOUNT
+        </span>
+        <h1>{policy?.name ?? "Contour desk organiser"}</h1>
+        <p>{policy?.description ?? "A little order. A lot of possibility."}</p>
         <div
           className="embed-canvas"
           role="img"
@@ -77,7 +87,9 @@ export default function DeskEmbed() {
       </section>
       <section className="embed-controls" aria-label="Desk configuration">
         <nav aria-label="Standalone creation modes">
-          {(["customise", "assemble", "engineer"] as const).map((m) => (
+          {(
+            policy?.modes ?? (["customise", "assemble", "engineer"] as const)
+          ).map((m) => (
             <button
               key={m}
               aria-pressed={mode === m}

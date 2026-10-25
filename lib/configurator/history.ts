@@ -15,11 +15,13 @@ export type HistoryAction =
   | { type: "edit"; action: DeskAction }
   | { type: "undo" }
   | { type: "redo" };
-export function createDeskHistory(): DeskHistory {
+export function createDeskHistory(
+  initial: DeskConfiguration = initialDesk,
+): DeskHistory {
   return {
     operation: "initial",
     past: [],
-    present: structuredClone(initialDesk),
+    present: structuredClone(initial),
     future: [],
   };
 }

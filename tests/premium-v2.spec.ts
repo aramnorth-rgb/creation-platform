@@ -1,0 +1,287 @@
+import { expect, test, type Page } from "@playwright/test";
+async function noWebgl(page: Page) {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      ...args: Parameters<typeof original>
+    ) {
+      return String(args[0]).includes("webgl")
+        ? null
+        : original.apply(this, args);
+    } as typeof original;
+  });
+}
+const studioSection = (page: Page, name: string) =>
+  page
+    .getByRole("navigation", { name: "Studio sections" })
+    .getByRole("button", { name, exact: true });
+test("premium homepage offers an interactive 3D product, clear routes and restrained editorial sections", async ({
+  page,
+}) => {
+  test.setTimeout(60000);
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Imagine it.Make it yours.",
+  );
+  await expect(
+    page.getByRole("link", { name: /Explore Products/ }),
+  ).toHaveAttribute("href", "/explore");
+  await expect(
+    page.getByRole("link", { name: /Start Creating/ }).last(),
+  ).toHaveAttribute("href", "/create");
+  const canvas = page.locator(".nx-hero-canvas canvas");
+  await expect(canvas).toHaveAttribute("data-scene-ready", "true", {
+    timeout: 30000,
+  });
+  const before = await canvas.screenshot();
+  await page.getByRole("button", { name: "coral hero colour" }).click();
+  await expect(
+    page.getByRole("button", { name: "coral hero colour" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  expect((await canvas.screenshot()).equals(before)).toBe(false);
+  const angle = page.getByRole("slider", { name: "Hero product rotation" });
+  const prior = await angle.inputValue();
+  const box = (await page.locator(".nx-hero-canvas").boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2, {
+    steps: 4,
+  });
+  await page.mouse.up();
+  expect(await angle.inputValue()).not.toBe(prior);
+  await expect(page.locator(".promotion-pair")).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: /Why buy ordinary/ }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+test("mobile navigation, collection filtering and manufacturer honesty work without WebGL", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await expect(page.locator(".nx-hero-canvas .desk-fallback")).toBeVisible();
+  const menu = page.getByRole("button", { name: "Open navigation menu" });
+  await menu.click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("link")).toHaveCount(4);
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeFocused();
+  await page.getByRole("link", { name: /Explore Products/ }).click();
+  await page.getByRole("button", { name: "Living", exact: true }).click();
+  await expect(page.locator(".nx-product-card")).toHaveCount(2);
+  await page.getByRole("button", { name: "Explore Fold chair" }).click();
+  await expect(
+    page.getByRole("link", { name: /View 3D exhibition/ }),
+  ).toHaveAttribute("href", "/exhibition");
+  await page.getByRole("button", { name: "Open navigation menu" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("link", { name: /For Manufacturers/ })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Sign In", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Create Account", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByText(/subject to final programme terms/),
+  ).toBeVisible();
+  await page
+    .getByLabel("Business name", { exact: true })
+    .fill("Sample Workshop");
+  await page.getByLabel("Work email").fill("demo@example.test");
+  await page.getByLabel("What do you make?").fill("Furniture");
+  await page.getByRole("button", { name: /Prepare interest note/ }).click();
+  await expect(page.getByRole("status")).toContainText("It has not been sent");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
+test("Studio saves local products, validates options, enforces rules and prices in the shared preview, and persists on reload", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.goto("/studio");
+  await studioSection(page, "Products").click();
+  await page.getByRole("button", { name: /Add product draft/ }).click();
+  await page
+    .getByLabel("Product name", { exact: true })
+    .fill("Workshop Series One");
+  await page.getByRole("button", { name: /Save draft/ }).click();
+  await expect(page.getByRole("status")).toContainText(
+    "saved on this browser only",
+  );
+  await studioSection(page, "Configurator Builder").click();
+  await page.getByRole("checkbox", { name: /^engineer$/i }).uncheck();
+  await page
+    .getByRole("checkbox", { name: "Warm oak composite", exact: true })
+    .uncheck();
+  await page.getByRole("checkbox", { name: "Pen cup", exact: true }).uncheck();
+  await page.getByRole("button", { name: /Save draft/ }).click();
+  await studioSection(page, "Pricing").click();
+  await page.getByLabel("Demo base fee (pence)").fill("2800");
+  await page.getByRole("button", { name: /Save draft/ }).click();
+  await page.getByRole("button", { name: /Preview demo pricing/ }).click();
+  const preview = page.getByRole("dialog");
+  await expect(preview).toBeVisible();
+  await expect(
+    preview.getByRole("button", { name: "engineer", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    preview
+      .getByRole("combobox", { name: "Material", exact: true })
+      .getByRole("option", { name: "Warm oak composite" }),
+  ).toHaveJSProperty("disabled", true);
+  const price = preview.getByLabel("Demonstration total");
+  const original = await price.textContent();
+  await preview.getByRole("button", { name: "assemble", exact: true }).click();
+  await expect(
+    preview
+      .getByRole("radiogroup", { name: "Module catalogue" })
+      .getByRole("radio", { name: /^Pen cup/ }),
+  ).toBeDisabled();
+  await preview
+    .getByRole("radiogroup", { name: "Module catalogue" })
+    .getByRole("radio", { name: /^Phone rest/ })
+    .click();
+  await preview.getByRole("button", { name: "Add module" }).click();
+  expect(await price.textContent()).not.toBe(original);
+  await preview
+    .getByRole("button", { name: "Rotate Phone rest at rear-left" })
+    .click();
+  await expect(
+    preview.getByRole("button", { name: "Rotate Phone rest at rear-left" }),
+  ).toHaveText("Rotate 90° · 90°");
+  await preview.getByRole("button", { name: /Undo/ }).click();
+  await expect(
+    preview.getByRole("button", { name: "Rotate Phone rest at rear-left" }),
+  ).toHaveText("Rotate 90° · 0°");
+  await page.getByRole("button", { name: "Close product preview" }).click();
+  await studioSection(page, "Publishing").click();
+  await expect(
+    page.getByRole("button", { name: /Publish · not connected/ }),
+  ).toBeDisabled();
+  const create = page.getByRole("link", { name: /Open saved draft in Create/ });
+  const href = await create.getAttribute("href");
+  await page.goto(href!);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Workshop Series One",
+  );
+  await expect(
+    page.getByRole("button", { name: "engineer", exact: true }),
+  ).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Workshop Series One",
+  );
+  await page.goto("/studio");
+  await studioSection(page, "Products").click();
+  await expect(
+    page.getByRole("heading", { level: 3, name: "Workshop Series One" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Edit Workshop Series One" }).click();
+  await studioSection(page, "Configurator Builder").click();
+  await page.getByRole("checkbox", { name: /^customise$/i }).uncheck();
+  await page.getByRole("checkbox", { name: /^assemble$/i }).uncheck();
+  await page.getByRole("button", { name: /Save draft/ }).click();
+  await expect(
+    page.getByRole("alert", { name: "Product validation errors" }),
+  ).toContainText("Enable at least one supported creation mode");
+});
+test("Studio prototype sections are honest, responsive and permit duplicate/delete of local drafts", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/studio");
+  for (const section of [
+    "Overview",
+    "Products",
+    "Configurator Builder",
+    "Pricing",
+    "Publishing",
+    "Orders and Enquiries",
+    "Analytics",
+    "Business Settings",
+  ]) {
+    await studioSection(page, section).click();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+  await studioSection(page, "Orders and Enquiries").click();
+  await expect(
+    page.getByText(/There are no real orders or messages/),
+  ).toBeVisible();
+  await studioSection(page, "Products").click();
+  await page
+    .getByRole("button", {
+      name: "Duplicate Contour desk organiser",
+      exact: true,
+    })
+    .click();
+  await page.getByRole("button", { name: /Save draft/ }).click();
+  await expect(
+    page.getByRole("heading", {
+      level: 3,
+      name: "Contour desk organiser copy",
+    }),
+  ).toBeVisible();
+  page.once("dialog", (d) => d.accept());
+  await page
+    .getByRole("button", {
+      name: "Delete Contour desk organiser copy",
+      exact: true,
+    })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      level: 3,
+      name: "Contour desk organiser copy",
+    }),
+  ).toHaveCount(0);
+});
+test("Create shares configuration, price, rotation, history and environments across all three modes", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.goto("/create");
+  await page.getByRole("button", { name: "forest organiser" }).click();
+  const modes = page.getByRole("navigation", {
+    name: "Standalone creation modes",
+  });
+  await modes.getByRole("button", { name: "assemble", exact: true }).click();
+  await page
+    .getByRole("radiogroup", { name: "Module catalogue" })
+    .getByRole("radio", { name: /^Phone rest/ })
+    .click();
+  await page.getByRole("button", { name: "Add module" }).click();
+  const price = await page.getByLabel("Demonstration total").textContent();
+  await modes.getByRole("button", { name: "engineer", exact: true }).click();
+  await page.getByRole("spinbutton", { name: "Width (mm)" }).fill("420");
+  await page.getByRole("spinbutton", { name: "Width (mm)" }).press("Enter");
+  await page.getByRole("button", { name: /Undo/ }).click();
+  await expect(page.getByLabel("Demonstration total")).toHaveText(price!);
+  await page
+    .getByRole("button", { name: "Warm woodworking workshop", exact: true })
+    .click();
+  await expect(page.locator(".workshop-backdrop.env-wood")).toHaveCount(1);
+  await modes.getByRole("button", { name: "customise", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "forest organiser" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("desk-summary")).toContainText("3 modules");
+});

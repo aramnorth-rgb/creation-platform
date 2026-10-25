@@ -65,7 +65,9 @@ export function DeskControls({
 }) {
   const { config: c, dispatch, kind, slot, chooseKind, chooseSlot } = engine;
   const [message, setMessage] = useState("");
-  const price = priceDesk(c);
+  const policy = engine.policy;
+  const kindPermitted = !policy || policy.modules.includes(kind);
+  const price = priceDesk(c, policy?.pricing);
   const measure = (
     key: "width" | "depth" | "thickness" | "wall" | "rim" | "radius",
     label: string,
@@ -113,7 +115,7 @@ export function DeskControls({
       <p className="desk-feedback" role="status">
         {engine.historyMessage || message}
       </p>
-      <h2>Contour / desk organiser</h2>
+      <h2>{policy?.name ?? "Contour / desk organiser"}</h2>
       <p className="desk-intro">
         One product. One shared design.{" "}
         {mode === "customise"
@@ -154,7 +156,16 @@ export function DeskControls({
               }
             >
               {Object.entries(deskProduct.materials).map(([id, m]) => (
-                <option key={id} value={id}>
+                <option
+                  key={id}
+                  value={id}
+                  disabled={
+                    policy &&
+                    !policy.materials.includes(
+                      id as DeskConfiguration["material"],
+                    )
+                  }
+                >
                   {m.label}
                 </option>
               ))}
@@ -167,6 +178,12 @@ export function DeskControls({
                 <button
                   key={name}
                   aria-label={`${name} organiser`}
+                  disabled={
+                    policy &&
+                    !policy.colours.includes(
+                      name as DeskConfiguration["colour"],
+                    )
+                  }
                   aria-pressed={c.colour === name}
                   onClick={() =>
                     dispatch({
@@ -191,6 +208,13 @@ export function DeskControls({
               ].map((s) => (
                 <button
                   key={s.label}
+                  disabled={
+                    policy &&
+                    (s.width < policy.minWidth ||
+                      s.width > policy.maxWidth ||
+                      s.depth < policy.minDepth ||
+                      s.depth > policy.maxDepth)
+                  }
                   aria-pressed={c.width === s.width && c.depth === s.depth}
                   onClick={() => {
                     dispatch({
@@ -219,13 +243,16 @@ export function DeskControls({
               );
             }}
             options={moduleCatalogue.map((id) => {
-              const available = availableConnections(c, id);
+              const allowed = !policy || policy.modules.includes(id);
+              const available = allowed ? availableConnections(c, id) : [];
               return {
                 id,
                 name: deskProduct.modules[id].name,
-                detail: available.length
-                  ? `${available.length} compatible points${deskProduct.modules[id].rearOnly ? " · rear only" : ""}`
-                  : "Unavailable — no empty compatible connection.",
+                detail: !allowed
+                  ? "Not enabled in this manufacturer demo."
+                  : available.length
+                    ? `${available.length} compatible points${deskProduct.modules[id].rearOnly ? " · rear only" : ""}`
+                    : "Unavailable — no empty compatible connection.",
                 disabled: !available.length,
                 preview: <PickerThumbnail kind={id} config={c} />,
               };
@@ -242,13 +269,13 @@ export function DeskControls({
               id: p.id,
               name: p.id,
               detail: connectionIssue(c, kind, p.id) ?? "Available · rail-v1",
-              disabled: !canConnect(c, kind, p.id),
+              disabled: !kindPermitted || !canConnect(c, kind, p.id),
               preview: <PickerThumbnail slot={p.id} config={c} />,
             }))}
           />
           <button
             className="desk-primary"
-            disabled={!canConnect(c, kind, slot)}
+            disabled={!kindPermitted || !canConnect(c, kind, slot)}
             onClick={() => {
               dispatch({ type: "add", kind, slot });
               setMessage(
@@ -258,16 +285,27 @@ export function DeskControls({
           >
             Add module
           </button>
-          {!canConnect(c, kind, slot) && (
+          {(!kindPermitted || !canConnect(c, kind, slot)) && (
             <p className="desk-hint">
-              {connectionIssue(c, kind, slot)} Choose another available
-              connection or remove a module.
+              {kindPermitted
+                ? connectionIssue(c, kind, slot)
+                : "This module is not enabled by the manufacturer demo."}{" "}
+              Choose another available connection or remove a module.
             </p>
           )}
           <ul className="desk-modules">
             {c.modules.map((m) => (
               <li key={m.slot}>
                 <strong>{deskProduct.modules[m.kind].name}</strong>
+                <button
+                  aria-label={`Rotate ${deskProduct.modules[m.kind].name} at ${m.slot}`}
+                  onClick={() => {
+                    dispatch({ type: "rotate", slot: m.slot });
+                    setMessage("Module rotated by 90 degrees.");
+                  }}
+                >
+                  Rotate 90° · {m.rotation ?? 0}°
+                </button>
                 <details>
                   <summary>
                     Reposition {deskProduct.modules[m.kind].name} at {m.slot}
@@ -308,16 +346,29 @@ export function DeskControls({
       {mode === "engineer" && (
         <>
           <div className="desk-measurements">
-            {measure("width", "Width", 270, 480)}
-            {measure("depth", "Depth", 180, 300)}
+            {measure(
+              "width",
+              "Width",
+              policy?.minWidth ?? 270,
+              policy?.maxWidth ?? 480,
+            )}
+            {measure(
+              "depth",
+              "Depth",
+              policy?.minDepth ?? 180,
+              policy?.maxDepth ?? 300,
+            )}
             {measure("thickness", "Base thickness", 8, 20)}
             {measure("wall", "Wall thickness", 3, 8)}
             {measure("rim", "Rim height", 18, 55)}
             {measure("radius", "Edge radius", 2, 12)}
           </div>
           <p className="desk-hint">
-            Whole millimetres. Values clamp to supported ranges. Edge rounding
-            is limited by each part’s thickness.
+            Whole millimetres.{" "}
+            {policy
+              ? "Edits outside approved ranges are rejected."
+              : "Values clamp to supported ranges."}{" "}
+            Edge rounding is limited by each part’s thickness.
           </p>
           <label className="check-row">
             <input
@@ -421,8 +472,11 @@ export function DeskFallback({
     >
       <g transform={`rotate(${c.angle / 8})`}>
         {parts.map((part) => {
-          const [x, y, z] = part.position,
-            [w, h, d] = part.size;
+          const [x, y, z] = part.position;
+          const [width, h, depth] = part.size;
+          const quarterTurn = Math.abs(Math.sin(part.yaw ?? 0)) > 0.5;
+          const w = quarterTurn ? depth : width,
+            d = quarterTurn ? width : depth;
           const project = (x: number, y: number, z: number) =>
             `${x * 0.8 - z * 0.65},${x * 0.22 + z * 0.3 - y}`;
           const pts = [
