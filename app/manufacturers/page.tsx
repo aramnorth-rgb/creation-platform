@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/v2/brand-logo";
 import { SiteHeader, SiteFooter } from "@/components/v2/site-header";
 import { ManufacturerInterest } from "@/components/v2/manufacturer-interest";
 import "../v2.css";
@@ -35,8 +36,8 @@ export default function Manufacturers() {
             aria-label="Studio demonstration workflow"
           >
             <div>
-              <strong>
-                NITORIX <span>STUDIO</span>
+              <strong className="nx-illustration-brand">
+                <BrandLogo /> <span>STUDIO</span>
               </strong>
               <i>PREVIEW</i>
             </div>

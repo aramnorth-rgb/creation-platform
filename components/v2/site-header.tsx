@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRef } from "react";
+import { BrandLogo } from "./brand-logo";
 const links = [
   { label: "Explore Creations", href: "/explore" },
   { label: "Start Creating", href: "/create" },
@@ -17,7 +18,8 @@ export function SiteHeader({ studio = false }: { studio?: boolean }) {
       </a>
       <header className="nx-header">
         <Link className="nx-wordmark" href="/" aria-label="NITORIX home">
-          NITORIX{studio && <span>STUDIO</span>}
+          <BrandLogo eager />
+          {studio && <span>STUDIO</span>}
         </Link>
         <nav className="nx-desktop-nav" aria-label="Main navigation">
           {links.map((l) => (
@@ -79,7 +81,7 @@ export function SiteFooter() {
     <footer className="nx-footer">
       <div>
         <Link href="/" className="nx-wordmark">
-          NITORIX
+          <BrandLogo />
         </Link>
         <p>Thoughtfully made. Uniquely yours.</p>
       </div>

@@ -2085,3 +2085,61 @@ body:has(.nx) {
   width: 48px;
   height: 48px;
 }
+
+/* Approved V2 web logo: a lossless crop with the original lettering and glow. */
+.nx-approved-logo {
+  display: block;
+  width: clamp(220px, 21vw, 280px);
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+.nx .nx-header {
+  height: auto;
+  min-height: 124px;
+  padding-block: 8px;
+}
+.nx-wordmark {
+  flex-shrink: 0;
+}
+.nx-footer .nx-approved-logo {
+  width: 280px;
+}
+.nx-dashboard-illustration > div:first-child {
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.nx-illustration-brand {
+  display: flex;
+  align-items: center;
+}
+.nx-illustration-brand .nx-approved-logo {
+  width: 260px;
+}
+@media (max-width: 700px) {
+  .nx .nx-header {
+    min-height: 112px;
+    gap: 20px;
+  }
+  .nx-wordmark {
+    flex-direction: column;
+    gap: 0;
+  }
+  .nx-approved-logo,
+  .nx-footer .nx-approved-logo {
+    width: clamp(200px, calc(100vw - 130px), 260px);
+  }
+  .nx-wordmark > span {
+    padding: 0 0 5px;
+    border: 0;
+  }
+  .nx-illustration-brand {
+    flex-direction: column;
+  }
+}
+
+/* Keep the approved logo level within the manufacturer preview panel. */
+.nx-dashboard-illustration:has(.nx-approved-logo) {
+  transform: none;
+}
