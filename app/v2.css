@@ -2359,40 +2359,61 @@ body:has(.nx) {
 }
 
 
-/* V2 visual polish: slightly clearer pastels without increasing motion. */
+/* V2 gallery balance: quieter colour washes, slightly clearer floating forms. */
 .nx-atmosphere {
   --nx-pastel-edge: linear-gradient(
-    120deg, #e8e1a9 0%, #edcbdc 35%, #d8cbec 67%, #bfe4e2 100%
+    120deg, #ebe4c4 0%, #eed9e3 35%, #dfd5ed 67%, #cfe8e5 100%
   );
 }
 .nx-atmosphere-distant {
   background:
-    radial-gradient(ellipse at 8% 12%, #f6e9ae80, transparent 48%),
-    radial-gradient(ellipse at 90% 25%, #f5d1e47d, transparent 48%),
-    radial-gradient(ellipse at 22% 85%, #dbd0f180, transparent 50%),
-    radial-gradient(ellipse at 85% 90%, #c9eee883, transparent 45%);
+    radial-gradient(ellipse at 8% 12%, #f6e9ae62, transparent 48%),
+    radial-gradient(ellipse at 90% 25%, #f5d1e463, transparent 48%),
+    radial-gradient(ellipse at 22% 85%, #dbd0f164, transparent 50%),
+    radial-gradient(ellipse at 85% 90%, #c9eee86b, transparent 45%);
 }
+/* Shapes are more legible than the washes, not brighter or faster. */
 .nx-atmosphere-middle i {
-  border-color: #d6c6e589;
-  background: linear-gradient(140deg, #fffefa65, #e6d6f03c);
+  border-color: #cebee5aa;
+  background: linear-gradient(140deg, #fffefa66, #e7d9f15e);
+  box-shadow: 0 14px 48px #bcb2d518;
+}
+.nx-atmosphere-middle i:nth-child(1) {
+  left: -4%;
+  top: 16%;
+}
+.nx-atmosphere-middle i:nth-child(2) {
+  right: -4%;
+  top: 47%;
+  border-color: #bfe2dfb5;
+}
+.nx-atmosphere-middle i:nth-child(3) {
+  top: 70%;
+  opacity: 0.58;
 }
 .nx-atmosphere .nx-product-card,
 .nx-atmosphere .nx-story-grid article,
 .nx-atmosphere .nx-note-panel,
 .nx-atmosphere .nx-filter {
-  box-shadow: 0 9px 32px #65547c0d;
+  box-shadow: 0 7px 29px #65547c09;
 }
 .nx-atmosphere .nx-belief,
 .nx-atmosphere .nx-how,
 .nx-atmosphere .nx-manufacturer-call {
-  background: linear-gradient(115deg, #fff7e7cf, #f8eaf78f, #e6f9f49c);
+  background: linear-gradient(115deg, #fff7e7b5, #f8eaf75f, #e6f9f476);
 }
-/* The manufacturer illustration has a tinted panel; remove the white tile
-   visually without cutting away the approved logo or its glow. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .nx-atmosphere [data-pastel-hover="true"]::after {
+    opacity: 0.48;
+  }
+}
+/* The approved cropped pastel wordmark blends with cream/tinted surfaces,
+   instead of showing the source image's opaque white backing. */
+.nx-footer .nx-approved-logo,
 .nx-illustration-brand .nx-approved-logo {
   mix-blend-mode: multiply;
 }
-/* The backdrop remains visible through the floor, including beyond the grid. */
+/* Keep the 3D workshop backdrop visible behind the mesh-floor grid. */
 .nx .embed-canvas {
   background: transparent;
 }
