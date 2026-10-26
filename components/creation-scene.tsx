@@ -839,6 +839,8 @@ export default function CreationScene({
           }
           envMapIntensity={workspace ? 1 : 0}
           roughness={0.9}
+          transparent={Boolean(workspace && desk && workshop && room)}
+          opacity={workspace && desk && workshop && room ? 0.76 : 1}
         />
       </mesh>
       <mesh
