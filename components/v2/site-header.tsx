@@ -81,7 +81,7 @@ export function SiteFooter() {
     <footer className="nx-footer">
       <div>
         <Link href="/" className="nx-wordmark">
-          <BrandLogo />
+          <BrandLogo header />
         </Link>
         <p>Thoughtfully made. Uniquely yours.</p>
       </div>
