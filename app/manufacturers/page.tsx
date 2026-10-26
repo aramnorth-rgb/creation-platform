@@ -37,7 +37,7 @@ export default function Manufacturers() {
           >
             <div>
               <strong className="nx-illustration-brand">
-                <BrandLogo /> <span>STUDIO</span>
+                <BrandLogo header /> <span>STUDIO</span>
               </strong>
               <i>PREVIEW</i>
             </div>
