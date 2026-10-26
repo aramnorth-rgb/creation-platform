@@ -2357,3 +2357,42 @@ body:has(.nx) {
 .nx-studio :is(.nx-studio-sidebar, .nx-note-panel) {
   border-color: #e1e4de;
 }
+
+
+/* V2 visual polish: slightly clearer pastels without increasing motion. */
+.nx-atmosphere {
+  --nx-pastel-edge: linear-gradient(
+    120deg, #e8e1a9 0%, #edcbdc 35%, #d8cbec 67%, #bfe4e2 100%
+  );
+}
+.nx-atmosphere-distant {
+  background:
+    radial-gradient(ellipse at 8% 12%, #f6e9ae80, transparent 48%),
+    radial-gradient(ellipse at 90% 25%, #f5d1e47d, transparent 48%),
+    radial-gradient(ellipse at 22% 85%, #dbd0f180, transparent 50%),
+    radial-gradient(ellipse at 85% 90%, #c9eee883, transparent 45%);
+}
+.nx-atmosphere-middle i {
+  border-color: #d6c6e589;
+  background: linear-gradient(140deg, #fffefa65, #e6d6f03c);
+}
+.nx-atmosphere .nx-product-card,
+.nx-atmosphere .nx-story-grid article,
+.nx-atmosphere .nx-note-panel,
+.nx-atmosphere .nx-filter {
+  box-shadow: 0 9px 32px #65547c0d;
+}
+.nx-atmosphere .nx-belief,
+.nx-atmosphere .nx-how,
+.nx-atmosphere .nx-manufacturer-call {
+  background: linear-gradient(115deg, #fff7e7cf, #f8eaf78f, #e6f9f49c);
+}
+/* The manufacturer illustration has a tinted panel; remove the white tile
+   visually without cutting away the approved logo or its glow. */
+.nx-illustration-brand .nx-approved-logo {
+  mix-blend-mode: multiply;
+}
+/* The backdrop remains visible through the floor, including beyond the grid. */
+.nx .embed-canvas {
+  background: transparent;
+}
