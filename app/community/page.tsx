@@ -1,3 +1,4 @@
+import { PastelAtmosphere } from "@/components/v2/pastel-atmosphere";
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/v2/site-header";
 import { ProductArt } from "@/components/v2/product-art";
@@ -6,7 +7,7 @@ import "../v2.css";
 export const metadata = { title: "Community stories — NITORIX" };
 export default function Community() {
   return (
-    <div className="nx">
+    <PastelAtmosphere>
       <SiteHeader />
       <main id="content" className="nx-section">
         <div className="nx-page-heading">
@@ -49,6 +50,6 @@ export default function Community() {
         </div>
       </main>
       <SiteFooter />
-    </div>
+    </PastelAtmosphere>
   );
 }

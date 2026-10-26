@@ -2160,3 +2160,200 @@ body:has(.nx) {
     width: clamp(175px, 52vw, 205px);
   }
 }
+
+/* Shared gallery atmosphere. Decorative planes never intercept content or 3D input. */
+.nx-atmosphere {
+  isolation: isolate;
+  position: relative;
+  --nx-pastel-edge: linear-gradient(
+    120deg,
+    #eae7c9,
+    #ecdde5 36%,
+    #e0dced 67%,
+    #d6e8e5
+  );
+}
+.nx-atmosphere > :is(header, main, footer) {
+  position: relative;
+  z-index: 1;
+}
+.nx-atmosphere-depth {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+.nx-atmosphere-distant {
+  position: absolute;
+  inset: -5%;
+  background:
+    radial-gradient(ellipse at 8% 12%, #f6edc85c, transparent 48%),
+    radial-gradient(ellipse at 90% 25%, #f1dfea55, transparent 48%),
+    radial-gradient(ellipse at 22% 85%, #e6e1f155, transparent 50%),
+    radial-gradient(ellipse at 85% 90%, #dcefeb66, transparent 45%);
+}
+.nx-atmosphere-middle {
+  position: absolute;
+  inset: -45px 0;
+}
+.nx-atmosphere-middle i {
+  position: absolute;
+  width: clamp(160px, 25vw, 390px);
+  aspect-ratio: 1;
+  border: 1px solid #dfd9e54a;
+  border-radius: 30%;
+  background: linear-gradient(140deg, #ffffff32, #eae4f01a);
+  rotate: -12deg;
+}
+.nx-atmosphere-middle i:nth-child(1) {
+  left: -12%;
+  top: 18%;
+}
+.nx-atmosphere-middle i:nth-child(2) {
+  right: -13%;
+  top: 50%;
+  rotate: 19deg;
+  border-radius: 50%;
+  border-color: #d6e8e559;
+}
+.nx-atmosphere-middle i:nth-child(3) {
+  left: 42%;
+  top: 82%;
+  width: 190px;
+  rotate: 32deg;
+  opacity: 0.35;
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .nx-atmosphere-distant {
+      animation: nx-distant-depth linear both;
+      animation-timeline: scroll(root block);
+    }
+    .nx-atmosphere-middle {
+      animation: nx-middle-depth linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+}
+@keyframes nx-distant-depth {
+  to {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+@keyframes nx-middle-depth {
+  to {
+    transform: translate3d(0, -38px, 0);
+  }
+}
+
+.nx-atmosphere
+  :where(
+    .nx-header,
+    .nx-product-card,
+    .nx-story-grid article,
+    .nx-note-panel,
+    .nx-filter
+  ) {
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background:
+    linear-gradient(#fcfbf8ed, #fbfaf7ed) padding-box,
+    var(--nx-pastel-edge) border-box;
+  box-shadow: 0 6px 28px #65607705;
+}
+.nx-atmosphere .nx-header {
+  border-radius: 0 0 22px 22px;
+  border-top: 0;
+  border-inline: 0;
+}
+.nx-atmosphere .nx-product-card .nx-art,
+.nx-atmosphere .nx-story-grid .nx-art {
+  border-radius: 19px 19px 12px 12px;
+}
+.nx-atmosphere .nx-card-copy {
+  padding-inline: 20px;
+}
+.nx-atmosphere .nx-story-grid article > :not(.nx-art) {
+  margin-left: 22px;
+  margin-right: 22px;
+}
+.nx-atmosphere .nx-story-grid article {
+  padding-bottom: 22px;
+}
+.nx-atmosphere .nx-filter {
+  padding: 8px;
+  width: fit-content;
+  max-width: 100%;
+}
+.nx-atmosphere main > section:not(.nx-hero) {
+  border-block-start: 1px solid #e7e1e665;
+  border-radius: 28px;
+}
+.nx-atmosphere .nx-belief,
+.nx-atmosphere .nx-how,
+.nx-atmosphere .nx-manufacturer-call {
+  background: linear-gradient(115deg, #fffdf9b8, #f6f0f747, #eff8f54d);
+}
+/* Small border-only highlights; text and product surfaces keep their original contrast. */
+.nx-atmosphere
+  :where(
+    .nx-header,
+    .nx-product-card,
+    .nx-story-grid article,
+    .nx-note-panel,
+    .nx-filter
+  )::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  pointer-events: none;
+  opacity: 0;
+  background-image: radial-gradient(
+    circle,
+    #d6caeacc,
+    #d3eae780 35%,
+    transparent 70%
+  );
+  background-size: 240px 240px;
+  background-repeat: no-repeat;
+  background-position: calc(var(--nx-cursor-x, 0px) - 120px)
+    calc(var(--nx-cursor-y, 0px) - 120px);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  transition:
+    opacity 250ms ease,
+    background-position 130ms ease-out;
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .nx-atmosphere [data-pastel-hover="true"]::after {
+    opacity: 0.65;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-atmosphere
+    :where(
+      .nx-product-card,
+      .nx-story-grid article,
+      .nx-header,
+      .nx-filter,
+      .nx-note-panel
+    )::after {
+    display: none;
+    transition: none;
+  }
+  .nx-atmosphere .nx-product-card .nx-art svg {
+    transition: none;
+    transform: none;
+  }
+}
+/* Studio remains a quiet business workspace, with static hairlines only. */
+.nx-studio :is(.nx-studio-sidebar, .nx-note-panel) {
+  border-color: #e1e4de;
+}

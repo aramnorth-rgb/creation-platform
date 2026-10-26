@@ -207,3 +207,9 @@ The other ten creations remain **procedural demo placeholders**. V5 prioritises 
 Performance choices: only the featured creation receives detailed geometry / licensed GLBs, a single 1024px spotlight map supplies shadows, the pixel ratio is capped at 1.5, and the generated grain texture is 64×64. Reflections use a local prefiltered studio environment; there are no live raytraced/planar product reflections or postprocessing bloom. Tests run with software Chromium, not a physical Windows hardware benchmark.
 
 Model-source/licence details remain in `public/models/ATTRIBUTION.md`: two verified CC0 reference models, ten explicitly labelled procedural placeholders. The new panels, carbon grain and additional geometry are generated within this project and use no third-party artwork.
+
+### V2 pastel gallery atmosphere
+
+Home, Explore and Community share `PastelAtmosphere`. The background gradients and translucent middle plane are decorative and ignore pointer input; foreground content scrolls normally. CSS scroll timelines move the distant plane by at most 6px and the middle plane by at most 38px over the entire page. Unsupported browsers retain a static composition. Reduced-motion preferences remove this movement and decorative card-hover transforms.
+
+One delegated, requestAnimationFrame-coalesced pointer listener highlights selected borders on fine-pointer hover devices only. There are no scroll handlers, perpetual JavaScript animation loops, animation dependencies, blur filters or additional WebGL contexts. Cursor effects stop on leave/cancellation, preference changes and unmount. Manufacturer pages, Studio, Create and the preserved exhibition do not mount the moving atmosphere. The shared product engine, logo files and typography are unchanged.

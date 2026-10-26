@@ -1,3 +1,4 @@
+import { PastelAtmosphere } from "@/components/v2/pastel-atmosphere";
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/v2/site-header";
 import { HomeHero } from "@/components/v2/home-hero";
@@ -5,7 +6,7 @@ import { ProductArt } from "@/components/v2/product-art";
 import "./v2.css";
 export default function Home() {
   return (
-    <div className="nx">
+    <PastelAtmosphere>
       <SiteHeader />
       <main id="content">
         <HomeHero />
@@ -157,6 +158,6 @@ export default function Home() {
         </section>
       </main>
       <SiteFooter />
-    </div>
+    </PastelAtmosphere>
   );
 }

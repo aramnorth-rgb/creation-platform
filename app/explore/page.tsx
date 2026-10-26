@@ -1,10 +1,11 @@
+import { PastelAtmosphere } from "@/components/v2/pastel-atmosphere";
 import { SiteHeader, SiteFooter } from "@/components/v2/site-header";
 import { Explore } from "@/components/v2/explore";
 import "../v2.css";
 export const metadata = { title: "Explore creations — NITORIX" };
 export default function ExplorePage() {
   return (
-    <div className="nx">
+    <PastelAtmosphere>
       <SiteHeader />
       <main id="content" className="nx-section">
         <div className="nx-page-heading">
@@ -22,6 +23,6 @@ export default function ExplorePage() {
         <Explore />
       </main>
       <SiteFooter />
-    </div>
+    </PastelAtmosphere>
   );
 }
