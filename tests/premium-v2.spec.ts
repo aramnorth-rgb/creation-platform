@@ -307,3 +307,25 @@ test("Customer Create shows Customise above 3D canvas with honest construction s
   await page.getByRole("button", { name: "forest organiser" }).click();
   await expect(page.getByTestId("desk-summary")).toContainText("forest");
 });
+
+test("Customise stage is larger and breathing room scales down without mobile overflow", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/create");
+  const viewer = page.locator(".nx-create .embed-canvas");
+  const large = await viewer.boundingBox();
+  expect(large).not.toBeNull();
+  expect(large!.height).toBeGreaterThanOrEqual(560);
+  const desktopModeTabs = await page.locator(".nx-create .nx-mode-tabs").boundingBox();
+  expect(desktopModeTabs).not.toBeNull();
+  expect(large!.y - (desktopModeTabs!.y + desktopModeTabs!.height)).toBeGreaterThanOrEqual(16);
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  const mobile = await viewer.boundingBox();
+  expect(mobile).not.toBeNull();
+  expect(mobile!.height).toBeGreaterThanOrEqual(390);
+  expect(mobile!.width).toBeLessThanOrEqual(375);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
