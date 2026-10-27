@@ -31,6 +31,7 @@ export function CreateExperience({
         key={draft ? JSON.stringify(draft) : "default"}
         policy={draft}
         initialMode={initialMode}
+        customiseOnly={!draftId}
       />
       <p className="nx-create-disclaimer">
         Explore without registering. Prices are demonstrations, geometry is
