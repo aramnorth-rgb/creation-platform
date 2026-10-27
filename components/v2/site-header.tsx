@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useRef } from "react";
 import { BrandLogo } from "./brand-logo";
 const links = [
@@ -11,6 +12,12 @@ const links = [
 export function SiteHeader({ studio = false }: { studio?: boolean }) {
   const menu = useRef<HTMLDialogElement>(null),
     trigger = useRef<HTMLButtonElement>(null);
+  const pathname = usePathname();
+  const isCurrent = (href: string) =>
+    pathname === href ||
+    pathname.startsWith(`${href}/`) ||
+    (href === "/manufacturers" && pathname.startsWith("/studio")) ||
+    (href === "/explore" && pathname.startsWith("/exhibition"));
   return (
     <>
       <a className="nx-skip" href="#content">
@@ -23,7 +30,11 @@ export function SiteHeader({ studio = false }: { studio?: boolean }) {
         </Link>
         <nav className="nx-desktop-nav" aria-label="Main navigation">
           {links.map((l) => (
-            <Link key={l.href} href={l.href}>
+            <Link
+              key={l.href}
+              href={l.href}
+              aria-current={isCurrent(l.href) ? "page" : undefined}
+            >
               {l.label}
             </Link>
           ))}
@@ -63,6 +74,7 @@ export function SiteHeader({ studio = false }: { studio?: boolean }) {
             <Link
               href={l.href}
               key={l.href}
+              aria-current={isCurrent(l.href) ? "page" : undefined}
               onClick={() => menu.current?.close()}
             >
               <small>0{i + 1}</small>
