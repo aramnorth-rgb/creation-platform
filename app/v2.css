@@ -2502,3 +2502,104 @@ body:has(.nx) {
     transition: none;
   }
 }
+
+
+/* Mode selector belongs immediately above the 3D display, not in the settings panel. */
+.nx .embed-preview .nx-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(6px, 1vw, 14px);
+  margin-top: 23px;
+  margin-bottom: 12px;
+  padding: 0;
+  border: 0;
+}
+.nx .nx-mode-tab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 66px;
+  padding: 12px 8px;
+  overflow: hidden;
+  background: #fafbf8;
+  color: #34434a;
+  border: 1px solid #d8dfe0;
+  border-radius: 13px;
+  font: 600 clamp(12px, 1vw, 15px)/1.25 Arial, Helvetica, sans-serif;
+  letter-spacing: 0.025em;
+  text-transform: capitalize;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.nx .nx-mode-tab[aria-pressed="true"] {
+  border-color: #c9d9df;
+  background: linear-gradient(115deg, #fffef7, #f9f5fd 58%, #f3fafa);
+  box-shadow: inset 0 -3px #d9c8e8;
+}
+.nx .nx-mode-tab:not(:disabled):hover {
+  border-color: #baabc9;
+}
+.nx .nx-mode-tab:disabled {
+  cursor: not-allowed;
+  color: #83878a;
+  background: #f0f1ef;
+  border-color: #e1e1de;
+  opacity: 1;
+}
+.nx .nx-mode-tab:disabled .nx-mode-name {
+  transform: translateY(-10px);
+}
+.nx .nx-mode-tape {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  background: repeating-linear-gradient(
+    115deg,
+    #e8bd31 0px,
+    #e8bd31 11px,
+    #242525 11px,
+    #242525 19px
+  );
+  border-top: 1px solid #5b5138;
+}
+.nx .nx-mode-tape span {
+  max-width: calc(100% - 12px);
+  padding: 2px 6px;
+  color: #232323;
+  background: #f6d65d;
+  border-radius: 2px;
+  font: 800 clamp(8px, .75vw, 10px)/1.15 Arial, Helvetica, sans-serif;
+  letter-spacing: 0.035em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.nx .embed-preview .nx-mode-tabs + .embed-canvas {
+  margin-top: 0;
+}
+@media (max-width: 700px) {
+  .nx .embed-preview .nx-mode-tabs {
+    gap: 5px;
+    margin-top: 18px;
+    margin-bottom: 10px;
+  }
+  .nx .nx-mode-tab {
+    min-height: 72px;
+    padding: 9px 2px;
+    font-size: 12px;
+  }
+  .nx .nx-mode-tape {
+    height: 29px;
+  }
+  .nx .nx-mode-tape span {
+    font-size: 8px;
+    padding-inline: 3px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx .nx-mode-tab {
+    transition: none;
+  }
+}
