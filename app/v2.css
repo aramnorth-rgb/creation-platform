@@ -2603,3 +2603,84 @@ body:has(.nx) {
     transition: none;
   }
 }
+
+
+/* NITORIX Create: give the 3D stage priority and let the editing experience breathe.
+   Scoped to the consumer workspace; manufacturer demos keep their own proportions. */
+.nx-create .desk-embed {
+  grid-template-columns: minmax(0, 1fr) clamp(320px, 24vw, 360px);
+  min-height: unset;
+}
+.nx-create .embed-preview {
+  padding: clamp(32px, 3.2vw, 54px);
+}
+.nx-create .embed-preview > .nx-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.nx-create .embed-preview h1 {
+  margin: 28px 0 18px;
+}
+.nx-create .embed-preview > p {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.nx-create .embed-preview .nx-mode-tabs {
+  gap: clamp(10px, 1.2vw, 18px);
+  margin-top: 32px;
+  margin-bottom: 18px;
+}
+.nx-create .embed-preview .embed-canvas {
+  height: clamp(560px, 64svh, 730px);
+  min-height: 0;
+  margin-top: 0;
+  border-radius: 18px;
+}
+.nx-create .embed-background {
+  margin-top: 26px;
+  margin-bottom: 20px;
+}
+.nx-create .embed-controls {
+  padding: clamp(30px, 2.5vw, 42px);
+}
+.nx-create .desk-controls .desk-history {
+  margin-bottom: 22px;
+}
+.nx-create .desk-controls > h2 {
+  margin-top: 18px;
+  margin-bottom: 16px;
+}
+.nx-create .desk-controls .desk-price {
+  margin-block: 24px;
+}
+.nx-create .desk-controls > label {
+  margin-block: 21px;
+}
+@media (max-width: 900px) {
+  .nx-create .embed-preview {
+    position: relative;
+  }
+  .nx-create .embed-preview .embed-canvas {
+    height: clamp(460px, 55svh, 610px);
+  }
+}
+@media (max-width: 760px) {
+  .nx-create .desk-embed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .nx-create .embed-preview {
+    padding: 30px 6%;
+  }
+  .nx-create .embed-preview .nx-mode-tabs {
+    gap: 7px;
+    margin-top: 26px;
+    margin-bottom: 16px;
+  }
+  .nx-create .embed-preview .embed-canvas {
+    height: clamp(390px, 50svh, 520px);
+    border-radius: 14px;
+  }
+  .nx-create .embed-controls {
+    padding: 32px 6% 46px;
+  }
+}
