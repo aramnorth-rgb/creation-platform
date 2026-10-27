@@ -2684,3 +2684,15 @@ body:has(.nx) {
     padding: 32px 6% 46px;
   }
 }
+
+
+/* Keep the atmospheric background free of a competing 2D grid.
+   Perspective and grid fade are now produced together by the WebGL floor. */
+.nx .embed-canvas .workshop-backdrop.env-studio {
+  background:
+    radial-gradient(ellipse at 55% 13%, #fafcf7e8, transparent 72%),
+    linear-gradient(155deg, #d8e6e7, #eef1ec 57%, #c7d3ce);
+}
+.nx .embed-canvas .workshop-backdrop.env-industrial {
+  background: linear-gradient(150deg, #b2bec1, #e5ece9 57%, #a5b4b8);
+}
