@@ -9,6 +9,7 @@ import DeskModel from "./desk-model";
 import { environments, type EnvironmentId } from "./workshop-environment";
 import type { DeskConfiguration, Slot } from "@/lib/configurator/desk";
 import ShowroomFloor from "./showroom-floor";
+import FadingWorkshopGrid from "./fading-workshop-grid";
 import { PromotionMeshes } from "./promotion-panels";
 import { creations, defaults, type Configuration } from "./exhibition-data";
 
@@ -855,12 +856,7 @@ export default function CreationScene({
           fragmentShader="varying vec2 vUv;void main(){float a=1.0-smoothstep(0.05,0.5,length(vUv-0.5));gl_FragColor=vec4(0.,0.,0.,a*.45);}"
         />
       </mesh>
-      {workspace && workshop && (
-        <gridHelper
-          args={[24, 24, "#b3bcb6", "#cbd1cb"]}
-          position={[0, -0.02, 0]}
-        />
-      )}
+      {workspace && workshop && <FadingWorkshopGrid />}
     </Canvas>
   );
 }
