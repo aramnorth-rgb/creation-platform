@@ -16,18 +16,26 @@ import { type ProductDraft, type CreationMode } from "@/lib/studio/product";
 export default function DeskEmbed({
   policy,
   initialMode = "customise",
+  customiseOnly = false,
 }: {
   policy?: ProductDraft;
   initialMode?: CreationMode;
+  /** Customer-facing V2 launch: only Customise is available; other engines remain intact. */
+  customiseOnly?: boolean;
 }) {
   const engine = useDeskEngine(true, policy);
   const config = engine.config;
   const room = useWorkshopEnvironment();
-  const [mode, setMode] = useState<"customise" | "assemble" | "engineer">(
-    policy && !policy.modes.includes(initialMode)
-      ? policy.modes[0]
-      : initialMode,
+  const [mode, setMode] = useState<CreationMode>(
+    customiseOnly
+      ? "customise"
+      : policy && !policy.modes.includes(initialMode)
+        ? policy.modes[0]
+        : initialMode,
   );
+  const modes: CreationMode[] = customiseOnly
+    ? ["customise", "assemble", "engineer"]
+    : (policy?.modes ?? ["customise", "assemble", "engineer"]);
   const [webgl, setWebgl] = useState(false);
   useEffect(() => {
     const canvas = document.createElement("canvas");
@@ -44,6 +52,29 @@ export default function DeskEmbed({
         </span>
         <h1>{policy?.name ?? "Contour desk organiser"}</h1>
         <p>{policy?.description ?? "A little order. A lot of possibility."}</p>
+        <nav className="nx-mode-tabs" aria-label="Standalone creation modes">
+          {modes.map((m) => {
+            const underConstruction = customiseOnly && m !== "customise";
+            return (
+              <button
+                className="nx-mode-tab"
+                key={m}
+                type="button"
+                aria-label={m}
+                aria-pressed={mode === m}
+                disabled={underConstruction}
+                onClick={() => setMode(m)}
+              >
+                <span className="nx-mode-name">{m}</span>
+                {underConstruction && (
+                  <span className="nx-mode-tape" aria-hidden="true">
+                    <span>Under construction</span>
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
         <div
           className="embed-canvas"
           role="img"
@@ -86,19 +117,6 @@ export default function DeskEmbed({
         />
       </section>
       <section className="embed-controls" aria-label="Desk configuration">
-        <nav aria-label="Standalone creation modes">
-          {(
-            policy?.modes ?? (["customise", "assemble", "engineer"] as const)
-          ).map((m) => (
-            <button
-              key={m}
-              aria-pressed={mode === m}
-              onClick={() => setMode(m)}
-            >
-              {m}
-            </button>
-          ))}
-        </nav>
         <DeskControls engine={engine} mode={mode} />
       </section>
     </main>
