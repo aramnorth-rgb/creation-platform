@@ -254,11 +254,11 @@ test("Studio prototype sections are honest, responsive and permit duplicate/dele
     }),
   ).toHaveCount(0);
 });
-test("Create shares configuration, price, rotation, history and environments across all three modes", async ({
+test("Underlying configurator retains shared pricing, rotation and history across all three modes", async ({
   page,
 }) => {
   await noWebgl(page);
-  await page.goto("/create");
+  await page.goto("/configure");
   await page.getByRole("button", { name: "forest organiser" }).click();
   const modes = page.getByRole("navigation", {
     name: "Standalone creation modes",
@@ -284,4 +284,26 @@ test("Create shares configuration, price, rotation, history and environments acr
     page.getByRole("button", { name: "forest organiser" }),
   ).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByTestId("desk-summary")).toContainText("3 modules");
+});
+
+test("Customer Create shows Customise above 3D canvas with honest construction states", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.goto("/create");
+  const nav = page.getByRole("navigation", { name: "Standalone creation modes" });
+  await expect(nav.getByRole("button", { name: "customise", exact: true })).toHaveAttribute("aria-pressed", "true");
+  for (const mode of ["assemble", "engineer"]) {
+    const button = nav.getByRole("button", { name: mode, exact: true });
+    await expect(button).toBeDisabled();
+    await expect(button).toContainText("Under construction");
+  }
+  const navBounds = await nav.boundingBox();
+  const canvasBounds = await page.locator(".embed-canvas").boundingBox();
+  expect(navBounds).not.toBeNull();
+  expect(canvasBounds).not.toBeNull();
+  expect(navBounds!.y + navBounds!.height).toBeLessThanOrEqual(canvasBounds!.y);
+  await expect(page.getByRole("combobox", { name: "Material", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "forest organiser" }).click();
+  await expect(page.getByTestId("desk-summary")).toContainText("forest");
 });
