@@ -12,6 +12,7 @@ import {
 } from "@/lib/studio/product";
 import { saveProducts, useStudioProducts } from "@/lib/studio/store";
 import { ProductArt } from "./product-art";
+import { DemoCrm } from "./demo-crm";
 const sections = [
   "Overview",
   "Products",
@@ -741,21 +742,7 @@ export function StudioDashboard() {
             )}
           </section>
         )}
-        {section === "Orders and Enquiries" && (
-          <section className="nx-empty-state">
-            <span aria-hidden="true">
-              <StudioIcon index={5} />
-            </span>
-            <h2>Room for future conversations.</h2>
-            <p>
-              Orders, customer enquiries and payments are not connected. There
-              are no real orders or messages in this demo.
-            </p>
-            <Link href="/manufacturers">
-              Explore the manufacturer programme
-            </Link>
-          </section>
-        )}
+        {section === "Orders and Enquiries" && <DemoCrm />}
         {section === "Analytics" && (
           <section className="nx-editor-card">
             <span className="nx-eyebrow">
