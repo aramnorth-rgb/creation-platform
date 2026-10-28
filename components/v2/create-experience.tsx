@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import DeskEmbed from "../desk-embed";
 import { useStudioProducts } from "@/lib/studio/store";
 import { type CreationMode } from "@/lib/studio/product";
@@ -11,6 +12,7 @@ export function CreateExperience({
   initialMode?: CreationMode;
 }) {
   const products = useStudioProducts();
+  const router = useRouter();
   const draft = draftId ? products.find((p) => p.id === draftId) : undefined;
   return (
     <>
@@ -19,6 +21,22 @@ export function CreateExperience({
           NITORIX CREATE <i> / </i> YOUR SPACE TO EXPERIMENT
         </span>
         <Link href="/explore">← Explore products</Link>
+      </div>
+      <div className="nx-catalogue-chooser">
+        <label htmlFor="nx-catalogue-product">Demo manufacturer catalogue</label>
+        <select
+          id="nx-catalogue-product"
+          value={draft?.id ?? ""}
+          onChange={(e) => router.push(e.target.value
+            ? `/create?draft=${encodeURIComponent(e.target.value)}`
+            : "/create")}
+        >
+          <option value="">Contour · standard demo</option>
+          {products.map((p) => (
+            <option key={p.id} value={p.id}>{p.name} · local demo draft</option>
+          ))}
+        </select>
+        <p>Each local product uses its own permitted options and illustrative pricing; real manufacturer catalogues are not connected.</p>
       </div>
       {draftId && (
         <p className="nx-preview-banner">
