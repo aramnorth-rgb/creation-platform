@@ -383,3 +383,28 @@ test("Shared manufacturer catalogue and demo CRM link an explicit configured des
   await page.getByRole("button", { name: "Remove demo" }).click();
   await expect(page.getByText("No demo enquiries yet.")).toBeVisible();
 });
+
+
+test("Studio CSV catalogue drafts feed the same consumer configurator and CRM demo", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.goto("/studio");
+  await studioSection(page, "Products").click();
+  await page.getByLabel("Import catalogue CSV").setInputFiles({
+    name: "manufacturer-catalogue.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from('sku,name,description\nNIT-101,Arc Desk Tray,"Adjustable demo tray"\n'),
+  });
+  await expect(page.getByRole("status")).toContainText("1 catalogue drafts imported");
+  await expect(page.getByRole("heading", { name: "Arc Desk Tray" })).toBeVisible();
+  await page.goto("/create");
+  await page.getByRole("combobox", { name: "Demo manufacturer catalogue" })
+    .selectOption("nit-101");
+  await expect(page.getByRole("heading", { level: 1, name: "Arc Desk Tray" })).toBeVisible();
+  await page.getByRole("button", { name: "Create demo enquiry" }).click();
+  await expect(page.getByRole("status")).toContainText("Nothing was sent");
+  await page.goto("/studio");
+  await studioSection(page, "Orders and Enquiries").click();
+  await expect(page.getByRole("heading", { name: "Arc Desk Tray" })).toBeVisible();
+});
