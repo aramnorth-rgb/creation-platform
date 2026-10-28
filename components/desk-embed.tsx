@@ -3,7 +3,8 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { defaults } from "./exhibition-data";
 import { DeskControls, DeskFallback } from "./desk-controls";
-import { deskDescription } from "@/lib/configurator/desk";
+import { deskDescription, priceDesk } from "@/lib/configurator/desk";
+import { addDemoEnquiry } from "@/lib/studio/enquiries";
 import { scaleChoices, referenceLabel, personHeightCm, type ScaleReferenceKind } from "@/lib/configurator/scale-reference";
 import { useDeskEngine } from "./use-desk-engine";
 import {
@@ -40,6 +41,7 @@ export default function DeskEmbed({
   const [comparison, setComparison] = useState<ScaleReferenceKind>("none");
   const [personHeight, setPersonHeight] = useState(175);
   const [webgl, setWebgl] = useState(false);
+  const [enquiryStatus, setEnquiryStatus] = useState("");
   useEffect(() => {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("webgl2") || canvas.getContext("webgl");
@@ -158,6 +160,32 @@ export default function DeskEmbed({
       </section>
       <section className="embed-controls" aria-label="Desk configuration">
         <DeskControls engine={engine} mode={mode} />
+        {customiseOnly && (
+          <div className="nx-enquiry-action">
+            <span className="nx-eyebrow">TRY THE CONNECTED WORKFLOW</span>
+            <h3>From design to enquiry.</h3>
+            <p>See how this exact configuration could appear in a manufacturer's CRM.</p>
+            <button
+              type="button"
+              className="nx-button nx-primary"
+              onClick={() => {
+                const saved = addDemoEnquiry(
+                  policy?.id ?? "contour-demo",
+                  policy?.name ?? "Contour desk organiser",
+                  config,
+                  priceDesk(config, policy?.pricing).totalPence,
+                );
+                setEnquiryStatus(saved
+                  ? "Demo enquiry added to Studio on this browser only. Nothing was sent."
+                  : "Could not save the demo enquiry; browser storage may be full.");
+              }}
+            >
+              Create demo enquiry
+            </button>
+            {enquiryStatus && <p role="status">{enquiryStatus}</p>}
+            <p className="nx-demo-note">Demo only · No name, email or personal information requested.</p>
+          </div>
+        )}
       </section>
     </main>
   );
