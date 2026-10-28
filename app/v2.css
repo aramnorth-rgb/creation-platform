@@ -2896,3 +2896,40 @@ body:has(.nx) {
   .nx-catalogue-chooser { padding-inline: 6%; }
   .nx-catalogue-chooser select { width: 100%; }
 }
+
+
+.nx-catalogue-import {
+  display: grid;
+  gap: 12px;
+  padding: 25px;
+  border: 1px solid #e0dce4;
+  border-radius: 14px;
+  margin: 20px 0 30px;
+  background: linear-gradient(120deg, #fffdf7, #f9f7fb, #f1faf7);
+}
+.nx-catalogue-import h3 {
+  font-size: 22px;
+  font-weight: 500;
+  color: #30403e;
+}
+.nx-catalogue-import p {
+  max-width: 790px;
+  font-size: 13px;
+  line-height: 1.75;
+}
+.nx-catalogue-import label {
+  display: grid;
+  max-width: 420px;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.nx-catalogue-import input[type="file"] {
+  max-width: 100%;
+  min-width: 0;
+  padding: 12px;
+  font-size: 12px;
+  border: 1px dashed #a9bcb4;
+  border-radius: 10px;
+  background: #fffefa;
+}
