@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { defaults } from "./exhibition-data";
 import { DeskControls, DeskFallback } from "./desk-controls";
 import { deskDescription } from "@/lib/configurator/desk";
+import { scaleChoices, referenceLabel, personHeightCm, type ScaleReferenceKind } from "@/lib/configurator/scale-reference";
 import { useDeskEngine } from "./use-desk-engine";
 import {
   useWorkshopEnvironment,
@@ -36,6 +37,8 @@ export default function DeskEmbed({
   const modes: CreationMode[] = customiseOnly
     ? ["customise", "assemble", "engineer"]
     : (policy?.modes ?? ["customise", "assemble", "engineer"]);
+  const [comparison, setComparison] = useState<ScaleReferenceKind>("none");
+  const [personHeight, setPersonHeight] = useState(175);
   const [webgl, setWebgl] = useState(false);
   useEffect(() => {
     const canvas = document.createElement("canvas");
@@ -75,6 +78,36 @@ export default function DeskEmbed({
             );
           })}
         </nav>
+        <div className="nx-scale-toolbar">
+          <label htmlFor="nx-scale-reference">Compare size with…</label>
+          <select
+            id="nx-scale-reference"
+            value={comparison}
+            onChange={(e) => setComparison(e.target.value as ScaleReferenceKind)}
+          >
+            {scaleChoices.map((choice) => (
+              <option key={choice.value} value={choice.value}>{choice.label}</option>
+            ))}
+          </select>
+          {comparison === "person" && (
+            <label className="nx-person-height">
+              Height (cm)
+              <input
+                type="number"
+                min={140}
+                max={210}
+                step={1}
+                value={personHeight}
+                onChange={(e) => {
+                  if (e.target.value) setPersonHeight(personHeightCm(Number(e.target.value)));
+                }}
+              />
+            </label>
+          )}
+          {comparison !== "none" && (
+            <span className="nx-scale-caption">{referenceLabel(comparison, personHeight)}</span>
+          )}
+        </div>
         <div
           className="embed-canvas"
           role="img"
@@ -94,6 +127,8 @@ export default function DeskEmbed({
               highlightSlot={mode === "assemble" ? engine.slot : undefined}
               config={defaults}
               desk={config}
+              referenceKind={comparison}
+              personHeight={personHeight}
             />
           ) : (
             <DeskFallback
@@ -102,6 +137,11 @@ export default function DeskEmbed({
             />
           )}
         </div>
+        {comparison !== "none" && !webgl && (
+          <p className="nx-scale-fallback" role="status">
+            The size reference is available in the 3D viewer. {referenceLabel(comparison, personHeight)}.
+          </p>
+        )}
         <label className="embed-background">
           <input
             type="checkbox"
