@@ -50,6 +50,7 @@ export function CreateExperience({
         policy={draft}
         initialMode={initialMode}
         customiseOnly={!draftId}
+        enableDemoEnquiry
       />
       <p className="nx-create-disclaimer">
         Explore without registering. Prices are demonstrations, geometry is
