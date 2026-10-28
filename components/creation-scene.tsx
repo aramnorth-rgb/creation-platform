@@ -10,6 +10,8 @@ import { environments, type EnvironmentId } from "./workshop-environment";
 import type { DeskConfiguration, Slot } from "@/lib/configurator/desk";
 import ShowroomFloor from "./showroom-floor";
 import FadingWorkshopGrid from "./fading-workshop-grid";
+import { ScaleReference } from "./scale-reference-model";
+import type { ScaleReferenceKind } from "@/lib/configurator/scale-reference";
 import { PromotionMeshes } from "./promotion-panels";
 import { creations, defaults, type Configuration } from "./exhibition-data";
 
@@ -513,9 +515,11 @@ export type ObjectRotation = {
 };
 function CameraRig({
   workspace,
+  referenceKind,
   onReady,
 }: {
   workspace: boolean;
+  referenceKind: ScaleReferenceKind;
   onReady?: () => void;
 }) {
   const { camera, invalidate } = useThree();
@@ -528,12 +532,23 @@ function CameraRig({
     }
   });
   useEffect(() => {
-    if (workspace) camera.position.set(6.6, 3.8, 8.8);
-    else camera.position.set(0, 3.5, 14.5);
-    camera.lookAt(0, workspace ? 0 : 1.4, -1);
+    if (workspace && referenceKind === "person") {
+      camera.position.set(45, 27, 58);
+      camera.lookAt(7, 13.5, 0);
+    } else if (workspace && referenceKind === "ruler") {
+      camera.position.set(29, 18, 39);
+      camera.lookAt(4, 7.6, 0);
+    } else if (workspace && referenceKind !== "none") {
+      camera.position.set(10.5, 5.3, 13.5);
+      camera.lookAt(2.4, 1, -1);
+    } else {
+      if (workspace) camera.position.set(6.6, 3.8, 8.8);
+      else camera.position.set(0, 3.5, 14.5);
+      camera.lookAt(0, workspace ? 0 : 1.4, -1);
+    }
     camera.updateProjectionMatrix();
     invalidate();
-  }, [camera, invalidate, workspace]);
+  }, [camera, invalidate, workspace, referenceKind]);
   return null;
 }
 function CarouselItem({
@@ -730,6 +745,8 @@ export default function CreationScene({
   detailsOpen = false,
   highlightSlot,
   environment,
+  referenceKind = "none",
+  personHeight = 175,
   onReady,
   reduced,
   paused,
@@ -744,6 +761,8 @@ export default function CreationScene({
   desk?: DeskConfiguration;
   highlightSlot?: Slot;
   environment?: EnvironmentId;
+  referenceKind?: ScaleReferenceKind;
+  personHeight?: number;
   detailsOpen?: boolean;
   onReady?: () => void;
   reduced: boolean;
@@ -765,7 +784,7 @@ export default function CreationScene({
       frameloop={reduced || paused ? "demand" : "always"}
       aria-hidden="true"
     >
-      <CameraRig workspace={workspace} onReady={onReady} />
+      <CameraRig workspace={workspace} referenceKind={desk ? referenceKind : "none"} onReady={onReady} />
       {!workspace && (
         <>
           <GalleryLighting />
@@ -804,6 +823,9 @@ export default function CreationScene({
           intensity={1.25}
           color="#f3f7ff"
         />
+      )}
+      {workspace && desk && (
+        <ScaleReference kind={referenceKind} personHeight={personHeight} desk={desk} />
       )}
       {workspace && desk ? (
         <DeskModel
