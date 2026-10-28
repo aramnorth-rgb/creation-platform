@@ -329,3 +329,30 @@ test("Customise stage is larger and breathing room scales down without mobile ov
   expect(mobile!.width).toBeLessThanOrEqual(375);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+
+test("Create offers optional size references, configurable height and no-WebGL disclosure", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.goto("/create");
+  const compare = page.getByRole("combobox", { name: "Compare size with…" });
+  await expect(compare).toHaveValue("none");
+  await expect(page.locator(".nx-scale-fallback")).toHaveCount(0);
+  await compare.selectOption("person");
+  const height = page.getByRole("spinbutton", { name: "Height (cm)" });
+  await expect(height).toHaveValue("175");
+  await height.fill("195");
+  await expect(page.locator(".nx-scale-caption")).toContainText("195 cm");
+  await expect(page.locator(".nx-scale-fallback")).toContainText("3D viewer");
+  await compare.selectOption("ruler");
+  await expect(height).toHaveCount(0);
+  await expect(page.locator(".nx-scale-caption")).toContainText("100 cm");
+  await compare.selectOption("banana");
+  await expect(page.locator(".nx-scale-caption")).toContainText("18 cm");
+  await compare.selectOption("hand");
+  await expect(page.locator(".nx-scale-caption")).toContainText("18 cm");
+  await compare.selectOption("none");
+  await expect(page.locator(".nx-scale-fallback")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "assemble", exact: true })).toBeDisabled();
+});
