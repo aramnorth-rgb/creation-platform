@@ -356,3 +356,30 @@ test("Create offers optional size references, configurable height and no-WebGL d
   await expect(page.locator(".nx-scale-fallback")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "assemble", exact: true })).toBeDisabled();
 });
+
+
+test("Shared manufacturer catalogue and demo CRM link an explicit configured design", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.goto("/create");
+  const catalogue = page.getByRole("combobox", { name: "Demo manufacturer catalogue" });
+  await expect(catalogue).toBeVisible();
+  await page.getByRole("button", { name: "forest organiser" }).click();
+  await page.getByRole("button", { name: "Create demo enquiry" }).click();
+  await expect(page.getByRole("status")).toContainText("Nothing was sent");
+  await page.goto("/studio");
+  await studioSection(page, "Orders and Enquiries").click();
+  await expect(page.getByText("Contour desk organiser", { exact: true })).toBeVisible();
+  await expect(page.getByText(/forest · 2 modules/)).toBeVisible();
+  await page.getByRole("combobox", { name: "Enquiry stage for Contour desk organiser" })
+    .selectOption("qualified");
+  await expect(page.getByRole("combobox", { name: "Enquiry stage for Contour desk organiser" }))
+    .toHaveValue("qualified");
+  await page.reload();
+  await studioSection(page, "Orders and Enquiries").click();
+  await expect(page.getByRole("combobox", { name: "Enquiry stage for Contour desk organiser" }))
+    .toHaveValue("qualified");
+  await page.getByRole("button", { name: "Remove demo" }).click();
+  await expect(page.getByText("No demo enquiries yet.")).toBeVisible();
+});
