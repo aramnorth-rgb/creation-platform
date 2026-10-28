@@ -19,11 +19,14 @@ export default function DeskEmbed({
   policy,
   initialMode = "customise",
   customiseOnly = false,
+  enableDemoEnquiry = false,
 }: {
   policy?: ProductDraft;
   initialMode?: CreationMode;
   /** Customer-facing V2 launch: only Customise is available; other engines remain intact. */
   customiseOnly?: boolean;
+  /** Only consumer Create can explicitly simulate an enquiry. */
+  enableDemoEnquiry?: boolean;
 }) {
   const engine = useDeskEngine(true, policy);
   const config = engine.config;
@@ -160,7 +163,7 @@ export default function DeskEmbed({
       </section>
       <section className="embed-controls" aria-label="Desk configuration">
         <DeskControls engine={engine} mode={mode} />
-        {customiseOnly && (
+        {enableDemoEnquiry && (
           <div className="nx-enquiry-action">
             <span className="nx-eyebrow">TRY THE CONNECTED WORKFLOW</span>
             <h3>From design to enquiry.</h3>
