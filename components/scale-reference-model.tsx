@@ -48,14 +48,14 @@ function Person({ heightCm }: { heightCm: number }) {
 function Hand() {
   // 18 cm illustrated adult hand, palm and raised fingers.
   const fingers = [
-    { x: -55, height: 65 }, { x: -25, height: 86 },
-    { x: 6, height: 94 }, { x: 36, height: 79 },
+    { x: -55, height: 62 }, { x: -25, height: 77 },
+    { x: 6, height: 84 }, { x: 36, height: 72 },
   ];
   return (
     <group>
-      <BodyPart position={[0, 57, 0]} size={[128, 114, 30]} colour="#cba99c" />
+      <BodyPart position={[0, 47.5, 0]} size={[128, 95, 30]} colour="#cba99c" />
       {fingers.map((f) => (
-        <mesh key={f.x} position={[f.x, 114 + f.height / 2, 0]}>
+        <mesh key={f.x} position={[f.x, 95 + f.height / 2, 0]}>
           <capsuleGeometry args={[13, Math.max(1, f.height - 26), 6, 10]} />
           <meshStandardMaterial color="#cba99c" />
         </mesh>
