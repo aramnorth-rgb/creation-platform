@@ -13,6 +13,7 @@ import {
 import { saveProducts, useStudioProducts } from "@/lib/studio/store";
 import { ProductArt } from "./product-art";
 import { DemoCrm } from "./demo-crm";
+import { importCatalogueCsv } from "@/lib/studio/catalogue-import";
 const sections = [
   "Overview",
   "Products",
@@ -503,6 +504,47 @@ export function StudioDashboard() {
                 <button className="nx-button nx-secondary" onClick={add}>
                   ＋ Add product draft
                 </button>
+              </div>
+              <div className="nx-catalogue-import">
+                <span className="nx-eyebrow">CSV CATALOGUE ONBOARDING · LOCAL DEMO</span>
+                <h3>Bring in a small product collection.</h3>
+                <p>Import a CSV with <code>sku,name,description</code> columns. Each row becomes a local product draft using the current desk-organiser model. No photos or files are uploaded to a server, and no arbitrary products are turned into 3D automatically.</p>
+                <label>
+                  Import catalogue CSV
+                  <input
+                    type="file"
+                    accept=".csv,text/csv"
+                    onChange={async (event) => {
+                      const input = event.currentTarget;
+                      const file = input.files?.[0];
+                      if (!file) return;
+                      if (file.size > 32768) {
+                        setErrors(["CSV exceeds the 32 KB local-demo limit."]);
+                        setStatus("Import rejected.");
+                        input.value = "";
+                        return;
+                      }
+                      try {
+                        const parsed = importCatalogueCsv(await file.text());
+                        const duplicates = parsed.products
+                          .filter((p) => products.some((existing) => existing.id === p.id))
+                          .map((p) => `SKU ${p.id} already exists in this browser.`);
+                        const issues = [...parsed.errors, ...duplicates];
+                        if (products.length + parsed.products.length > 30)
+                          issues.push("The local demo supports at most 30 product drafts.");
+                        setErrors(issues);
+                        if (issues.length) setStatus("Import rejected. No drafts were changed.");
+                        else setStatus(saveProducts([...products, ...parsed.products])
+                          ? `${parsed.products.length} catalogue drafts imported to this browser only.`
+                          : "Import could not be saved in browser storage.");
+                      } catch {
+                        setErrors(["The CSV could not be read."]);
+                        setStatus("Import rejected.");
+                      }
+                      input.value = "";
+                    }}
+                  />
+                </label>
               </div>
               {products.map((p) => (
                 <article key={p.id}>
