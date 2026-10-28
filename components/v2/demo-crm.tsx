@@ -14,7 +14,7 @@ export function DemoCrm() {
       <p>
         This is a browser-only simulation of the future manufacturer CRM. Only a deliberate
         &quot;Create demo enquiry&quot; action in the configurator adds an entry. No customer
-        names, emails, real enquiries, messages, orders or payments are collected or sent.
+        names, emails, real enquiries, messages, orders or payments are collected or sent. There are no real orders or messages in this demo.
       </p>
       <div className="nx-crm-summary">
         {demoLeadStages.map((stage) => (
