@@ -14,10 +14,17 @@ export function StudioModelUpload({
   const [model,setModel]=useState<{url:string;name:string;units:ModelUnits}|null>(null);
   const [message,setMessage]=useState("");
   const [busy,setBusy]=useState(false);
+  const [webgl,setWebgl]=useState(false);
   const [dimensions,setDimensions]=useState<[number,number,number]|null>(null);
   const onSize=useCallback((size:[number,number,number])=>setDimensions(size),[]);
   const onError=useCallback((error:string)=>setMessage(error),[]);
 
+  useEffect(()=>{
+    const canvas=document.createElement("canvas");
+    const context=canvas.getContext("webgl2")||canvas.getContext("webgl");
+    setWebgl(Boolean(context)); // eslint-disable-line react-hooks/set-state-in-effect
+    context?.getExtension("WEBGL_lose_context")?.loseContext();
+  },[]);
   useEffect(()=>{
     let active=true;
     let objectUrl="";
@@ -83,7 +90,7 @@ export function StudioModelUpload({
           </div>
           {model ? (
             <div className="nx-model-import-preview">
-              <div className="nx-model-import-stage"><Viewer key={model.url} url={model.url} units={model.units} onDimensions={onSize} onError={onError}/></div>
+              <div className="nx-model-import-stage">{webgl ? <Viewer key={model.url} url={model.url} units={model.units} onDimensions={onSize} onError={onError}/> : <div className="nx-model-fallback"><strong>3D preview unavailable</strong><p>Enable WebGL or hardware acceleration to view this model.</p></div>}</div>
               <div className="nx-model-stage-caption"><strong>{model.name}</strong><span>{dimensions ? dimensions.map((n)=>`${n} mm`).join(" × ") : "Drag to rotate · scroll to zoom"}</span></div>
             </div>
           ) : (
