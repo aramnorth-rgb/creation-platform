@@ -125,7 +125,7 @@ export function DeskControls({
             : "Inspect the geometry behind your design."}
       </p>
       <div className="desk-price">
-        <span>DEMONSTRATION PRICE · GBP</span>
+        <span>GUIDE PRICE · GBP</span>
         <output aria-live="polite" aria-label="Demonstration total">
           {formatPrice(price.totalPence)}
         </output>
@@ -139,7 +139,7 @@ export function DeskControls({
           ))}
         </details>
         <small>
-          Illustrative only. No manufacturer quote, tax, delivery or order.
+          Indicative only · Confirm final pricing with the manufacturer.
         </small>
       </div>
       {mode === "customise" && (
