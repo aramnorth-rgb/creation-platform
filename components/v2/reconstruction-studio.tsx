@@ -39,6 +39,7 @@ export function ReconstructionStudio({
   const [suggestions,setSuggestions] = useState<Array<{reference:ReferenceMaterial;distance:number}>>([]);
   const [materialId, setMaterialId] = useState("");
   const [materialName, setMaterialName] = useState("");
+  const [materialPhoto,setMaterialPhoto] = useState<string | null>(null);
   const [materialPrompt, setMaterialPrompt] = useState("");
   const [materialMode, setMaterialMode] = useState<"original" | "library" | "description">("original");
   const [dimensions, setDimensions] = useState<Dimensions>(initialDimensions);
@@ -181,11 +182,11 @@ export function ReconstructionStudio({
   }
 
   async function addMaterial() {
-    if(!photos[0])return;
+    if(!materialPhoto)return;
     try {
-      saveReference(materialName,productId,photos[0].uri);
+      saveReference(materialName,productId,materialPhoto);
       setNotice("Material photograph saved to your browser's reference collection.");
-      setMaterialName("");
+      setMaterialName("");setMaterialPhoto(null);
     } catch(e){setError(e instanceof Error?e.message:"Could not save the material.");}
   }
 
@@ -271,14 +272,22 @@ export function ReconstructionStudio({
           <textarea rows={3} maxLength={600} value={materialPrompt} onChange={event=>setMaterialPrompt(event.target.value)}
             placeholder="e.g. Warm matte oak, fine natural grain, understated brushed brass fittings"/>
         </label>}
-        {photos.length>0&&<details className="nx-recon-save-material"><summary>Save the first photograph as a reusable material reference</summary>
-          <p>Use a close-up of an approved fabric or surface. Only save references that you have rights to use.</p>
+        <details className="nx-recon-save-material"><summary>Add a reusable material photograph to your reference library</summary>
+          <p>Choose a dedicated close-up of an approved fabric, timber grain, leather or metal finish from your own catalogue. This is separate from the photographs used for reconstructing the product's shape.</p>
           <label>Material name
             <input value={materialName} maxLength={65} onChange={event=>setMaterialName(event.target.value)}
               placeholder="e.g. Fjord linen · Sand"/>
           </label>
-          <button type="button" className="nx-button nx-secondary" disabled={!materialName.trim()} onClick={()=>void addMaterial()}>Add to material library</button>
-        </details>}
+          <label>Material close-up photograph
+            <input type="file" accept={accepted} aria-label="Material close-up photograph" onChange={event=>{
+              const file=event.currentTarget.files?.[0];
+              if(file)void imageToDataUri(file,1000).then(setMaterialPhoto).catch(err=>setError(String(err)));
+              event.currentTarget.value="";
+            }}/>
+          </label>
+          {materialPhoto&&<img className="nx-recon-material-preview" src={materialPhoto} alt="Selected material close-up"/>}
+          <button type="button" className="nx-button nx-secondary" disabled={!materialName.trim()||!materialPhoto} onClick={()=>void addMaterial()}>Add to material library</button>
+        </details>
       </div>
       <div className="nx-recon-section">
         <div className="nx-recon-heading"><div><span className="nx-eyebrow">03 / GENERATION</span><h3>Reconstruct your product.</h3></div></div>
