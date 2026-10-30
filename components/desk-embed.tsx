@@ -1,6 +1,8 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { readModelAsset, type ModelUnits } from "@/lib/studio/model-assets";
+import type { PresentationFinish } from "./imported-model-viewer";
 import { defaults } from "./exhibition-data";
 import { DeskControls, DeskFallback } from "./desk-controls";
 import { deskDescription, priceDesk } from "@/lib/configurator/desk";
@@ -13,6 +15,7 @@ import {
   WorkshopBackdrop,
 } from "./workshop-environment";
 const Scene = dynamic(() => import("./creation-scene"), { ssr: false });
+const ImportedModelViewer = dynamic(()=>import("./imported-model-viewer"),{ssr:false});
 /** Minimal standalone host. No marketplace/account dependency or external services. */
 import { type ProductDraft, type CreationMode } from "@/lib/studio/product";
 export default function DeskEmbed({
@@ -20,6 +23,7 @@ export default function DeskEmbed({
   initialMode = "customise",
   customiseOnly = false,
   enableDemoEnquiry = false,
+  showcaseChair = false,
 }: {
   policy?: ProductDraft;
   initialMode?: CreationMode;
@@ -27,6 +31,7 @@ export default function DeskEmbed({
   customiseOnly?: boolean;
   /** Only consumer Create can explicitly simulate an enquiry. */
   enableDemoEnquiry?: boolean;
+  showcaseChair?: boolean;
 }) {
   const engine = useDeskEngine(true, policy);
   const config = engine.config;
@@ -45,6 +50,25 @@ export default function DeskEmbed({
   const [personHeight, setPersonHeight] = useState(175);
   const [webgl, setWebgl] = useState(false);
   const [enquiryStatus, setEnquiryStatus] = useState("");
+  const [model,setModel]=useState<{url:string;units:ModelUnits}|null>(null);
+  const [modelLoading,setModelLoading]=useState(false);
+  const [finish,setFinish]=useState<PresentationFinish>("original");
+  const [dimensions,setDimensions]=useState<[number,number,number]|null>(null);
+  const [modelError,setModelError]=useState("");
+  const receiveDimensions=useCallback((size:[number,number,number])=>setDimensions(size),[]);
+  const receiveError=useCallback((msg:string)=>setModelError(msg),[]);
+  const displayModel=showcaseChair ? {url:"/models/SheenChair.glb",units:"m" as ModelUnits} : model;
+  useEffect(()=>{
+    if(!policy?.id)return;
+    let active=true;
+    let objectUrl="";
+    readModelAsset(policy.id).then(asset=>{
+      if(!active)return;
+      if(asset){objectUrl=URL.createObjectURL(asset.file);setModel({url:objectUrl,units:asset.units});}
+      else setModel(null);
+    }).catch(()=>{if(active)setModel(null);});
+    return ()=>{active=false;if(objectUrl)URL.revokeObjectURL(objectUrl);};
+  },[policy?.id]);
   useEffect(() => {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("webgl2") || canvas.getContext("webgl");
@@ -58,8 +82,8 @@ export default function DeskEmbed({
         <span className="nx-eyebrow">
           NITORIX CREATE / CUSTOMISE
         </span>
-        <h1>{policy?.name ?? "Contour desk organiser"}</h1>
-        <p>{policy?.description ?? "A little order. A lot of possibility."}</p>
+        <h1>{showcaseChair ? "Sheen chair" : policy?.name ?? "Contour desk organiser"}</h1>
+        <p>{showcaseChair ? "Sculpted softness. Explore a fully textured 3D furniture model." : policy?.description ?? "A little order. A lot of possibility."}</p>
         <nav className="nx-mode-tabs" aria-label="Standalone creation modes">
           {modes.map((m) => {
             const unavailable = customiseOnly && m !== "customise";
@@ -86,7 +110,15 @@ export default function DeskEmbed({
           <WorkshopBackdrop
             environment={room.enabled ? room.environment : undefined}
           />
-          {webgl ? (
+          {webgl && displayModel ? (
+            <ImportedModelViewer
+              url={displayModel.url}
+              units={displayModel.units}
+              finish={finish}
+              onDimensions={receiveDimensions}
+              onError={receiveError}
+            />
+          ) : webgl ? (
             <Scene
               selected={0}
               reduced
@@ -107,6 +139,10 @@ export default function DeskEmbed({
             />
           )}
         </div>
+        {displayModel && dimensions && (
+          <div className="nx-model-measurement" aria-live="polite">Actual GLB geometry · {dimensions.map(n=>`${n} mm`).join(" × ")} · width × height × depth</div>
+        )}
+        {modelError && <p className="nx-model-feedback" role="status">{modelError}</p>}
         {comparison !== "none" && !webgl && (
           <p className="nx-scale-fallback" role="status">
             Size references need WebGL. {referenceLabel(comparison, personHeight)}.
@@ -121,7 +157,7 @@ export default function DeskEmbed({
             />
             Workshop background
           </label>
-          <div className="nx-scale-inline">
+          {!displayModel && <div className="nx-scale-inline">
             <label htmlFor="nx-scale-reference">Compare size with…</label>
             <select
               id="nx-scale-reference"
@@ -152,7 +188,7 @@ export default function DeskEmbed({
             {comparison !== "none" && (
               <span className="nx-scale-caption">{referenceLabel(comparison, personHeight)}</span>
             )}
-          </div>
+          </div>}
         </div>
         <EnvironmentSwitcher
           value={room.environment}
@@ -161,8 +197,33 @@ export default function DeskEmbed({
         />
       </section>
       <section className="embed-controls" aria-label="Desk configuration">
-        <DeskControls engine={engine} mode={mode} />
-        {enableDemoEnquiry && (
+        {displayModel ? (
+          <div className="nx-imported-controls">
+            <span className="nx-eyebrow">3D PRODUCT STUDIO</span>
+            <h2>Every detail, in view.</h2>
+            <p>Drag the model to orbit. Scroll to zoom. Inspect its original textures and finishes under soft studio lighting.</p>
+            <fieldset className="nx-model-finish-options">
+              <legend>Presentation finish</legend>
+              {([
+                ["original","Original materials"],
+                ["chalk","Soft porcelain"],
+                ["graphite","Graphite"],
+                ["champagne","Champagne metal"],
+              ] as const).map(([value,label])=>(
+                <button type="button" key={value} aria-pressed={finish===value}
+                  onClick={()=>setFinish(value)}>{label}</button>
+              ))}
+            </fieldset>
+            <p className="nx-model-notice">Finishes are visual demonstrations, not manufacturer-approved options. Measurements reflect the GLB model and selected units.</p>
+            {dimensions && <div className="nx-model-specs">
+              <span>Width <strong>{dimensions[0]} mm</strong></span>
+              <span>Height <strong>{dimensions[1]} mm</strong></span>
+              <span>Depth <strong>{dimensions[2]} mm</strong></span>
+            </div>}
+            <div className="nx-model-specs-footer">3D asset viewer · No manufacturing files, pricing or orders generated</div>
+          </div>
+        ) : <DeskControls engine={engine} mode={mode} />}
+        {enableDemoEnquiry && !displayModel && (
           <details className="nx-enquiry-action">
             <summary>Preview the enquiry workflow</summary>
             <span className="nx-eyebrow">TRY THE CONNECTED WORKFLOW</span>
