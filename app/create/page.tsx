@@ -9,6 +9,7 @@ export default async function CreatePage({
   searchParams: Promise<{
     draft?: string | string[];
     mode?: string | string[];
+    showcase?: string | string[];
   }>;
 }) {
   const q = await searchParams;
@@ -25,6 +26,7 @@ export default async function CreatePage({
         <CreateExperience
           draftId={typeof q.draft === "string" ? q.draft : undefined}
           initialMode={mode}
+          showcase={q.showcase === "chair" ? "chair" : undefined}
         />
       </main>
       <SiteFooter />
