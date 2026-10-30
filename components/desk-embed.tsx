@@ -106,9 +106,9 @@ export default function DeskEmbed({
           role="img"
           aria-label={deskDescription(config)}
         >
-          <WorkshopBackdrop
+          {!displayModel && <WorkshopBackdrop
             environment={room.enabled ? room.environment : undefined}
-          />
+          />}
           {webgl && displayModel ? (
             <ImportedModelViewer
               url={displayModel.url}
@@ -131,6 +131,11 @@ export default function DeskEmbed({
               referenceKind={comparison}
               personHeight={personHeight}
             />
+          ) : displayModel ? (
+            <div className="nx-model-fallback">
+              <strong>3D preview unavailable</strong>
+              <p>Enable hardware acceleration or use a browser with WebGL support to explore this model.</p>
+            </div>
           ) : (
             <DeskFallback
               config={config}
@@ -148,14 +153,14 @@ export default function DeskEmbed({
           </p>
         )}
         <div className="nx-viewport-controls">
-          <label className="embed-background">
+          {!displayModel && <label className="embed-background">
             <input
               type="checkbox"
               checked={room.enabled}
               onChange={(e) => room.setEnabled(e.target.checked)}
             />
             Workshop background
-          </label>
+          </label>}
           {!displayModel && <div className="nx-scale-inline">
             <label htmlFor="nx-scale-reference">Compare size with…</label>
             <select
@@ -189,11 +194,11 @@ export default function DeskEmbed({
             )}
           </div>}
         </div>
-        <EnvironmentSwitcher
+        {!displayModel && <EnvironmentSwitcher
           value={room.environment}
           change={room.setEnvironment}
           disabled={!room.enabled}
-        />
+        />}
       </section>
       <section className="embed-controls" aria-label="Desk configuration">
         {displayModel ? (
