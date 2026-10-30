@@ -55,3 +55,17 @@ A request for quote links to a *specific versioned configuration snapshot*. A te
 - Platform must remain responsive, reduced-motion safe, keyboard accessible, and useful on mid-range laptops.
 - Avoid copycat competitor designs; compete on unified workflow, delightful experience and low manufacturer setup friction.
 - V1 main and backup remain untouched until explicitly approved.
+
+
+## Progressive product capabilities (implemented in V2 Studio prototype, October 2026)
+New manufacturer catalogue entries begin as **Customise-only drafts**. Photo/AI-generated appearance can enable a visual preview, but visual plausibility alone does not attest to product options, supplier prices, component compatibility, or manufacturing safety.
+
+- **Customise** requires the supplier to confirm a reviewed visual reference, physical outer dimensions, available purchasable variants, and prices. In the present prototype an incomplete Customise record can be saved and previewed, but it is not publishable or purchasable.
+- **Assemble** additionally requires real component geometry, documented attachment points, compatibility restrictions and component pricing.
+- **Engineer** additionally requires parametric/controlled geometry, critical tolerances, material/performance specifications and production constraints.
+- A product only gains eligibility for a mode when all current and lower-tier prerequisites are explicitly declared, and the supplier opts into that mode. **Losing any prerequisite automatically revokes modes that depend on it.**
+- Evidence checkboxes are explicitly labelled *manufacturer declarations*, not automated validation, proof of engineering quality, or independent NITORIX certification. In production, proof/approval workflow, evidence versioning, audit and server-side enforcement are necessary before enabling real orders.
+- Legacy unfamiliar drafts with no evidence migrate conservatively to Customise; built-in procedural demonstration products preserve their original demo behavior only. The storefront's Assemble and Engineer tabs remain visually disabled until customer-facing functionality is ready.
+- An imported GLB or scanned model is an appearance asset. It does not automatically become separable components or editable engineering CAD, even when the manufacturer opts into the future modes.
+
+This should shape Concierge onboarding, CSV imports, AI reconstruction, Studio rule building, permissions, and eventual publication approval. A manufacturer can onboard a large catalogue at a lower capability tier and incrementally unlock individual product families as verified data arrives.
