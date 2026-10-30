@@ -14,11 +14,13 @@ import { saveProducts, useStudioProducts } from "@/lib/studio/store";
 import { ProductArt } from "./product-art";
 import { DemoCrm } from "./demo-crm";
 import { StudioModelUpload } from "./studio-model-upload";
+import { ReconstructionStudio } from "./reconstruction-studio";
 import { importCatalogueCsv } from "@/lib/studio/catalogue-import";
 import { assessCapabilities, capabilityGroups, capabilityRequirements, blankCapabilityEvidence, modesAfterEvidenceChange, type EvidenceKey } from "@/lib/studio/capabilities";
 const sections = [
   "Overview",
   "Products",
+  "Reconstruction Studio",
   "Configurator Builder",
   "Pricing",
   "Publishing",
@@ -696,6 +698,14 @@ export function StudioDashboard() {
                 productId={editor.id}
                 saved={products.some((p) => p.id === editor.id)}
               />
+              <div className="nx-recon-entry">
+                <div><span className="nx-eyebrow">NITORIX / PHOTO TO 3D</span>
+                  <h3>Only have photographs?</h3>
+                  <p>Turn a few product images into a textured 3D model, using approved materials from your own catalogue.</p>
+                </div>
+                <button className="nx-button nx-primary" type="button"
+                  onClick={() => setSection("Reconstruction Studio")}>Open Reconstruction Studio</button>
+              </div>
               <div className="nx-editor-actions">
                 <button
                   className="nx-button nx-secondary"
@@ -709,6 +719,25 @@ export function StudioDashboard() {
               </div>
             </section>
           </>
+        )}
+        {section === "Reconstruction Studio" && (
+          <div className="nx-reconstruction-shell">
+            <label className="nx-product-select">
+              Working product
+              <select
+                value={products.some((p) => p.id === editor.id) ? editor.id : "unsaved"}
+                onChange={(event) => {
+                  const product = products.find(p => p.id === event.target.value);
+                  if (product) edit(product, "Reconstruction Studio");
+                }}
+              >
+                {!products.some((p) => p.id === editor.id) && <option value="unsaved">Unsaved: {editor.name}</option>}
+                {products.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}
+              </select>
+            </label>
+            <ReconstructionStudio key={editor.id} productId={editor.id} productName={editor.name}
+              saved={products.some(product => product.id === editor.id)} />
+          </div>
         )}
         {section === "Configurator Builder" && (
           <section className="nx-editor-card">
