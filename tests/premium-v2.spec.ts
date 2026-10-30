@@ -366,7 +366,8 @@ test("Shared manufacturer catalogue and demo CRM link an explicit configured des
   const catalogue = page.getByRole("combobox", { name: "Demo manufacturer catalogue" });
   await expect(catalogue).toBeVisible();
   await page.getByRole("button", { name: "forest organiser" }).click();
-  await page.getByRole("button", { name: "Create demo enquiry" }).click();
+  await page.locator(".nx-enquiry-action summary").click();
+  await page.getByRole("button", { name: "Add to Studio preview" }).click();
   await expect(page.getByRole("status")).toContainText("Nothing was sent");
   await page.goto("/studio");
   await studioSection(page, "Orders and Enquiries").click();
@@ -402,7 +403,8 @@ test("Studio CSV catalogue drafts feed the same consumer configurator and CRM de
   await page.getByRole("combobox", { name: "Demo manufacturer catalogue" })
     .selectOption("nit-101");
   await expect(page.getByRole("heading", { level: 1, name: "Arc Desk Tray" })).toBeVisible();
-  await page.getByRole("button", { name: "Create demo enquiry" }).click();
+  await page.locator(".nx-enquiry-action summary").click();
+  await page.getByRole("button", { name: "Add to Studio preview" }).click();
   await expect(page.getByRole("status")).toContainText("Nothing was sent");
   await page.goto("/studio");
   await studioSection(page, "Orders and Enquiries").click();
