@@ -9,7 +9,7 @@ const BODY_LIMIT = 12 * 1024 * 1024;
 
 /**
  * Pilot-only gate until real manufacturer accounts / billing / quotas exist.
- * Never expose MESHIY_API_KEY or the gate through NEXT_PUBLIC variables.
+ * Never expose MESHY_API_KEY or the gate through NEXT_PUBLIC variables.
  */
 export function reconstructionConfigured() {
   return Boolean(process.env.MESHY_API_KEY && process.env.NITORIX_RECONSTRUCTION_ACCESS_KEY);
