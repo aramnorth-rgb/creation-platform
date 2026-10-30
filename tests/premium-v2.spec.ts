@@ -503,3 +503,47 @@ test("Revoking a required specification disables previously enabled Assemble", a
   await page.getByRole("button",{name:/Save draft/}).click();
   await expect(page.getByRole("status")).toContainText("saved on this browser only");
 });
+
+
+test("Photo reconstruction Studio captures product images without submitting paid requests", async ({ page, request }) => {
+  await noWebgl(page);
+  const status = await request.get("/api/reconstruction");
+  expect(status.ok()).toBeTruthy();
+  expect(typeof (await status.json()).configured).toBe("boolean");
+
+  await page.goto("/studio");
+  await studioSection(page, "Products").click();
+  await page.getByRole("button", { name: "Open Reconstruction Studio" }).click();
+  await expect(page.getByRole("heading", { name: /Make anything/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Generate 3D model" })).toBeDisabled();
+  const image = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/DqUAAAAASUVORK5CYII=",
+    "base64",
+  );
+  await page.getByLabel("Add product photographs").setInputFiles({
+    name: "chair-front.png",
+    mimeType: "image/png",
+    buffer: image,
+  });
+  await expect(page.getByText("Front reference")).toBeVisible();
+  await page.getByPlaceholder("e.g. Fjord linen · Sand").fill("Fjord linen");
+  await page.getByRole("button", { name: "Add to material library" }).click();
+  await expect(page.getByRole("status")).toContainText("saved to your browser");
+  await page.getByRole("button", { name: "Reference material" }).click();
+  await expect(page.getByText("Fjord linen", { exact: true })).toBeVisible();
+  await page.reload();
+  await studioSection(page, "Reconstruction Studio").click();
+  await page.getByRole("button", { name: "Reference material" }).click();
+  await expect(page.getByText("Fjord linen", { exact: true })).toBeVisible();
+});
+
+test("Reconstruction endpoints reject unauthorised paid operations", async ({ request }) => {
+  const input = await request.post("/api/reconstruction", {
+    data: {images: []},
+  });
+  expect([401,503]).toContain(input.status());
+  const poll = await request.get("/api/reconstruction/12345678");
+  expect([401,503]).toContain(poll.status());
+  const model = await request.get("/api/reconstruction/12345678/model");
+  expect([401,503]).toContain(model.status());
+});
