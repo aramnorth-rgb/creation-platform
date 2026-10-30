@@ -51,7 +51,6 @@ export default function DeskEmbed({
   const [webgl, setWebgl] = useState(false);
   const [enquiryStatus, setEnquiryStatus] = useState("");
   const [model,setModel]=useState<{url:string;units:ModelUnits}|null>(null);
-  const [modelLoading,setModelLoading]=useState(false);
   const [finish,setFinish]=useState<PresentationFinish>("original");
   const [dimensions,setDimensions]=useState<[number,number,number]|null>(null);
   const [modelError,setModelError]=useState("");
