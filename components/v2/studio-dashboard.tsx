@@ -15,6 +15,7 @@ import { ProductArt } from "./product-art";
 import { DemoCrm } from "./demo-crm";
 import { StudioModelUpload } from "./studio-model-upload";
 import { importCatalogueCsv } from "@/lib/studio/catalogue-import";
+import { assessCapabilities, capabilityGroups, capabilityRequirements, blankCapabilityEvidence, modesAfterEvidenceChange, type EvidenceKey } from "@/lib/studio/capabilities";
 const sections = [
   "Overview",
   "Products",
@@ -140,6 +141,13 @@ export function StudioDashboard() {
   const price = validateProduct(editor).length
     ? null
     : priceDesk(approvedInitial(editor), editor.pricing);
+  const capabilities = assessCapabilities(editor);
+  const evidence = editor.capabilityEvidence ?? blankCapabilityEvidence();
+  const updateEvidence = (key: EvidenceKey, checked: boolean) => {
+    const next = { ...evidence, [key]: checked };
+    setEditor(p => ({ ...p, capabilityEvidence: next, modes: modesAfterEvidenceChange(p.modes, next) }));
+    setStatus("Unpublished capability information changed. Save to keep it on this browser.");
+  };
   const rules = (
     <>
       <div className="nx-editor-heading">
@@ -150,19 +158,69 @@ export function StudioDashboard() {
           manufacturing or safety validation.
         </p>
       </div>
+      <section className="nx-capability-panel" aria-label="Product capability readiness">
+        <div className="nx-capability-heading">
+          <span className="nx-eyebrow">PROGRESSIVE PRODUCT ONBOARDING</span>
+          <h3>Start simple. Unlock more when you're ready.</h3>
+          <p>Confirm the product information you can provide. These checkboxes are your declarations, not independent NITORIX certifications. Images and AI-inferred geometry do not count as verified engineering specifications.</p>
+        </div>
+        <div className="nx-capability-levels">
+          {capabilityGroups.map(group => {
+            const state = capabilities.find(item => item.mode === group.mode);
+            const missing = state?.missing.length ?? group.requirements.length;
+            return (
+              <article key={group.mode} className="nx-capability-level">
+                <div className="nx-capability-level-head">
+                  <div>
+                    <span className="nx-eyebrow">{group.mode.toUpperCase()}</span>
+                    <h4>{group.name}</h4>
+                  </div>
+                  <span className="nx-capability-progress">{state?.complete ? "Information supplied" : `${missing} outstanding`}</span>
+                </div>
+                <p>{group.introduction}</p>
+                <div className="nx-capability-checks">
+                  {group.requirements.map(requirement => (
+                    <label key={requirement.key}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(evidence[requirement.key])}
+                        onChange={event => updateEvidence(requirement.key, event.target.checked)}
+                      />
+                      <span><strong>{requirement.label}</strong><small>{requirement.detail}</small></span>
+                    </label>
+                  ))}
+                </div>
+                <p className="nx-capability-footer">
+                  {group.mode === "customise" && !state?.complete
+                    ? "Customise preview stays available. Confirm these details before offering a product for sale."
+                    : state?.complete
+                    ? "This level can be enabled in Customer creation modes. Product and manufacturing verification remain separate."
+                    : `Supply the missing information to unlock ${group.name}.`}
+                </p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
       <div className="nx-rule-grid">
         <fieldset>
-          <legend>Available creation modes</legend>
-          {creationModes.map((m) => (
-            <label key={m}>
-              <input
-                type="checkbox"
-                checked={editor.modes.includes(m)}
-                onChange={() => toggle("modes", m)}
-              />
-              <span className="nx-capitalise">{m}</span>
-            </label>
-          ))}
+          <legend>Customer creation modes</legend>
+          {creationModes.map((m) => {
+            const status = capabilities.find(entry => entry.mode === m);
+            const supported = m === "customise" || Boolean(status?.complete);
+            return (
+              <label key={m}>
+                <input
+                  type="checkbox"
+                  checked={editor.modes.includes(m)}
+                  disabled={!supported && !editor.modes.includes(m)}
+                  onChange={() => toggle("modes", m)}
+                />
+                <span className="nx-capitalise">{m}</span>
+                {!supported && <small>Needs manufacturer information</small>}
+              </label>
+            );
+          })}
         </fieldset>
         <fieldset>
           <legend>Materials</legend>
