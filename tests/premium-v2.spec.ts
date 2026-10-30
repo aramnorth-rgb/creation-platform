@@ -410,3 +410,33 @@ test("Studio CSV catalogue drafts feed the same consumer configurator and CRM de
   await studioSection(page, "Orders and Enquiries").click();
   await expect(page.getByRole("heading", { name: "Arc Desk Tray" })).toBeVisible();
 });
+
+
+test("Studio accepts a real GLB and reuses it in the same product's Create viewer", async ({
+  page,
+}) => {
+  await noWebgl(page);
+  await page.goto("/studio");
+  await studioSection(page, "Products").click();
+  const library = page.getByRole("region", { name: "3D model library" });
+  await expect(library).toBeVisible();
+  await library.getByLabel("Choose 3D model (.glb)").setInputFiles("public/models/BoomBox.glb");
+  await expect(library.getByRole("status")).toContainText("saved in this browser");
+  await expect(library.getByText("3D preview unavailable")).toBeVisible();
+  await page.goto("/create?draft=contour-demo");
+  await expect(page.getByRole("heading", { level: 1, name: "Contour desk organiser" })).toBeVisible();
+  await expect(page.getByText("Presentation finish")).toBeVisible();
+  await expect(page.getByText("3D preview unavailable")).toBeVisible();
+  await page.goto("/studio");
+  await studioSection(page, "Products").click();
+  await expect(page.getByText("Remove model")).toBeVisible();
+});
+
+test("Second showcase is a textured chair, not the desk organiser", async ({ page }) => {
+  await noWebgl(page);
+  await page.goto("/create?showcase=chair");
+  await expect(page.getByRole("heading", { level: 1, name: "Sheen chair" })).toBeVisible();
+  await expect(page.getByText("Presentation finish")).toBeVisible();
+  await expect(page.getByText("3D preview unavailable")).toBeVisible();
+  await expect(page.getByRole("combobox", {name:"Demo manufacturer catalogue"})).toHaveValue("chair-showcase");
+});
