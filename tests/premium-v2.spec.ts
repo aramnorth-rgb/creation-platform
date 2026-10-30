@@ -286,7 +286,7 @@ test("Underlying configurator retains shared pricing, rotation and history acros
   await expect(page.getByTestId("desk-summary")).toContainText("3 modules");
 });
 
-test("Customer Create shows Customise above 3D canvas with honest construction states", async ({
+test("Customer Create shows Customise above 3D canvas with disabled future modes", async ({
   page,
 }) => {
   await noWebgl(page);
@@ -296,7 +296,7 @@ test("Customer Create shows Customise above 3D canvas with honest construction s
   for (const mode of ["assemble", "engineer"]) {
     const button = nav.getByRole("button", { name: mode, exact: true });
     await expect(button).toBeDisabled();
-    await expect(button).toContainText("Under construction");
+    await expect(button).toHaveText(mode, { ignoreCase: true });
   }
   const navBounds = await nav.boundingBox();
   const canvasBounds = await page.locator(".embed-canvas").boundingBox();
