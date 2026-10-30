@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { Mesh, MeshStandardMaterial, Object3D } from "three";
 import { CatmullRomCurve3, TubeGeometry, Vector3 } from "three";
 import type { DeskConfiguration } from "@/lib/configurator/desk";
 import {
@@ -24,23 +26,40 @@ function BodyPart({
   );
 }
 
+/**
+ * CC0 anatomical human mesh (original Quaternius, posed by UMRAM Bilkent).
+ * Source/licence: github.com/UMRAM-Bilkent/supine-human-model (CC0-1.0).
+ * The model is centred at origin and 5.54 local units tall.
+ */
 function Person({ heightCm }: { heightCm: number }) {
-  // All geometry is expressed in millimetres and scaled once at the parent.
-  const h = personHeightCm(heightCm) * 10;
-  const ratio = h / 1750;
+  const [figure, setFigure] = useState<Object3D | null>(null);
+  useEffect(() => {
+    let active = true;
+    const loader = new GLTFLoader();
+    loader.load("/models/cc0-human-posed.glb", (gltf) => {
+      if (!active) return;
+      const figure = gltf.scene.clone(true);
+      figure.traverse((child) => {
+        if (child instanceof Mesh) {
+          child.material = new MeshStandardMaterial({
+            color: "#f6f7f5",
+            roughness: 0.86,
+            metalness: 0,
+          });
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+      setFigure(figure);
+    });
+    return () => { active = false; };
+  }, []);
+  const height = personHeightCm(heightCm) * 10;
+  const factor = height / 5.54;
+  if (!figure) return null;
   return (
-    <group scale={ratio}>
-      <mesh position={[0, 1650, 0]} castShadow>
-        <sphereGeometry args={[100, 20, 16]} />
-        <meshStandardMaterial color="#c0a69b" roughness={0.83} />
-      </mesh>
-      <BodyPart position={[0, 1160, 0]} size={[390, 650, 210]} />
-      <BodyPart position={[-250, 1110, 0]} size={[105, 670, 115]} />
-      <BodyPart position={[250, 1110, 0]} size={[105, 670, 115]} />
-      <BodyPart position={[-105, 420, 0]} size={[160, 840, 175]} colour="#687785" />
-      <BodyPart position={[105, 420, 0]} size={[160, 840, 175]} colour="#687785" />
-      <BodyPart position={[-105, 45, 75]} size={[205, 90, 330]} colour="#58616b" />
-      <BodyPart position={[105, 45, 75]} size={[205, 90, 330]} colour="#58616b" />
+    <group position={[0, height / 2, 0]} scale={factor}>
+      <primitive object={figure} />
     </group>
   );
 }
