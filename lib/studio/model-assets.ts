@@ -6,7 +6,7 @@
 const DB_NAME = "nitorix-v2-model-assets";
 const STORE = "models";
 const VERSION = 1;
-export const MAX_GLB_BYTES = 12 * 1024 * 1024;
+export const MAX_GLB_BYTES = 30 * 1024 * 1024;
 export type ModelUnits = "m" | "cm" | "mm";
 export type StoredModel = { file: Blob; name: string; units: ModelUnits };
 
@@ -25,7 +25,7 @@ function openDatabase(): Promise<IDBDatabase> {
 
 export async function validateGlbFile(file: File) {
   if (!/\.glb$/i.test(file.name)) throw new Error("Please select a self-contained .glb 3D model.");
-  if (file.size < 20 || file.size > MAX_GLB_BYTES) throw new Error("Model must be a GLB smaller than 12 MB.");
+  if (file.size < 20 || file.size > MAX_GLB_BYTES) throw new Error("Model must be a GLB smaller than 30 MB.");
   const header = new DataView(await file.slice(0, 20).arrayBuffer());
   if (header.getUint32(0, true) !== 0x46546c67 || header.getUint32(4, true) !== 2 || header.getUint32(8, true) !== file.size) {
     throw new Error("This does not appear to be a valid glTF 2.0 binary file.");
