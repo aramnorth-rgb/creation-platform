@@ -5,7 +5,7 @@ const MESHY_BASE = "https://api.meshy.ai/openapi/v1/multi-image-to-3d";
 const MAX_PAYLOAD_CHARACTERS = 5_000_000;
 const IMAGE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
 const TASK_ID = /^[a-zA-Z0-9_-]{8,100}$/;
-const BODY_LIMIT = 12 * 1024 * 1024;
+const BODY_LIMIT = 30 * 1024 * 1024;
 
 /**
  * Pilot-only gate until real manufacturer accounts / billing / quotas exist.
@@ -107,7 +107,7 @@ export async function streamGlb(id: string): Promise<Response> {
   const expectedSize = Number(upstream.headers.get("content-length") ?? 0);
   if (expectedSize > BODY_LIMIT) {
     upstream.body.cancel().catch(() => {});
-    throw new Error("Generated model exceeds the 12 MB local preview limit.");
+    throw new Error("Generated model exceeds the 30 MB local preview limit.");
   }
   let received = 0;
   const capped = upstream.body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
