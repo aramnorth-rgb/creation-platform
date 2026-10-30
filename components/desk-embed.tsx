@@ -18,6 +18,7 @@ const Scene = dynamic(() => import("./creation-scene"), { ssr: false });
 const ImportedModelViewer = dynamic(()=>import("./imported-model-viewer"),{ssr:false});
 /** Minimal standalone host. No marketplace/account dependency or external services. */
 import { type ProductDraft, type CreationMode } from "@/lib/studio/product";
+import { allowedCreationModes } from "@/lib/studio/capabilities";
 export default function DeskEmbed({
   policy,
   initialMode = "customise",
@@ -36,16 +37,14 @@ export default function DeskEmbed({
   const engine = useDeskEngine(true, policy);
   const config = engine.config;
   const room = useWorkshopEnvironment();
+  const availableModes: CreationMode[] = policy ? allowedCreationModes(policy) : ["customise", "assemble", "engineer"];
   const [mode, setMode] = useState<CreationMode>(
-    customiseOnly
-      ? "customise"
-      : policy && !policy.modes.includes(initialMode)
-        ? policy.modes[0]
-        : initialMode,
+    customiseOnly ? "customise" : availableModes.includes(initialMode) ? initialMode : (availableModes[0] ?? "customise"),
   );
   const modes: CreationMode[] = customiseOnly
     ? ["customise", "assemble", "engineer"]
-    : (policy?.modes ?? ["customise", "assemble", "engineer"]);
+    : (availableModes.length ? availableModes : ["customise"]);
+  const activeMode = modes.includes(mode) && (!customiseOnly || mode === "customise") ? mode : "customise";
   const [comparison, setComparison] = useState<ScaleReferenceKind>("none");
   const [personHeight, setPersonHeight] = useState(175);
   const [webgl, setWebgl] = useState(false);
@@ -85,14 +84,14 @@ export default function DeskEmbed({
         <p>{showcaseChair ? "Sculpted softness. Explore a fully textured 3D furniture model." : policy?.description ?? "A little order. A lot of possibility."}</p>
         <nav className="nx-mode-tabs" aria-label="Standalone creation modes">
           {modes.map((m) => {
-            const unavailable = customiseOnly && m !== "customise";
+            const unavailable = customiseOnly && (m !== "customise" || (policy ? !availableModes.includes(m) && m !== "customise" : false));
             return (
               <button
                 className="nx-mode-tab"
                 key={m}
                 type="button"
                 aria-label={m}
-                aria-pressed={mode === m}
+                aria-pressed={activeMode === m}
                 disabled={unavailable}
                 onClick={() => setMode(m)}
               >
@@ -125,7 +124,7 @@ export default function DeskEmbed({
               workspace
               workshop={room.enabled}
               environment={room.enabled ? room.environment : undefined}
-              highlightSlot={mode === "assemble" ? engine.slot : undefined}
+              highlightSlot={activeMode === "assemble" ? engine.slot : undefined}
               config={defaults}
               desk={config}
               referenceKind={comparison}
@@ -226,7 +225,7 @@ export default function DeskEmbed({
             </div>}
             <div className="nx-model-specs-footer">3D asset viewer · No manufacturing files, pricing or orders generated</div>
           </div>
-        ) : <DeskControls engine={engine} mode={mode} />}
+        ) : <DeskControls engine={engine} mode={activeMode} />}
         {enableDemoEnquiry && !displayModel && (
           <details className="nx-enquiry-action">
             <summary>Preview the enquiry workflow</summary>
