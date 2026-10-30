@@ -13,6 +13,7 @@ import {
 import { saveProducts, useStudioProducts } from "@/lib/studio/store";
 import { ProductArt } from "./product-art";
 import { DemoCrm } from "./demo-crm";
+import { StudioModelUpload } from "./studio-model-upload";
 import { importCatalogueCsv } from "@/lib/studio/catalogue-import";
 const sections = [
   "Overview",
@@ -631,19 +632,11 @@ export function StudioDashboard() {
                   />
                 </label>
               </div>
-              <div className="nx-upload-note">
-                <span>
-                  <StudioIcon index={1} />
-                </span>
-                <div>
-                  <strong>Product files, thoughtfully handled.</strong>
-                  <p>
-                    File uploads and arbitrary GLB ingestion are not
-                    implemented. This demo reuses the existing desk organiser
-                    model. No file picker or upload is simulated.
-                  </p>
-                </div>
-              </div>
+              <StudioModelUpload
+                key={editor.id}
+                productId={editor.id}
+                saved={products.some((p) => p.id === editor.id)}
+              />
               <div className="nx-editor-actions">
                 <button
                   className="nx-button nx-secondary"
