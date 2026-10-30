@@ -62,7 +62,7 @@ export default function DeskEmbed({
         <p>{policy?.description ?? "A little order. A lot of possibility."}</p>
         <nav className="nx-mode-tabs" aria-label="Standalone creation modes">
           {modes.map((m) => {
-            const underConstruction = customiseOnly && m !== "customise";
+            const unavailable = customiseOnly && m !== "customise";
             return (
               <button
                 className="nx-mode-tab"
@@ -70,15 +70,10 @@ export default function DeskEmbed({
                 type="button"
                 aria-label={m}
                 aria-pressed={mode === m}
-                disabled={underConstruction}
+                disabled={unavailable}
                 onClick={() => setMode(m)}
               >
                 <span className="nx-mode-name">{m}</span>
-                {underConstruction && (
-                  <span className="nx-mode-tape" aria-hidden="true">
-                    <span>Under construction</span>
-                  </span>
-                )}
               </button>
             );
           })}
