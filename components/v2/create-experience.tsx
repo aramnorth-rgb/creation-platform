@@ -7,9 +7,11 @@ import { type CreationMode } from "@/lib/studio/product";
 export function CreateExperience({
   draftId,
   initialMode,
+  showcase,
 }: {
   draftId?: string;
   initialMode?: CreationMode;
+  showcase?: "chair";
 }) {
   const products = useStudioProducts();
   const router = useRouter();
@@ -27,12 +29,13 @@ export function CreateExperience({
         <select
           id="nx-catalogue-product"
           aria-label="Demo manufacturer catalogue"
-          value={draft?.id ?? ""}
-          onChange={(e) => router.push(e.target.value
+          value={showcase === "chair" ? "chair-showcase" : draft?.id ?? ""}
+          onChange={(e) => router.push(e.target.value === "chair-showcase" ? "/create?showcase=chair" : e.target.value
             ? `/create?draft=${encodeURIComponent(e.target.value)}`
             : "/create")}
         >
           <option value="">Contour desk organiser</option>
+          <option value="chair-showcase">Sheen chair · 3D showcase</option>
           {products.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
@@ -46,11 +49,12 @@ export function CreateExperience({
         </p>
       )}
       <DeskEmbed
-        key={draft ? JSON.stringify(draft) : "default"}
+        key={showcase === "chair" ? "showcase-chair" : draft ? JSON.stringify(draft) : "default"}
         policy={draft}
         initialMode={initialMode}
         customiseOnly={!draftId}
         enableDemoEnquiry
+        showcaseChair={showcase === "chair"}
       />
       <p className="nx-create-disclaimer">
         Product experience preview. Prices are indicative; no orders, enquiries or
