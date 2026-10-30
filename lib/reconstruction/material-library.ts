@@ -71,3 +71,50 @@ export async function imageToDataUri(file: File, edge = 1200): Promise<string> {
     return data;
   } finally { bitmap.close(); }
 }
+
+
+type ColourSignature = { red:number; green:number; blue:number; variation:number; texture:number };
+/** Lightweight on-device comparison: chromatic similarity and tonal variation, NOT material recognition. */
+async function signature(dataUri: string): Promise<ColourSignature> {
+  const response = await fetch(dataUri);
+  const bitmap = await createImageBitmap(await response.blob());
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 20; canvas.height = 20;
+    const context = canvas.getContext("2d", {willReadFrequently:true});
+    if (!context) throw new Error("Image comparison is unavailable.");
+    context.drawImage(bitmap,0,0,20,20);
+    const rgba = context.getImageData(0,0,20,20).data;
+    let r=0,g=0,b=0,total=0,variance=0,edges=0;
+    const levels:number[]=[];
+    for(let index=0;index<rgba.length;index+=4){
+      const rr=rgba[index],gg=rgba[index+1],bb=rgba[index+2];
+      r+=rr;g+=gg;b+=bb;levels.push((rr+gg+bb)/3);total++;
+    }
+    const mean=levels.reduce((sum,value)=>sum+value,0)/total;
+    for(let i=0;i<levels.length;i++){
+      variance+=(levels[i]-mean)**2;
+      if(i%20!==19)edges+=Math.abs(levels[i]-levels[i+1]);
+    }
+    return {red:r/total,green:g/total,blue:b/total,
+      variation:Math.sqrt(variance/total),texture:edges/(total-20)};
+  }finally{bitmap.close();}
+}
+export async function suggestMaterialReferences(
+  sourceImage: string, references: ReferenceMaterial[],
+): Promise<Array<{reference:ReferenceMaterial;distance:number}>> {
+  if (!sourceImage || !references.length) return [];
+  const base=await signature(sourceImage);
+  const comparisons=await Promise.all(references.map(async reference=>{
+    try{
+      const candidate=await signature(reference.image);
+      const colour=Math.sqrt((base.red-candidate.red)**2+
+        (base.green-candidate.green)**2+(base.blue-candidate.blue)**2);
+      const structure=Math.abs(base.variation-candidate.variation)*0.6+
+        Math.abs(base.texture-candidate.texture)*0.4;
+      return {reference,distance:colour+structure};
+    }catch{return null;}
+  }));
+  return comparisons.filter((item):item is {reference:ReferenceMaterial;distance:number}=>item!==null)
+    .sort((left,right)=>left.distance-right.distance).slice(0,3);
+}
