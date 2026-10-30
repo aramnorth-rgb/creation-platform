@@ -344,7 +344,7 @@ test("Create offers optional size references, configurable height and no-WebGL d
   await expect(height).toHaveValue("175");
   await height.fill("195");
   await expect(page.locator(".nx-scale-caption")).toContainText("195 cm");
-  await expect(page.locator(".nx-scale-fallback")).toContainText("3D viewer");
+  await expect(page.locator(".nx-scale-fallback")).toContainText("need WebGL");
   await compare.selectOption("ruler");
   await expect(height).toHaveCount(0);
   await expect(page.locator(".nx-scale-caption")).toContainText("100 cm");
