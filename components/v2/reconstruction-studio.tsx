@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
-import { putModelAsset } from "@/lib/studio/model-assets";
+import { putModelAsset, validateGlbFile } from "@/lib/studio/model-assets";
 import {
   imageToDataUri, loadReferences, removeReference, saveReference, suggestMaterialReferences, REFERENCE_EVENT,
   type ReferenceMaterial,
@@ -82,7 +82,6 @@ export function ReconstructionStudio({
   },[photos,references]);
   const selectedReference = references.find(reference => reference.id === materialId);
   const dims = Object.values(dimensions);
-  const sizesProvided = dims.every(size => size !== "" && Number.isFinite(Number(size)) && Number(size)>0);
   const sizesValid = dims.every(size => !size || (Number.isFinite(Number(size)) && Number(size)>0 && Number(size)<100_000));
 
   async function addPhotos(files: FileList | null) {
@@ -162,6 +161,7 @@ export function ReconstructionStudio({
       const response=await api(`/api/reconstruction/${encodeURIComponent(job.id)}/model`, accessKey);
       const blob=await response.blob();
       const file=new File([blob],`nitorix-${productId}.glb`,{type:"model/gltf-binary"});
+      await validateGlbFile(file);
       const url=URL.createObjectURL(file);
       setResult(previous=>{if(previous)URL.revokeObjectURL(previous.url);return {file,url};});
       setModelDimensions(null);
