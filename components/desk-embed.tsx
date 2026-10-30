@@ -154,6 +154,9 @@ export default function DeskEmbed({
                 cm
               </label>
             )}
+            {comparison !== "none" && (
+              <span className="nx-scale-caption">{referenceLabel(comparison, personHeight)}</span>
+            )}
           </div>
         </div>
         <EnvironmentSwitcher
@@ -165,7 +168,8 @@ export default function DeskEmbed({
       <section className="embed-controls" aria-label="Desk configuration">
         <DeskControls engine={engine} mode={mode} />
         {enableDemoEnquiry && (
-          <div className="nx-enquiry-action">
+          <details className="nx-enquiry-action">
+            <summary>Preview the enquiry workflow</summary>
             <span className="nx-eyebrow">TRY THE CONNECTED WORKFLOW</span>
             <h3>From design to enquiry.</h3>
             <p>See how this exact configuration could appear in a manufacturer's CRM.</p>
@@ -180,15 +184,15 @@ export default function DeskEmbed({
                   priceDesk(config, policy?.pricing).totalPence,
                 );
                 setEnquiryStatus(saved
-                  ? "Demo enquiry added to Studio on this browser only. Nothing was sent."
-                  : "Could not save the demo enquiry; browser storage may be full.");
+                  ? "Added to Studio preview on this browser. Nothing was sent."
+                  : "Could not save this preview; browser storage may be full.");
               }}
             >
-              Create demo enquiry
+              Add to Studio preview
             </button>
             {enquiryStatus && <p role="status">{enquiryStatus}</p>}
-            <p className="nx-demo-note">Demo only · No name, email or personal information requested.</p>
-          </div>
+            
+          </details>
         )}
       </section>
     </main>
