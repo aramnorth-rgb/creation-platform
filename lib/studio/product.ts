@@ -76,7 +76,7 @@ export function validateProduct(value: unknown): string[] {
   if (!choices(p.modes, creationModes, true))
     errors.push("Enable at least one supported creation mode.");
   if (!validCapabilityEvidence(p.capabilityEvidence)) errors.push("Product capability information is invalid.");
-  else if (p.capabilityEvidence && assessCapabilities(p).some((mode) => mode.requested && !mode.complete))
+  else if (p.capabilityEvidence && assessCapabilities(p).some((mode) => mode.mode !== "customise" && mode.requested && !mode.complete))
     errors.push("An enabled creation mode is missing its required manufacturer-confirmed information.");
   if (!choices(p.materials, Object.keys(deskProduct.materials), true))
     errors.push("Enable at least one supported material.");
