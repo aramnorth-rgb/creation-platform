@@ -212,6 +212,7 @@ export function StudioDashboard() {
               <label key={m}>
                 <input
                   type="checkbox"
+                  aria-label={m}
                   checked={editor.modes.includes(m)}
                   disabled={!supported && !editor.modes.includes(m)}
                   onChange={() => toggle("modes", m)}
