@@ -57,7 +57,7 @@ export function StudioModelUpload({
       <div className="nx-model-import-title">
         <div>
           <h3>Your product, beautifully presented.</h3>
-          <p>Add a self-contained .glb model with its original textures. We'll frame it, light it and let you orbit and zoom. Maximum 12 MB.</p>
+          <p>Add a self-contained .glb model with its original textures. We'll frame it, light it and let you orbit and zoom. Maximum 30 MB.</p>
         </div>
         <span className="nx-status-pill">Private browser preview</span>
       </div>
