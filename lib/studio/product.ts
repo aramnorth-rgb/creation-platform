@@ -7,6 +7,7 @@ import {
   type DeskPricing,
   defaultDeskPricing,
 } from "../configurator/desk";
+import { assessCapabilities, blankCapabilityEvidence, demoCapabilityEvidence, validCapabilityEvidence, type CapabilityEvidence } from "./capabilities";
 export type CreationMode = "customise" | "assemble" | "engineer";
 export type ProductDraft = {
   schemaVersion: 1;
@@ -14,6 +15,7 @@ export type ProductDraft = {
   name: string;
   description: string;
   modes: CreationMode[];
+  capabilityEvidence?: CapabilityEvidence;
   materials: DeskConfiguration["material"][];
   colours: DeskConfiguration["colour"][];
   modules: (keyof typeof deskProduct.modules)[];
@@ -30,7 +32,8 @@ export function newProduct(id = "contour-demo"): ProductDraft {
     id,
     name: "Contour desk organiser",
     description: "A considered home for the things you reach for every day.",
-    modes: ["customise", "assemble", "engineer"],
+    modes: id === "contour-demo" || id === "linea-demo" ? ["customise", "assemble", "engineer"] : ["customise"],
+    capabilityEvidence: id === "contour-demo" || id === "linea-demo" ? demoCapabilityEvidence() : blankCapabilityEvidence(),
     materials: ["polymer", "aluminium", "oak"],
     colours: ["ivory", "forest", "charcoal", "coral"],
     modules: ["cup", "tray", "phone"],
@@ -72,6 +75,9 @@ export function validateProduct(value: unknown): string[] {
     v.every((k) => typeof k === "string" && allowed.includes(k));
   if (!choices(p.modes, creationModes, true))
     errors.push("Enable at least one supported creation mode.");
+  if (!validCapabilityEvidence(p.capabilityEvidence)) errors.push("Product capability information is invalid.");
+  else if (p.capabilityEvidence && assessCapabilities(p).some((mode) => mode.requested && !mode.complete))
+    errors.push("An enabled creation mode is missing its required manufacturer-confirmed information.");
   if (!choices(p.materials, Object.keys(deskProduct.materials), true))
     errors.push("Enable at least one supported material.");
   if (!choices(p.colours, Object.keys(deskProduct.colours), true))
