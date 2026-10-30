@@ -56,7 +56,7 @@ export default function DeskEmbed({
     <main className="desk-embed">
       <section className="embed-preview">
         <span className="nx-eyebrow">
-          NITORIX CREATE · TRY WITHOUT AN ACCOUNT
+          NITORIX CREATE / CUSTOMISE
         </span>
         <h1>{policy?.name ?? "Contour desk organiser"}</h1>
         <p>{policy?.description ?? "A little order. A lot of possibility."}</p>
@@ -83,36 +83,6 @@ export default function DeskEmbed({
             );
           })}
         </nav>
-        <div className="nx-scale-toolbar">
-          <label htmlFor="nx-scale-reference">Compare size with…</label>
-          <select
-            id="nx-scale-reference"
-            value={comparison}
-            onChange={(e) => setComparison(e.target.value as ScaleReferenceKind)}
-          >
-            {scaleChoices.map((choice) => (
-              <option key={choice.value} value={choice.value}>{choice.label}</option>
-            ))}
-          </select>
-          {comparison === "person" && (
-            <label className="nx-person-height">
-              Height (cm)
-              <input
-                type="number"
-                min={140}
-                max={210}
-                step={1}
-                value={personHeight}
-                onChange={(e) => {
-                  if (e.target.value) setPersonHeight(personHeightCm(Number(e.target.value)));
-                }}
-              />
-            </label>
-          )}
-          {comparison !== "none" && (
-            <span className="nx-scale-caption">{referenceLabel(comparison, personHeight)}</span>
-          )}
-        </div>
         <div
           className="embed-canvas"
           role="img"
@@ -144,17 +114,48 @@ export default function DeskEmbed({
         </div>
         {comparison !== "none" && !webgl && (
           <p className="nx-scale-fallback" role="status">
-            The size reference is available in the 3D viewer. {referenceLabel(comparison, personHeight)}.
+            Size references need WebGL. {referenceLabel(comparison, personHeight)}.
           </p>
         )}
-        <label className="embed-background">
-          <input
-            type="checkbox"
-            checked={room.enabled}
-            onChange={(e) => room.setEnabled(e.target.checked)}
-          />{" "}
-          Workshop background
-        </label>
+        <div className="nx-viewport-controls">
+          <label className="embed-background">
+            <input
+              type="checkbox"
+              checked={room.enabled}
+              onChange={(e) => room.setEnabled(e.target.checked)}
+            />
+            Workshop background
+          </label>
+          <div className="nx-scale-inline">
+            <label htmlFor="nx-scale-reference">Compare size with…</label>
+            <select
+              id="nx-scale-reference"
+              value={comparison}
+              onChange={(e) => setComparison(e.target.value as ScaleReferenceKind)}
+            >
+              {scaleChoices.map((choice) => (
+                <option key={choice.value} value={choice.value}>{choice.label}</option>
+              ))}
+            </select>
+            {comparison === "person" && (
+              <label className="nx-person-height">
+                Height
+                <input
+                  type="number"
+                  min={140}
+                  max={210}
+                  step={1}
+                  aria-label="Height (cm)"
+                  value={personHeight}
+                  onChange={(e) => {
+                    if (e.target.value) setPersonHeight(personHeightCm(Number(e.target.value)));
+                  }}
+                />
+                cm
+              </label>
+            )}
+          </div>
+        </div>
         <EnvironmentSwitcher
           value={room.environment}
           change={room.setEnvironment}
