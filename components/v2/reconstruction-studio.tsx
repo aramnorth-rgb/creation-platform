@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { putModelAsset } from "@/lib/studio/model-assets";
 import {
-  imageToDataUri, loadReferences, removeReference, saveReference, REFERENCE_EVENT,
+  imageToDataUri, loadReferences, removeReference, saveReference, suggestMaterialReferences, REFERENCE_EVENT,
   type ReferenceMaterial,
 } from "@/lib/reconstruction/material-library";
 
@@ -36,6 +36,7 @@ export function ReconstructionStudio({
 }: { productId: string; productName: string; saved: boolean }) {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [references, setReferences] = useState<ReferenceMaterial[]>([]);
+  const [suggestions,setSuggestions] = useState<Array<{reference:ReferenceMaterial;distance:number}>>([]);
   const [materialId, setMaterialId] = useState("");
   const [materialName, setMaterialName] = useState("");
   const [materialPrompt, setMaterialPrompt] = useState("");
@@ -70,6 +71,15 @@ export function ReconstructionStudio({
     return () => window.removeEventListener(REFERENCE_EVENT, update);
   }, []);
 
+  useEffect(()=>{
+    const photo=photos[0]?.uri;
+    if(!photo || !references.length)return;
+    let active=true;
+    suggestMaterialReferences(photo,references)
+      .then(matches=>{if(active)setSuggestions(matches);})
+      .catch(()=>{if(active)setSuggestions([]);});
+    return ()=>{active=false;};
+  },[photos,references]);
   const selectedReference = references.find(reference => reference.id === materialId);
   const dims = Object.values(dimensions);
   const sizesProvided = dims.every(size => size !== "" && Number.isFinite(Number(size)) && Number(size)>0);
@@ -228,6 +238,22 @@ export function ReconstructionStudio({
           <small>{references.length} saved references</small>
         </div>
         <p>Borrow an approved fabric, grain or finish from your own reference collection. NITORIX sends the selected material image to guide surface generation, not as another geometric view.</p>
+        {suggestions.length>0 && <div className="nx-recon-suggestions">
+          <div className="nx-recon-heading">
+            <div><span className="nx-eyebrow">SUGGESTED FROM YOUR CATALOGUE</span>
+              <p>Similar colours and tonal textures found in your approved reference photos. Verify the material identity before using any suggestion.</p>
+            </div>
+          </div>
+          <div className="nx-recon-suggestion-list">
+            {suggestions.map(item=><button key={item.reference.id} type="button"
+              onClick={()=>{setMaterialMode("library");setMaterialId(item.reference.id);}}
+              aria-label={`Use ${item.reference.name} material reference`}>
+              <img src={item.reference.image} alt=""/>
+              <span><strong>{item.reference.name}</strong><small>{item.reference.productId}</small></span>
+              <span aria-hidden="true">↗</span>
+            </button>)}
+          </div>
+        </div>}
         <div className="nx-recon-switches" role="group" aria-label="Texture source">
           {([["original","Use product photographs"],["library","Reference material"],["description","Describe material"]] as const)
             .map(([id,label])=><button type="button" key={id} aria-pressed={materialMode===id} onClick={()=>setMaterialMode(id)}>{label}</button>)}
