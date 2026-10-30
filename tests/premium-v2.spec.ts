@@ -526,6 +526,7 @@ test("Photo reconstruction Studio captures product images without submitting pai
     buffer: image,
   });
   await expect(page.getByText("Front reference")).toBeVisible();
+  await page.getByText("Save the first photograph as a reusable material reference").click();
   await page.getByPlaceholder("e.g. Fjord linen · Sand").fill("Fjord linen");
   await page.getByRole("button", { name: "Add to material library" }).click();
   await expect(page.getByRole("status")).toContainText("saved to your browser");
