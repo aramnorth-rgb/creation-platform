@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Box3, Mesh, MeshStandardMaterial, Object3D, Vector3 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -124,10 +124,10 @@ export default function ImportedModelViewer({
   onError?:(message:string)=>void;
 }) {
   const [dimensions,setDimensions]=useState<[number,number,number]>([0,0,0]);
-  const receiveDimensions=(size:[number,number,number])=>{
+  const receiveDimensions=useCallback((size:[number,number,number])=>{
     setDimensions((old)=>old[0]===size[0]&&old[1]===size[1]&&old[2]===size[2]?old:size);
     onDimensions?.(size);
-  };
+  },[onDimensions]);
   return (
     <Canvas dpr={[1,1.75]} shadows camera={{position:[7,6,12],fov:42,near:0.04,far:500}}
       gl={{alpha:true,antialias:true,powerPreference:"high-performance"}} aria-label="Interactive 3D model">
