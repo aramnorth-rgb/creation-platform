@@ -2933,3 +2933,104 @@ body:has(.nx) {
   border-radius: 10px;
   background: #fffefa;
 }
+
+
+/* Correct legacy `embed-preview > div` sizing: only the canvas is tall. */
+.nx .embed-preview > .nx-viewport-controls {
+  height: auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  padding: 14px 2px;
+  margin-top: 4px;
+}
+.nx .nx-viewport-controls .embed-background {
+  margin: 0;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  color: #465450;
+  font-size: 12px;
+}
+.nx .nx-viewport-controls .nx-scale-inline {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: #475452;
+}
+.nx .nx-scale-inline > label:first-child {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.nx .nx-scale-inline select {
+  min-height: 37px;
+  max-width: 190px;
+  border: 1px solid #d5ded7;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #fcfdfa;
+  color: #34423b;
+  font-size: 12px;
+}
+.nx .nx-scale-inline .nx-person-height {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 11px;
+}
+.nx .nx-scale-inline input[type="number"] {
+  width: 65px;
+  min-height: 36px;
+  border: 1px solid #d5ded7;
+  border-radius: 8px;
+  background: #fff;
+  padding: 5px 7px;
+  font-size: 12px;
+}
+.nx-create .nx-catalogue-chooser {
+  padding-block: 11px;
+  background: #fafbf7;
+}
+.nx-create .nx-catalogue-chooser p {
+  display: none;
+}
+.nx-create .nx-catalogue-chooser label {
+  font-size: 12px;
+  font-weight: 500;
+}
+.nx-create .nx-catalogue-chooser select {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.nx-create .nx-preview-banner {
+  padding-block: 8px;
+  background: #f5f5ef;
+  font-size: 11px;
+}
+.nx-create .nx-enquiry-action .nx-demo-note {
+  font-size: 10px;
+  margin: 0 !important;
+}
+@media (max-width: 740px) {
+  .nx .embed-preview > .nx-viewport-controls {
+    gap: 6px 12px;
+    align-items: flex-start;
+  }
+  .nx .nx-viewport-controls .nx-scale-inline {
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+  .nx .nx-scale-inline select {
+    max-width: 165px;
+  }
+}
