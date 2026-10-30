@@ -3034,3 +3034,38 @@ body:has(.nx) {
     max-width: 165px;
   }
 }
+
+
+/* Discreet technical caption, exposed to assistive technology only. */
+.nx .nx-scale-inline .nx-scale-caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+.nx .embed-controls > details.nx-enquiry-action {
+  display: block;
+  margin-top: 22px;
+  padding: 14px 0 2px;
+  border-top: 1px solid #e0e5dc;
+}
+.nx .nx-enquiry-action > summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #596963;
+  padding: 5px 2px 7px;
+}
+.nx .nx-enquiry-action[open] > p {
+  margin: 12px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.nx .nx-enquiry-action[open] .nx-button {
+  margin-top: 7px;
+}
