@@ -3188,3 +3188,26 @@ body:has(.nx) {
 @media(prefers-reduced-motion:reduce){
   .nx .nx-model-finish-options button {transition:none}
 }
+
+
+.nx-model-fallback {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  min-height:100%;
+  gap:12px;
+  padding:30px;
+  text-align:center;
+  background:radial-gradient(ellipse at 45% 20%,#ffffff,#e9f1ed 66%,#dfe8e3);
+}
+.nx-model-fallback strong {
+  font:400 clamp(21px,2vw,30px)/1.2 Georgia,"Times New Roman",serif;
+  color:#34443f;
+}
+.nx-model-fallback p {
+  max-width:320px;
+  font-size:12px;
+  line-height:1.7;
+  color:#66766e;
+}
