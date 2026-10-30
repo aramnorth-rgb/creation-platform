@@ -470,6 +470,8 @@ test("Progressive onboarding never unlocks Assemble or Engineer from pictures al
   await expect(assemble).toBeDisabled();
   await page.getByRole("button", {name:/Save draft/}).click();
   await page.reload();
+  await studioSection(page,"Products").click();
+  await page.getByRole("button", {name:"Edit Photo-only armchair"}).click();
   await studioSection(page,"Configurator Builder").click();
   await expect(assemble).toBeDisabled();
   await expect(engineer).toBeDisabled();
