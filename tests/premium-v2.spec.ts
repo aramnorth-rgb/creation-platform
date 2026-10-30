@@ -123,7 +123,17 @@ test("Studio saves local products, validates options, enforces rules and prices 
     "saved on this browser only",
   );
   await studioSection(page, "Configurator Builder").click();
-  await page.getByRole("checkbox", { name: /^engineer$/i }).uncheck();
+  // A new product has Customise-only access until the supplier declares real modular data.
+  await expect(page.getByRole("checkbox", { name: /^assemble$/i })).toBeDisabled();
+  for (const field of [
+    "Product appearance", "Measured outer dimensions", "Available finishes and options",
+    "Prices for available choices", "Individual component geometry",
+    "Measured attachment points", "Compatibility rules", "Component pricing",
+  ]) {
+    await page.getByRole("checkbox", { name: new RegExp(field) }).check();
+  }
+  await page.getByRole("checkbox", { name: /^assemble$/i }).check();
+  await expect(page.getByRole("checkbox", { name: /^engineer$/i })).toBeDisabled();
   await page
     .getByRole("checkbox", { name: "Warm oak composite", exact: true })
     .uncheck();
@@ -439,4 +449,55 @@ test("Second showcase is a textured chair, not the desk organiser", async ({ pag
   await expect(page.getByText("Presentation finish")).toBeVisible();
   await expect(page.getByText("3D preview unavailable")).toBeVisible();
   await expect(page.getByRole("combobox", {name:"Demo manufacturer catalogue"})).toHaveValue("chair-showcase");
+});
+
+
+test("Progressive onboarding never unlocks Assemble or Engineer from pictures alone", async ({ page }) => {
+  await noWebgl(page);
+  await page.goto("/studio");
+  await studioSection(page, "Products").click();
+  await page.getByRole("button", { name: /Add product draft/ }).click();
+  await page.getByLabel("Product name", {exact:true}).fill("Photo-only armchair");
+  await page.getByRole("button", {name:/Save draft/}).click();
+  await studioSection(page, "Configurator Builder").click();
+  const assemble = page.getByRole("checkbox", {name:/^assemble$/i});
+  const engineer = page.getByRole("checkbox", {name:/^engineer$/i});
+  await expect(assemble).toBeDisabled();
+  await expect(engineer).toBeDisabled();
+  // A visually reconstructed product still needs manufacturer-confirmed options.
+  await page.getByRole("checkbox", {name:/Product appearance/}).check();
+  await page.getByRole("checkbox", {name:/Measured outer dimensions/}).check();
+  await expect(assemble).toBeDisabled();
+  await page.getByRole("button", {name:/Save draft/}).click();
+  await page.reload();
+  await studioSection(page,"Configurator Builder").click();
+  await expect(assemble).toBeDisabled();
+  await expect(engineer).toBeDisabled();
+  await studioSection(page,"Publishing").click();
+  const href = await page.getByRole("link", {name:/Open saved draft in Create/}).getAttribute("href");
+  await page.goto(href!);
+  await expect(page.getByRole("button", {name:"assemble",exact:true})).toBeDisabled();
+  await expect(page.getByRole("button", {name:"engineer",exact:true})).toBeDisabled();
+});
+
+test("Revoking a required specification disables previously enabled Assemble", async ({page})=>{
+  await noWebgl(page);
+  await page.goto("/studio");
+  await studioSection(page,"Products").click();
+  await page.getByRole("button", {name:/Add product draft/}).click();
+  await page.getByLabel("Product name", {exact:true}).fill("Modular organiser sample");
+  await studioSection(page,"Configurator Builder").click();
+  const fields = [
+    "Product appearance", "Measured outer dimensions", "Available finishes and options",
+    "Prices for available choices", "Individual component geometry",
+    "Measured attachment points", "Compatibility rules", "Component pricing",
+  ];
+  for(const field of fields)await page.getByRole("checkbox",{name:new RegExp(field)}).check();
+  await page.getByRole("checkbox",{name:/^assemble$/i}).check();
+  await expect(page.getByRole("checkbox",{name:/^assemble$/i})).toBeChecked();
+  await page.getByRole("checkbox",{name:/Compatibility rules/}).uncheck();
+  await expect(page.getByRole("checkbox",{name:/^assemble$/i})).toBeDisabled();
+  await expect(page.getByRole("checkbox",{name:/^assemble$/i})).not.toBeChecked();
+  await page.getByRole("button",{name:/Save draft/}).click();
+  await expect(page.getByRole("status")).toContainText("saved on this browser only");
 });
