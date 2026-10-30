@@ -25,7 +25,6 @@ function StudioObject({
   const scale = unitInMM[units] * MM_TO_SCENE;
   useEffect(() => {
     let active = true;
-    setObject(null);
     const loader = new GLTFLoader();
     loader.load(url, (gltf) => {
       if (!active) return;
