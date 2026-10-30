@@ -56,6 +56,7 @@ export default function DeskEmbed({
   const receiveDimensions=useCallback((size:[number,number,number])=>setDimensions(size),[]);
   const receiveError=useCallback((msg:string)=>setModelError(msg),[]);
   const displayModel=showcaseChair ? {url:"/models/SheenChair.glb",units:"m" as ModelUnits} : model;
+  const renderedMode = displayModel ? "customise" : activeMode;
   useEffect(()=>{
     if(!policy?.id)return;
     let active=true;
@@ -84,14 +85,14 @@ export default function DeskEmbed({
         <p>{showcaseChair ? "Sculpted softness. Explore a fully textured 3D furniture model." : policy?.description ?? "A little order. A lot of possibility."}</p>
         <nav className="nx-mode-tabs" aria-label="Standalone creation modes">
           {modes.map((m) => {
-            const unavailable = customiseOnly && (m !== "customise" || (policy ? !availableModes.includes(m) && m !== "customise" : false));
+            const unavailable = (customiseOnly || Boolean(displayModel)) && m !== "customise";
             return (
               <button
                 className="nx-mode-tab"
                 key={m}
                 type="button"
                 aria-label={m}
-                aria-pressed={activeMode === m}
+                aria-pressed={renderedMode === m}
                 disabled={unavailable}
                 onClick={() => setMode(m)}
               >
@@ -225,7 +226,7 @@ export default function DeskEmbed({
             </div>}
             <div className="nx-model-specs-footer">3D asset viewer · No manufacturing files, pricing or orders generated</div>
           </div>
-        ) : <DeskControls engine={engine} mode={activeMode} />}
+        ) : <DeskControls engine={engine} mode={renderedMode} />}
         {enableDemoEnquiry && !displayModel && (
           <details className="nx-enquiry-action">
             <summary>Preview the enquiry workflow</summary>
