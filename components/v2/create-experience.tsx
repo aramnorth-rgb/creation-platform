@@ -52,7 +52,7 @@ export function CreateExperience({
         key={showcase === "chair" ? "showcase-chair" : draft ? JSON.stringify(draft) : "default"}
         policy={draft}
         initialMode={initialMode}
-        customiseOnly={!draftId}
+        customiseOnly
         enableDemoEnquiry
         showcaseChair={showcase === "chair"}
       />
