@@ -1,4 +1,77 @@
-# NITORIX — Homepage V5
+# NITORIX V2 — Premium platform preview
+
+A Scandinavian-inspired consumer experience, an interactive creation workspace and a light manufacturer Studio, built on the existing Next.js App Router / TypeScript / Tailwind / React Three Fiber project. No project dependencies, paid services, remote fonts or external AI APIs were added.
+
+## Review safety
+
+This redesign is based on the existing `nitorix-v2` branch at `22a5a5acce4ff57d069bad4598c7268b6d1dc84b`. Its development branch is `feat/nitorix-v2-premium-platform`. The intended pull-request base is **`nitorix-v2`**, never `main`. No production deployment or automatic merge is part of this work. The protected live and backup branches are not edited.
+
+## Run and inspect
+
+```bash
+npm ci
+npm run dev -- --port 3000
+```
+
+Open http://localhost:3000. No secrets, database, account or API keys are needed. Production preview: `npm run build` then `npm start`.
+
+| Route | Experience |
+| --- | --- |
+| `/` | Premium homepage, interactive draggable/keyboard-rotatable 3D organiser, colour study, editorial collection and manufacturer invitation |
+| `/explore` | Filterable fictional product gallery with expandable details; Contour opens Create |
+| `/create` | NITORIX Create: one shared configuration, geometry, pricing and bounded history across all three modes |
+| `/manufacturers` | Studio introduction, honest disabled account options and proposed founding programme |
+| `/studio` | Interactive browser-local manufacturer dashboard prototype |
+| `/community` | Clearly fictional designer stories; no public profiles, messaging or real social accounts |
+| `/exhibition` | Preserved original twelve-object exhibition and legacy Atlas workshops |
+| `/configure` | Preserved minimal standalone organiser host |
+
+The homepage model uses the existing procedural organiser geometry, PBR materials, local reflections and one shadow map. Rendering is on demand, capped at DPR 1.25; dragging, keyboard arrows, a rotation slider and colour buttons request updates. SVG fallback and an error boundary preserve the presentation without WebGL. Static gallery drawings are original lightweight SVG illustrations, not product photographs. The two CC0 reference GLBs in the original exhibition and their licences are unchanged; see `public/models/ATTRIBUTION.md`.
+
+## What works
+
+- Responsive consumer pages, accessible native-dialog navigation, curated filtering/details, reduced motion, 3D interaction and WebGL fallback.
+- Existing shared desk configuration, compatibility checks, module placement, quarter-turn module rotation, geometry controls, environments, demonstration pricing, configuration export and 50-edit undo/redo. Module rotations are optional in the existing config schema and are recorded in history; pricing is unchanged by rotation.
+- Studio sections: Overview, Products, Configurator Builder, Pricing, Publishing, Orders and Enquiries, Analytics and Business Settings.
+- Product drafts can be created, edited, duplicated, deleted and explicitly saved **only in this browser’s localStorage**, with a 30-draft cap. Reloading retains valid saved drafts. Invalid stored records are ignored without executing them. If storage is blocked or full, saving reports failure.
+- Studio controls approved materials, colours, modules, dimensions, available modes, demo base fee/material rates/module prices and future publication-channel preferences. Validation rejects missing modes/choices, unsupported catalogue values, invalid ranges and prices.
+- Studio preview and saved-draft links use the same `DeskEmbed`, reducer, `deskGeometry()` and `priceDesk()` as Create. Customer controls disable disallowed choices, the shared host rejects unapproved configurations, and initial/reset values satisfy the product rules. Previewing new policy data creates a fresh configuration session; switching modes within it preserves the design/history.
+- Draft JSON export and local business-settings-note download. The founding interest form validates its fields and prepares a downloadable note locally; **nothing is submitted or sent**.
+
+## What remains a prototype
+
+There is no authentication, registration, secure/private manufacturer account, database, cloud draft storage, real file upload, arbitrary model ingestion, live publishing, customer order/enquiry backend, payment, email delivery or live analytics. Disabled actions and explanatory copy identify these limits. Browser-local drafts are readable by scripts on the same origin and must not contain confidential data. No real customers, manufacturers, customer ratings or business performance are implied.
+
+Only the desk organiser adapter is configurable; gallery concepts remain previews, and Atlas remains in the preserved legacy workshop. Initial demo collection entries are fictional variations of the organiser. SVG fallback approximates shape and does not reproduce PBR lighting, bevels or tilted panels exactly. Quarter-turn connections are demonstration geometry, not validated physical joints or manufacturing CAD. No load/tolerance/process calculations are provided.
+
+Studio’s client-side approved-option checks demonstrate the intended workflow, **not a security boundary or binding quote**. Production publishing needs authenticated manufacturer ownership, server-side schema/rule validation, asset processing, migrations and authoritative repricing. Exported drafts and local-storage data must not be trusted by a future backend. `/create?draft=ID` reads only drafts on the same browser/origin; it is not a shareable published configurator or cross-origin account session.
+
+Founding-partner lifetime core-software access is an intention for qualifying partners, subject to final eligibility, scope, availability and programme terms. No place, entitlement or present functionality is promised. Formal programme applications and a delivery/contact channel are not connected.
+
+## Validation
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
+```
+
+Playwright runs a dedicated production server on port 3100. The expanded suite covers the public 3D product, mobile navigation, collections, manufacturer disclosures, Studio CRUD/persistence/rules/pricing, Create state and module rotation, policy validation and the existing exhibition/workshop regressions. Browser tests run with software Chromium; no physical Windows hardware benchmark is claimed. Vercel preview URLs depend on the repository’s own Vercel integration; no production deployment command is run here.
+
+## V2 structure
+
+- `app/v2.css` and `components/v2/`: scoped public-page, Create and Studio design, leaving the original exhibition styles intact.
+- `lib/studio/product.ts`: validated local product definitions, approved initial configurations and client rule checks.
+- `lib/studio/store.ts`: versioned browser-local draft storage and subscriptions; no server persistence.
+- `lib/configurator/`: preserved shared configuration/geometry/history and parameterised demo pricing.
+- `components/desk-*`, `use-desk-engine.ts`: reused controls, model and host, with optional manufacturer rules.
+
+---
+
+The following reference describes the **preserved `/exhibition` and `/configure` experiences**, rather than the redesigned public homepage.
+
+# Legacy exhibition and workshop reference
 
 A visual, nearly black 3D exhibition built with **Next.js App Router, TypeScript, Tailwind CSS v4 and React Three Fiber**. NITORIX is a provisional working name, not a registered-brand claim. Customise, Assemble and Engineer now expose one shared Contour desk-organiser engine. The original Atlas prototype remains available through the workshop product selector.
 
@@ -134,3 +207,9 @@ The other ten creations remain **procedural demo placeholders**. V5 prioritises 
 Performance choices: only the featured creation receives detailed geometry / licensed GLBs, a single 1024px spotlight map supplies shadows, the pixel ratio is capped at 1.5, and the generated grain texture is 64×64. Reflections use a local prefiltered studio environment; there are no live raytraced/planar product reflections or postprocessing bloom. Tests run with software Chromium, not a physical Windows hardware benchmark.
 
 Model-source/licence details remain in `public/models/ATTRIBUTION.md`: two verified CC0 reference models, ten explicitly labelled procedural placeholders. The new panels, carbon grain and additional geometry are generated within this project and use no third-party artwork.
+
+### V2 pastel gallery atmosphere
+
+Home, Explore and Community share `PastelAtmosphere`. The background gradients and translucent middle plane are decorative and ignore pointer input; foreground content scrolls normally. CSS scroll timelines move the distant plane by at most 6px and the middle plane by at most 38px over the entire page. Unsupported browsers retain a static composition. Reduced-motion preferences remove this movement and decorative card-hover transforms.
+
+One delegated, requestAnimationFrame-coalesced pointer listener highlights selected borders on fine-pointer hover devices only. There are no scroll handlers, perpetual JavaScript animation loops, animation dependencies, blur filters or additional WebGL contexts. Cursor effects stop on leave/cancellation, preference changes and unmount. Manufacturer pages, Studio, Create and the preserved exhibition do not mount the moving atmosphere. The shared product engine, logo files and typography are unchanged.
