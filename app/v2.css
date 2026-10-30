@@ -3211,3 +3211,124 @@ body:has(.nx) {
   line-height:1.7;
   color:#66766e;
 }
+
+
+/* Progressive, evidence-led product onboarding. Scoped to Manufacturer Studio. */
+.nx-studio .nx-capability-panel {
+  margin: 26px 0 30px;
+  padding: clamp(18px, 2.7vw, 32px);
+  background: linear-gradient(132deg, #fffefb 0%, #fcf9fb 48%, #f3faf8 100%);
+  border: 1px solid #dde3df;
+  border-radius: 19px;
+}
+.nx-studio .nx-capability-heading h3 {
+  font: 400 clamp(26px, 2.9vw, 38px)/1.15 Georgia, "Times New Roman", serif;
+  letter-spacing: -.65px;
+  margin: 9px 0 11px;
+  color: #2d3f39;
+}
+.nx-studio .nx-capability-heading p {
+  max-width: 780px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.nx-studio .nx-capability-levels {
+  margin-top: 26px;
+  display: grid;
+  gap: 15px;
+}
+.nx-studio .nx-capability-level {
+  min-width: 0;
+  border: 1px solid #e1e5df;
+  background: #fffefa;
+  border-radius: 15px;
+  padding: clamp(18px, 2.3vw, 26px);
+  box-shadow: 0 6px 22px #263b3808;
+}
+.nx-studio .nx-capability-level-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.nx-studio .nx-capability-level h4 {
+  margin: 3px 0 0;
+  font: 400 25px/1.15 Georgia, "Times New Roman", serif;
+  color: #31443c;
+}
+.nx-studio .nx-capability-progress {
+  border: 1px solid #d4e2d9;
+  background: #f0f6f1;
+  border-radius: 100px;
+  padding: 6px 11px;
+  color: #547266;
+  font-size: 11px;
+}
+.nx-studio .nx-capability-level > p {
+  margin: 12px 0;
+  font-size: 12px;
+  line-height: 1.75;
+}
+.nx-studio .nx-capability-checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+.nx-studio .nx-capability-checks label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  cursor: pointer;
+  border: 1px solid #e2e7e3;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff, #fbfcfa);
+}
+.nx-studio .nx-capability-checks label:has(input:checked) {
+  border-color: #b5d1c5;
+  background: #f0f8f3;
+}
+.nx-studio .nx-capability-checks input {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin: 2px 0 0;
+  accent-color: #548f79;
+}
+.nx-studio .nx-capability-checks span {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+.nx-studio .nx-capability-checks strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: #31433d;
+}
+.nx-studio .nx-capability-checks small {
+  font-size: 11px;
+  line-height: 1.55;
+  font-weight: 400;
+  color: #738079;
+}
+.nx-studio .nx-capability-level .nx-capability-footer {
+  margin: 16px 0 0;
+  font-size: 11px;
+  color: #638076;
+}
+.nx-studio .nx-rule-grid fieldset > label:has(input:disabled) {
+  opacity: .58;
+}
+.nx-studio .nx-rule-grid fieldset > label small {
+  font-size: 10px;
+  font-weight: 400;
+}
+@media(max-width:700px){
+  .nx-studio .nx-capability-checks {grid-template-columns:1fr}
+  .nx-studio .nx-capability-level {padding:17px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nx-studio .nx-capability-level {scroll-behavior:auto}
+}
