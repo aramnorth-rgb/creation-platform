@@ -12,12 +12,12 @@ const BODY_LIMIT = 30 * 1024 * 1024;
  * Never expose MESHY_API_KEY or the gate through NEXT_PUBLIC variables.
  */
 export function reconstructionConfigured() {
-  return Boolean(process.env.MESHY_API_KEY && process.env.NITORIX_RECONSTRUCTION_ACCESS_KEY);
+  return Boolean(process.env.MESHY_API_KEY && (process.env.NITORIX_RECONSTRUCTION_ACCESS_KEY?.length ?? 0) >= 32);
 }
 export function accessAllowed(req: Request) {
   const secret = process.env.NITORIX_RECONSTRUCTION_ACCESS_KEY;
   const supplied = req.headers.get("x-nitorix-reconstruction-key");
-  if (!secret || secret.length < 16 || !supplied) return false;
+  if (!secret || secret.length < 32 || !supplied) return false;
   const a = Buffer.from(secret, "utf8"), b = Buffer.from(supplied, "utf8");
   return a.length === b.length && timingSafeEqual(a, b);
 }
