@@ -2546,36 +2546,6 @@ body:has(.nx) {
   border-color: #e1e1de;
   opacity: 1;
 }
-.nx .nx-mode-tab:disabled .nx-mode-name {
-  transform: translateY(-10px);
-}
-.nx .nx-mode-tape {
-  position: absolute;
-  inset: auto 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 24px;
-  background: repeating-linear-gradient(
-    115deg,
-    #e8bd31 0px,
-    #e8bd31 11px,
-    #242525 11px,
-    #242525 19px
-  );
-  border-top: 1px solid #5b5138;
-}
-.nx .nx-mode-tape span {
-  max-width: calc(100% - 12px);
-  padding: 2px 6px;
-  color: #232323;
-  background: #f6d65d;
-  border-radius: 2px;
-  font: 800 clamp(8px, .75vw, 10px)/1.15 Arial, Helvetica, sans-serif;
-  letter-spacing: 0.035em;
-  text-align: center;
-  text-transform: uppercase;
-}
 .nx .embed-preview .nx-mode-tabs + .embed-canvas {
   margin-top: 0;
 }
@@ -2589,13 +2559,6 @@ body:has(.nx) {
     min-height: 72px;
     padding: 9px 2px;
     font-size: 12px;
-  }
-  .nx .nx-mode-tape {
-    height: 29px;
-  }
-  .nx .nx-mode-tape span {
-    font-size: 8px;
-    padding-inline: 3px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
