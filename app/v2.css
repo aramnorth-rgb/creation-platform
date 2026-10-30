@@ -3032,3 +3032,159 @@ body:has(.nx) {
 .nx .nx-enquiry-action[open] .nx-button {
   margin-top: 7px;
 }
+
+
+/* Model Studio: premium, tactile product-import and preview experience. */
+.nx-model-import {
+  margin-top: 30px;
+  padding: clamp(22px,3vw,38px);
+  border: 1px solid #dedfda;
+  border-radius: 22px;
+  background: linear-gradient(133deg,#fffffc 3%,#faf7fb 49%,#f1faf8 100%);
+  box-shadow: 0 14px 38px #3b415509;
+}
+.nx-model-import-title {
+  display: flex;
+  gap: 20px;
+  align-items: start;
+  justify-content: space-between;
+  margin: 10px 0 25px;
+}
+.nx-model-import-title h3 {
+  font-family: Georgia,"Times New Roman",serif;
+  font-weight: 400;
+  font-size: clamp(25px,2.5vw,36px);
+  letter-spacing: -.7px;
+  line-height: 1.15;
+  color: #303c3b;
+}
+.nx-model-import-title p {
+  margin-top: 12px;
+  max-width: 600px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.nx-model-import-grid {
+  display: grid;
+  grid-template-columns: minmax(215px,.75fr) minmax(0,1.5fr);
+  gap: clamp(18px,2vw,32px);
+  align-items: start;
+}
+.nx-model-import-settings { display:grid; gap:20px; }
+.nx-model-import-settings label {
+  display:grid;gap:10px;font-size:12px;font-weight:600;
+  letter-spacing:.01em;color:#33413d;
+}
+.nx-model-import-settings select,
+.nx-model-import-settings input[type=file] {
+  min-width:0;width:100%;min-height:45px;
+  border:1px solid #d3dad6;border-radius:11px;
+  padding:12px;background:#fffefa;
+  font-size:12px;color:#33413d;
+}
+.nx-model-import-settings input[type=file]::file-selector-button {
+  border:0;border-radius:8px;padding:10px 14px;
+  margin-right:12px;background:#eef3f0;color:#33413d;
+  cursor:pointer;font-size:12px;font-weight:600;
+}
+.nx-model-notice,.nx-model-warning {
+  font-size:11px;line-height:1.7;color:#64736e;
+}
+.nx-model-warning {
+  border:1px dashed #bdcbc4;padding:16px;border-radius:12px;
+}
+.nx-model-import-preview,
+.nx-model-empty {
+  border:1px solid #e4e7e4;border-radius:17px;
+  overflow:hidden;background:#eff3ef;
+}
+.nx-model-import-stage {
+  position:relative;height:clamp(300px,40vw,445px);
+  min-width:0;
+}
+.nx-model-import-stage canvas,
+.nx-create .embed-canvas canvas { cursor:grab; }
+.nx-model-import-stage canvas:active,
+.nx-create .embed-canvas canvas:active { cursor:grabbing; }
+.nx-model-stage-caption {
+  display:flex;gap:14px;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;background:#fffefa;
+  border-top:1px solid #e1e6e1;padding:14px 19px;
+  font-size:12px;
+}
+.nx-model-stage-caption span { color:#697a73;font-size:11px; }
+.nx-model-empty {
+  min-height:300px;
+  display:flex;flex-direction:column;justify-content:center;
+  align-items:center;text-align:center;gap:10px;padding:24px;
+}
+.nx-model-empty-object {
+  display:flex;align-items:center;justify-content:center;
+  width:108px;height:108px;border:1px solid #d6ddd7;
+  border-radius:35px;background:linear-gradient(145deg,#fffdfa,#e6eeee);
+  box-shadow:18px 20px 36px #5c6c671a;
+  font-size:82px;line-height:1;color:#9cb9b2;
+  margin-bottom:14px;
+}
+.nx-model-empty strong {font-family:Georgia,serif;font-size:22px;font-weight:400}
+.nx-model-empty p {font-size:12px}
+.nx-model-feedback {
+  display:block;padding:13px 16px;margin-top:12px!important;
+  border:1px solid #dbe2dc;border-radius:9px;
+  background:#f2f6f0;font-size:12px;
+}
+.nx-imported-controls {
+  display:flex;flex-direction:column;gap:22px;
+}
+.nx-imported-controls h2 {
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(28px,2.5vw,39px);font-weight:400;line-height:1.15;
+  letter-spacing:-.8px;
+}
+.nx-imported-controls > p {font-size:13px;line-height:1.85}
+.nx-model-finish-options {
+  border:0;padding:0;margin:5px 0;display:grid;gap:10px;
+}
+.nx-model-finish-options legend {
+  padding-bottom:13px;font-size:12px;font-weight:600;
+  color:#394941;
+}
+.nx .nx-model-finish-options button {
+  min-height:47px;border:1px solid #d7e0da;background:#fffefa;
+  border-radius:11px;text-align:left;padding:10px 15px;
+  font-size:13px;transition:background .2s,border-color .2s,box-shadow .2s;
+}
+.nx .nx-model-finish-options button[aria-pressed=true] {
+  background:linear-gradient(115deg,#fff9eb,#f8f0f9,#eefaf7);
+  border-color:#bfcfc7;box-shadow:inset 3px 0 #b0d7d0;
+}
+.nx-model-specs {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+}
+.nx-model-specs > span {
+  display:grid;gap:6px;padding:13px 7px;border:1px solid #dbe3dd;
+  border-radius:11px;font-size:11px;text-align:center;
+  color:#66736f;
+}
+.nx-model-specs strong {font-size:12px;color:#344541}
+.nx-model-specs-footer {
+  margin-top:auto;padding-top:18px;
+  border-top:1px solid #e2e7e1;font-size:11px;color:#76847b;
+}
+.nx-model-measurement {
+  padding:10px 0 4px;font:500 12px/1.5 Arial,sans-serif;
+  color:#63716e;
+}
+@media(max-width:900px){
+  .nx-model-import-grid {grid-template-columns:1fr}
+  .nx-model-import-stage {height:clamp(340px,50vw,480px)}
+}
+@media(max-width:550px){
+  .nx-model-import {padding:19px;border-radius:17px}
+  .nx-model-import-title {flex-direction:column;gap:8px}
+  .nx-model-import-stage {height:370px}
+  .nx-model-specs {gap:5px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nx .nx-model-finish-options button {transition:none}
+}
