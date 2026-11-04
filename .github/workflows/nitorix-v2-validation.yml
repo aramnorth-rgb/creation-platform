@@ -15,5 +15,6 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - run: node --check services/reconstruction/worker.mjs
       - run: npm run typecheck
       - run: npm run build
