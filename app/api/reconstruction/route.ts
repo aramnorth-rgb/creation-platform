@@ -1,6 +1,7 @@
 import { accessAllowed, badRequest, meshProvider, noStoreJson, reconstructionConfigured, validateInput } from "@/lib/reconstruction/provider";
 
 import { gpuJson, localConfigured } from "@/lib/reconstruction/local-provider";
+type CreateInputWithEngine = {engine?:string};
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
@@ -15,11 +16,11 @@ export async function POST(request: Request) {
   if (size > 7_000_000) return badRequest("Photographs exceed the pilot upload limit.", 413);
   try {
     const input = validateInput(await request.json());
-    const requestedEngine = (await Promise.resolve(input as unknown as { engine?: string })).engine;
+    const requestedEngine = (input as CreateInputWithEngine).engine;
     if (requestedEngine && ["fast","balanced","premium"].includes(requestedEngine)) {
       if (!localConfigured()) return badRequest("The local GPU reconstruction service is not configured.", 503);
       const data = await gpuJson("/jobs", { method:"POST", body:JSON.stringify({ ...input, engine:requestedEngine }) });
-      return noStoreJson({id:data.id,status:"PENDING"},202);
+      return noStoreJson({id:`local_${data.id}`,status:"PENDING"},202);
     }
     const data = await meshProvider("", {
       method: "POST",
