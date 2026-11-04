@@ -128,8 +128,6 @@ export function ReconstructionStudio({
         body:JSON.stringify({
           engine,
           images: photos.map(photo=>photo.uri),
-          textureReference: materialMode==="library" ? selectedReference?.image : undefined,
-          texturePrompt: materialMode==="description" ? materialPrompt.trim() : undefined,
         }),
       });
       const data = await response.json() as GeneratedJob;
