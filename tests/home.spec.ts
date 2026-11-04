@@ -20,7 +20,7 @@ test("minimal viewport and twelve-step fallback timing, keyboard selection and p
     } as typeof original;
   });
   await page.clock.install();
-  await page.goto("/");
+  await page.goto("/exhibition");
   const scene = page.locator(".scene");
   await expect(scene.locator(".fallback-object")).toBeVisible();
   // Freeze between explicit advances: software-rendered actions must not consume
@@ -72,7 +72,7 @@ test("object drag is isolated, returns smoothly, carousel drag selects, click op
   // Software WebGL plus canvas captures can be slower on shared CI machines.
   test.setTimeout(90000);
   await page.setViewportSize({ width: 720, height: 600 });
-  await page.goto("/");
+  await page.goto("/exhibition");
   const scene = page.locator(".scene");
   await expect(scene.locator("canvas")).toHaveAttribute(
     "data-scene-ready",
@@ -128,7 +128,7 @@ test("on-demand information, fictional designer profile, rating and full local c
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/exhibition");
   const scene = page.locator(".scene");
   await expect(scene.locator("canvas")).toHaveAttribute(
     "data-scene-ready",
@@ -214,7 +214,7 @@ test("three studio modes update the model, retain options and reset", async ({
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/exhibition");
   const nav = page.getByRole("navigation", { name: "Creation modes" });
   await nav.getByRole("button", { name: /customise/i }).click();
   await expect(
@@ -297,7 +297,7 @@ test("mobile touch gestures, cancellation, reduced motion, fallback and configur
     } as typeof original;
   });
   await page.clock.install();
-  await page.goto("/");
+  await page.goto("/exhibition");
   const scene = page.locator(".scene");
   await expect(scene.locator(".fallback-object")).toBeVisible();
   await page.clock.fastForward(30000);
@@ -371,7 +371,7 @@ test("mobile touch gestures, cancellation, reduced motion, fallback and configur
 test("navigation modal retains keyboard focus and opens all studio modes", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/exhibition");
   const trigger = page.getByRole("button", { name: "Open navigation menu" });
   await trigger.click();
   const dialog = page.locator(".menu-dialog");
@@ -399,7 +399,7 @@ test("mobile WebGL object touch rotates without choosing or opening, tap opens",
   page.on("pageerror", (e) => errors.push(e.message));
   await page.setViewportSize({ width: 375, height: 812 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/exhibition");
   const scene = page.locator(".scene");
   await expect(scene.locator("canvas")).toHaveAttribute(
     "data-scene-ready",
@@ -451,7 +451,7 @@ test("local CC0 assets load, credits are available and missing assets fall back"
   expect((await request.get("/models/SheenChair.glb")).ok()).toBe(true);
   expect((await request.get("/models/BoomBox.glb")).ok()).toBe(true);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/exhibition");
 
   const scene = page.locator(".scene");
   await expect(scene.locator("canvas")).toHaveAttribute(
@@ -509,7 +509,7 @@ test("NITORIX foreground promotional panels: tall, readable, responsive and non-
         : original.apply(this, args);
     } as typeof original;
   });
-  await page.goto("/");
+  await page.goto("/exhibition");
   await expect(page).toHaveTitle(/NITORIX/);
   await expect(page.locator("header .wordmark")).toContainText("NITORIX");
   await expect(page.locator("body")).not.toContainText("form&field");
@@ -600,7 +600,7 @@ test("WebGL showroom foreground panels leave central object and side drag contro
   await page.emulateMedia({ reducedMotion: "reduce" });
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/exhibition");
   const scene = page.locator(".scene");
   await expect(scene.locator("canvas")).toHaveAttribute(
     "data-scene-ready",

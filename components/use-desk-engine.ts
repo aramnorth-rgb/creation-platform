@@ -6,27 +6,48 @@ import {
   type DeskAction,
   type ModuleKind,
   type Slot,
+  initialDesk,
 } from "@/lib/configurator/desk";
 import {
   createDeskHistory,
   deskHistoryReducer,
 } from "@/lib/configurator/history";
+import {
+  approvedInitial,
+  permittedAction,
+  type ProductDraft,
+} from "@/lib/studio/product";
 /** Shared host state for every mode; selection is UI state, installed positions are undoable product state. */
-export function useDeskEngine(active = true) {
-  const [history, send] = useReducer(
-    deskHistoryReducer,
-    undefined,
-    createDeskHistory,
+export function useDeskEngine(active = true, policy?: ProductDraft) {
+  const [history, send] = useReducer(deskHistoryReducer, policy, (p) =>
+    createDeskHistory(p ? approvedInitial(p) : initialDesk),
   );
-  const [kind, setKind] = useState<ModuleKind>("cup");
-  const [slot, setSlot] = useState<Slot>("front-left");
+  const [kind, setKind] = useState<ModuleKind>(
+    () => policy?.modules[0] ?? "cup",
+  );
+  const [slot, setSlot] = useState<Slot>(() =>
+    policy
+      ? (availableConnections(
+          approvedInitial(policy),
+          policy.modules[0] ?? "cup",
+        )[0]?.id ?? "front-left")
+      : "front-left",
+  );
   const dispatch = useCallback(
-    (action: DeskAction) => send({ type: "edit", action }),
-    [],
+    (action: DeskAction) => {
+      if (policy && action.type === "reset") {
+        // Reset approved fields as one history transaction, retaining the same reducer contract.
+        const c = approvedInitial(policy);
+        send({ type: "edit", action: { type: "restore", config: c } });
+      } else if (!policy || permittedAction(history.present, action, policy))
+        send({ type: "edit", action });
+    },
+    [policy, history.present],
   );
   const undo = useCallback(() => send({ type: "undo" }), []);
   const redo = useCallback(() => send({ type: "redo" }), []);
   const chooseKind = (next: ModuleKind) => {
+    if (policy && !policy.modules.includes(next)) return;
     setKind(next);
     if (!canConnect(history.present, next, slot)) {
       const first = availableConnections(history.present, next)[0];
@@ -60,6 +81,7 @@ export function useDeskEngine(active = true) {
   }, [active, undo, redo]);
   return {
     config: history.present,
+    policy,
     historyMessage:
       history.operation === "undo"
         ? "Configuration undone."

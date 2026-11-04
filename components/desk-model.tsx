@@ -24,20 +24,20 @@ function Part({ part, config }: { part: DeskPart; config: DeskConfiguration }) {
   useEffect(() => () => geometry.dispose(), [geometry]);
   const material = deskProduct.materials[config.material];
   return (
-    <mesh
+    <group
       position={part.position.map((n) => n / 100) as [number, number, number]}
-      rotation={part.rotation}
-      castShadow
-      receiveShadow
+      rotation={[0, part.yaw ?? 0, 0]}
     >
-      <primitive attach="geometry" object={geometry} />
-      <meshStandardMaterial
-        color={part.accent ? "#525c60" : deskProduct.colours[config.colour]}
-        metalness={part.accent ? 0.6 : material.metalness}
-        roughness={part.accent ? 0.4 : material.roughness}
-        wireframe={config.wireframe}
-      />
-    </mesh>
+      <mesh rotation={part.rotation} castShadow receiveShadow>
+        <primitive attach="geometry" object={geometry} />
+        <meshStandardMaterial
+          color={part.accent ? "#525c60" : deskProduct.colours[config.colour]}
+          metalness={part.accent ? 0.6 : material.metalness}
+          roughness={part.accent ? 0.4 : material.roughness}
+          wireframe={config.wireframe}
+        />
+      </mesh>
+    </group>
   );
 }
 export default function DeskModel({

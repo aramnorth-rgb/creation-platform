@@ -55,7 +55,7 @@ export type DeskConfiguration = {
   radius: number;
   material: keyof typeof deskProduct.materials;
   colour: keyof typeof deskProduct.colours;
-  modules: { kind: ModuleKind; slot: Slot }[];
+  modules: { kind: ModuleKind; slot: Slot; rotation?: 0 | 90 | 180 | 270 }[];
   wireframe: boolean;
   showConnections: boolean;
   angle: number;
@@ -123,6 +123,8 @@ export function canConnect(
   return connectionIssue(c, kind, slot, except) === null;
 }
 export type DeskAction =
+  | { type: "rotate"; slot: Slot }
+  | { type: "restore"; config: DeskConfiguration }
   | { type: "footprint"; width: number; depth: number }
   | {
       type: "set";
@@ -157,6 +159,24 @@ export function deskReducer(
   a: DeskAction,
 ): DeskConfiguration {
   switch (a.type) {
+    case "rotate":
+      return {
+        ...c,
+        modules: c.modules.map((m) =>
+          m.slot === a.slot
+            ? {
+                ...m,
+                rotation: (((m.rotation ?? 0) + 90) % 360) as
+                  | 0
+                  | 90
+                  | 180
+                  | 270,
+              }
+            : m,
+        ),
+      };
+    case "restore":
+      return structuredClone(a.config);
     case "footprint":
       return deskReducer(
         deskReducer(c, { type: "set", key: "width", value: a.width }),
@@ -200,21 +220,34 @@ export function deskReducer(
       };
   }
 }
-export function priceDesk(c: DeskConfiguration) {
+export type DeskPricing = {
+  basePence: number;
+  materialRates: Record<keyof typeof deskProduct.materials, number>;
+  modulePrices: Record<ModuleKind, number>;
+};
+export const defaultDeskPricing: DeskPricing = {
+  basePence: 1800,
+  materialRates: { polymer: 0.018, aluminium: 0.038, oak: 0.027 },
+  modulePrices: { cup: 850, tray: 650, phone: 1100 },
+};
+export function priceDesk(
+  c: DeskConfiguration,
+  pricing: DeskPricing = defaultDeskPricing,
+) {
   const volume =
     (c.width * c.depth * c.thickness +
       2 * (c.width + c.depth) * c.wall * c.rim) /
     1000;
   const lines = [
-    { label: "Base fabrication", pence: 1800 },
+    { label: "Base fabrication", pence: pricing.basePence },
     {
       label: `${deskProduct.materials[c.material].label} · base geometry`,
-      pence: Math.round(volume * deskProduct.materials[c.material].rate * 100),
+      pence: Math.round(volume * pricing.materialRates[c.material] * 100),
     },
     ...c.modules.map((m) => ({
       label: `${deskProduct.modules[m.kind].name} · ${m.slot}`,
       pence: Math.round(
-        deskProduct.modules[m.kind].price *
+        pricing.modulePrices[m.kind] *
           (c.material === "aluminium" ? 1.3 : c.material === "oak" ? 1.15 : 1),
       ),
     })),
@@ -232,6 +265,7 @@ export type DeskPart = {
   size: [number, number, number];
   position: [number, number, number];
   accent?: boolean;
+  yaw?: number;
   rotation?: [number, number, number];
 };
 /** One parametric geometry description consumed by both WebGL and SVG renderers. */
@@ -265,6 +299,7 @@ export function deskGeometry(c: DeskConfiguration): DeskPart[] {
     box(`${p.id}-rail`, [45, 3, 12], [p.x, c.thickness + 1.5, p.z], true);
   for (const m of c.modules) {
     const p = connections(c).find((p) => p.id === m.slot)!;
+    const start = parts.length;
     const y = c.thickness + 3;
     box(`${m.slot}-floor`, [72, 4, 68], [p.x, y + 2, p.z]);
     if (m.kind === "cup" || m.kind === "tray")
@@ -287,6 +322,14 @@ export function deskGeometry(c: DeskConfiguration): DeskPart[] {
         [-0.22, 0, 0],
       );
       box(`${m.slot}-lip`, [66, 10, 5], [p.x, y + 9, p.z + 20], true);
+    }
+    const angle = ((m.rotation ?? 0) * Math.PI) / 180;
+    for (const part of parts.slice(start)) {
+      const x = part.position[0] - p.x,
+        z = part.position[2] - p.z;
+      part.position[0] = p.x + x * Math.cos(angle) + z * Math.sin(angle);
+      part.position[2] = p.z - x * Math.sin(angle) + z * Math.cos(angle);
+      part.yaw = angle;
     }
   }
   for (const x of [-1, 1])
