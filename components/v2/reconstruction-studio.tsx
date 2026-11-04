@@ -46,6 +46,8 @@ export function ReconstructionStudio({
   const [modelDimensions, setModelDimensions] = useState<[number,number,number] | null>(null);
   const [accessKey, setAccessKey] = useState("");
   const [configured, setConfigured] = useState(false);
+  const [localAvailable,setLocalAvailable]=useState(false);
+  const [engine,setEngine]=useState<"fast"|"balanced"|"premium">("balanced");
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -66,7 +68,7 @@ export function ReconstructionStudio({
     setWebgl(Boolean(context)); // eslint-disable-line react-hooks/set-state-in-effect
     context?.getExtension("WEBGL_lose_context")?.loseContext();
     fetch("/api/reconstruction", {cache:"no-store"}).then(res=>res.json())
-      .then(data=>setConfigured(data.configured === true))
+      .then(data=>{setConfigured(data.configured === true);setLocalAvailable(data.localAvailable === true);})
       .catch(()=>setConfigured(false))
       .finally(()=>setLoadingConfig(false));
     return () => window.removeEventListener(REFERENCE_EVENT, update);
@@ -117,11 +119,14 @@ export function ReconstructionStudio({
     if (!sizesValid) {setError("Dimensions must be positive measurements in millimetres.");return;}
     if (materialMode==="library" && !selectedReference) {setError("Choose an approved reference material.");return;}
     if (materialMode==="description" && !materialPrompt.trim()) {setError("Describe the desired surface finish.");return;}
+    if (!localAvailable) {setError("Connect a private GPU worker first.");return;}
+    if(materialMode!=="original") {setError("Local engines cannot yet transfer reference textures. Choose product photographs and use the materials library for manual review.");return;}
     setError("");setNotice("");setBusy(true);setJob(null);
     try {
       const response = await api("/api/reconstruction", accessKey, {
         method:"POST",
         body:JSON.stringify({
+          engine,
           images: photos.map(photo=>photo.uri),
           textureReference: materialMode==="library" ? selectedReference?.image : undefined,
           texturePrompt: materialMode==="description" ? materialPrompt.trim() : undefined,
@@ -129,7 +134,7 @@ export function ReconstructionStudio({
       });
       const data = await response.json() as GeneratedJob;
       setJob({id:data.id,status:"PENDING",progress:0});
-      setNotice("Reconstruction submitted. The provider will process the photographs and generate textured geometry.");
+      setNotice("Reconstruction submitted to your GPU service. Only the first photo drives generation; other views help with manual review.");
     } catch(e) {setError(e instanceof Error ? e.message : "Could not begin reconstruction.");}
     finally {setBusy(false);}
   }
@@ -291,17 +296,25 @@ export function ReconstructionStudio({
       </div>
       <div className="nx-recon-section">
         <div className="nx-recon-heading"><div><span className="nx-eyebrow">03 / GENERATION</span><h3>Reconstruct your product.</h3></div></div>
-        {!loadingConfig && !configured && <p className="nx-recon-configuration">The real reconstruction service needs a Meshy API key and a separate private pilot access key configured on the server. No generation credits can be charged until it's connected.</p>}
+        {!loadingConfig && !localAvailable && <p className="nx-recon-configuration">The private GPU worker is not connected. Install TripoSR or trellis.cpp on a compatible machine and configure the server connection. Photo capture remains available.</p>}
+        <label className="nx-recon-engine">Reconstruction quality
+          <select aria-label="Reconstruction quality" value={engine} onChange={event=>setEngine(event.target.value as "fast"|"balanced"|"premium")}>
+            <option value="fast">Fast · TripoSR · low memory</option>
+            <option value="balanced">Balanced · TRELLIS Q4 · 512 mode</option>
+            <option value="premium">Premium · TRELLIS Q8 · 1024 mode</option>
+          </select>
+        </label>
+        <p className="nx-recon-note">Local models use the first product photograph only. Other views and material references are available for visual review; automated multi-view fusion and reference texture transfer are not implemented.</p>
         <div className="nx-recon-generate-grid">
           <div>
             <label className="nx-recon-key">Private pilot access key
               <input type="password" autoComplete="off" value={accessKey} onChange={event=>setAccessKey(event.target.value)}
                 placeholder="Enter the pilot key"/>
             </label>
-            <p className="nx-recon-note">Paid AI processing is explicitly started by you. Photos and chosen material references are sent to the reconstruction provider. Do not upload confidential designs without permission.</p>
+            <p className="nx-recon-note">Your connected GPU machine runs this reconstruction. Compute may cost money, but no Meshy credits are required for local models.</p>
           </div>
           <button type="button" className="nx-button nx-primary nx-recon-generate"
-            disabled={!configured || !saved || !photos.length || !accessKey || busy || !sizesValid || (materialMode==="library"&&!selectedReference)}
+            disabled={!configured || !localAvailable || !saved || !photos.length || !accessKey || busy || !sizesValid || materialMode!=="original"}
             onClick={()=>void generate()}>{busy?"Preparing…":"Generate 3D model"}</button>
         </div>
         {!saved&&<p className="nx-recon-note">Save the selected product draft in Studio before generating a model.</p>}
