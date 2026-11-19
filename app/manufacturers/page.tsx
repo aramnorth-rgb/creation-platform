@@ -24,11 +24,16 @@ export default function Manufacturers() {
               possibilities, keep control of the details and let customers
               explore.
             </p>
-            <Link href="/studio" className="nx-button nx-primary">
-              Try the Studio demo ↗
-            </Link>
+            <div className="nx-manufacturer-actions">
+              <Link href="/gates" className="nx-button nx-primary">
+                Try the specialist gate configurator ↗
+              </Link>
+              <Link href="/studio" className="nx-button nx-secondary">
+                Open manufacturer Studio
+              </Link>
+            </div>
             <p className="nx-small">
-              Try first, sell second. No registration required.
+              Free interactive prototype. Fictional products and prices, not a manufacturing offer.
             </p>
           </div>
           <div
