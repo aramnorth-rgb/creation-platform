@@ -3435,3 +3435,104 @@ body:has(.nx) {
 .nx-recon-engine{display:grid;gap:10px;max-width:630px;margin:8px 0 20px;font:600 12px/1.5 Arial,sans-serif;color:#365247}
 .nx-recon-engine select{width:100%;min-height:49px;border:1px solid #bad3c6;border-radius:12px;padding:12px 15px;background:linear-gradient(115deg,#fffefb,#f3f8f5);color:#324a40;font:500 13px/1.3 Arial,sans-serif}
 .nx-recon-engine select:focus-visible{outline:2px solid #628f78;outline-offset:3px}
+
+
+/* NITORIX bespoke gates, product-first configurator */
+.nx-gates{background:#faf9f6;color:#304235;min-height:100vh}
+.nx-gate{max-width:1760px;margin:auto;font-family:Arial,Helvetica,sans-serif;color:#354238}
+.nx-gate-top,.nx-gate-intro{padding-left:clamp(20px,4vw,70px);padding-right:clamp(20px,4vw,70px)}
+.nx-gate-top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;padding-top:24px}
+.nx-gate-breadcrumb{display:flex;gap:12px;align-items:center;font:600 10px/1.4 Arial,sans-serif;letter-spacing:.1em;color:#889488}
+.nx-gate-breadcrumb strong{color:#405b47}
+.nx-gate-lab-pill{display:flex;align-items:center;gap:9px;padding:9px 12px;border:1px solid #deebdd;border-radius:30px;background:#f1f7ef;font-size:10px;color:#557259}
+.nx-gate-lab-pill span,.nx-gate-live{width:7px;height:7px;border-radius:50%;background:#6b9d78;display:inline-block}
+.nx-gate-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;padding-top:clamp(39px,5vw,76px);padding-bottom:clamp(35px,4vw,58px)}
+.nx-gate-intro h1{font:400 clamp(43px,6vw,86px)/1.02 Georgia,serif;letter-spacing:-.05em;margin:14px 0 22px;color:#2a4034}
+.nx-gate-intro h1 em{font-weight:400;color:#8c9f90}
+.nx-gate-intro p{max-width:620px;font:400 13px/1.9 Arial,sans-serif;color:#778478}
+.nx-gate-intro-meta{display:grid;gap:12px;min-width:225px;padding-bottom:9px}
+.nx-gate-intro-meta span{font:600 10px Arial,sans-serif;letter-spacing:.08em;color:#96a195}
+.nx-gate-intro-meta strong{font:400 21px/1.5 Georgia,serif;color:#536954}
+.nx-gate-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(348px,.85fr);border-top:1px solid #e4e8df;border-bottom:1px solid #e4e8df}
+.nx-gate-stage{position:sticky;top:0;align-self:start;height:min(100vh,990px);min-height:650px;min-width:0;background:#e7ebe5;display:flex;flex-direction:column}
+.nx-gate-stage-toolbar,.nx-gate-stage-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px clamp(19px,3vw,42px)}
+.nx-gate-stage-toolbar{min-height:65px;background:#edf1eb;color:#596d5e;font-size:10px;letter-spacing:.08em}
+.nx-gate-stage-toolbar>span{display:flex;align-items:center;gap:10px}
+.nx-gate-view-switch{display:flex;padding:3px;border:1px solid #ccd7cd;background:#f8faf6;border-radius:10px}
+.nx .nx-gate-view-switch button{padding:9px 12px;border-radius:7px;font-size:11px;color:#6c7d6d;background:transparent}
+.nx .nx-gate-view-switch button[aria-pressed=true]{background:#fff;box-shadow:0 2px 9px #1c2f2113;color:#344c3b}
+.nx .nx-gate-view-switch button:disabled,.nx .nx-gate-open-button:disabled{opacity:.45;cursor:not-allowed}
+.nx-gate-canvas{position:relative;flex:1;min-height:0;overflow:hidden;background:radial-gradient(ellipse at 48% 42%,#eff3ec,#dae2d9)}
+.nx-gate-canvas canvas{display:block;width:100%;height:100%}
+.nx-gate-visual-label{position:absolute;left:clamp(19px,3vw,42px);bottom:25px;display:grid;gap:7px;pointer-events:none;text-shadow:0 2px 6px #e6eee5aa}
+.nx-gate-visual-label span{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:#6a7d70}
+.nx-gate-visual-label strong{font:400 22px/1.2 Georgia,serif;color:#2b4435}
+.nx-gate-stage-foot{background:#eef1eb;min-height:88px}
+.nx-gate-stage-foot>div{display:grid;gap:5px}
+.nx-gate-stage-foot strong{font:500 15px Arial,sans-serif;color:#344f3d}
+.nx-gate-stage-foot div span,.nx-gate-orbit-hint{font-size:10px;color:#819184}
+.nx .nx-gate-open-button{font-size:11px;padding:11px 16px;background:#f8faf6;color:#3b5944;border:1px solid #aec6b0;border-radius:9px;white-space:nowrap}
+.nx-gate-customizer{padding:clamp(24px,3vw,51px);border-left:1px solid #e6eae1;background:#fffefa}
+.nx-gate-customizer-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:23px;border-bottom:1px solid #e7ece4}
+.nx-gate-customizer-head>strong{font-size:11px;color:#7b8e7e}.nx-gate-customizer-head i{font-style:normal;color:#c2cac1}
+.nx-gate-option{padding:28px 0 31px;border-bottom:1px solid #ebeee8}
+.nx-gate-option h2{font:400 24px/1.3 Georgia,serif;color:#354e3c;display:flex;align-items:center;gap:13px;margin:0 0 18px}
+.nx-gate-option h2 span{font:600 10px Arial,sans-serif;color:#9caea1}
+.nx-gate-style-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.nx .nx-gate-style-options button{display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:8px;min-width:0;padding:7px;background:#fff;border:1px solid #dfe7dd;border-radius:12px}
+.nx .nx-gate-style-options button[aria-pressed=true]{border-color:#7eaa87;box-shadow:0 0 0 1px #7eaa8750;background:#f7faf5}
+.nx-gate-style-options strong{font-size:12px;color:#38503d;font-weight:600}
+.nx-gate-style-options small{font:400 10px/1.4 Arial,sans-serif;color:#8c998d;min-height:27px}
+.nx-gate-style-thumb{display:grid;place-items:center;height:83px;padding:13px;border-radius:7px;background:#e6ece3}
+.nx-gate-style-thumb i{display:block;width:95%;height:98%;border:4px solid #5d665e}
+.nx-gate-style-horizon i{background:repeating-linear-gradient(to bottom,#5d665e 0 7px,transparent 7px 11px)}
+.nx-gate-style-atelier i{background:repeating-linear-gradient(to right,#5d665e 0 5px,transparent 5px 11px)}
+.nx-gate-style-veil i{background:#5d665e}
+.nx-gate-segments{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nx .nx-gate-segments button{padding:13px 10px;min-height:43px;background:#f5f7f2;color:#65796a;font-size:12px;border:1px solid #e0e6dc;border-radius:9px}
+.nx .nx-gate-segments button[aria-pressed=true]{background:#edf5ed;color:#335a3d;border-color:#90b49a}
+.nx-gate-option-note{font:400 11px/1.7 Arial,sans-serif;color:#8c988b;margin:13px 0 0}
+.nx-gate-measure{display:grid;gap:11px;margin:0 0 24px}
+.nx-gate-measure>div:first-child{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nx-gate-measure label{font-size:12px;color:#6a7a6b}
+.nx-gate-measure strong{font:400 21px Georgia,serif;color:#3b5341}.nx-gate-measure strong small{font:400 11px Arial,sans-serif;color:#8e9a8d}
+.nx-gate-measure input[type=range]{width:100%;cursor:pointer;accent-color:#62876b}
+.nx-gate-range{display:flex;justify-content:space-between;font-size:10px;color:#95a194}
+.nx-gate-finishes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.nx .nx-gate-finishes button{display:flex;align-items:center;gap:10px;min-height:51px;padding:9px;border:1px solid #e1e7df;border-radius:9px;background:#fff;color:#647767;font-size:11px}
+.nx .nx-gate-finishes button[aria-pressed=true]{background:#f4f9f3;border-color:#91b398;color:#385642}
+.nx-gate-swatch{width:27px;height:27px;flex:0 0 27px;border-radius:50%;border:1px solid #7e8e8130;box-shadow:inset 0 0 0 2px #ffffff3d}
+.nx-gate-pricing{padding-top:29px}
+.nx-gate-total{display:flex;justify-content:space-between;gap:10px;align-items:end;margin:15px 0 20px}
+.nx-gate-total strong{font:400 48px/1 Georgia,serif;letter-spacing:-.04em;color:#304d3b}
+.nx-gate-total span{font-size:10px;color:#849286;text-align:right}
+.nx-gate-price-items{display:grid;gap:13px;margin:15px 0 23px;border-top:1px solid #e2e9e0;padding-top:15px}
+.nx-gate-price-items>div{display:flex;justify-content:space-between;gap:14px;font-size:11px;color:#6a7d6c}
+.nx-gate-price-items>div strong{font-weight:500;color:#455c4c;text-align:right}
+.nx .nx-gate-quote-button{display:flex;align-items:center;justify-content:space-between;gap:15px;width:100%;padding:18px 21px;background:#345641;border:1px solid #345641;color:#fff;font-size:12px;font-weight:600;border-radius:10px}
+.nx .nx-gate-quote-button:hover{background:#486a51}
+.nx-gate-pricing>p{font:400 10px/1.7 Arial,sans-serif;color:#95a195;margin:15px 0 0}
+.nx-gate-secondary{display:flex;justify-content:space-between;gap:24px;align-items:center;padding:clamp(32px,5vw,70px) clamp(20px,4vw,72px)}
+.nx-gate-secondary h2{font:400 clamp(32px,4vw,52px)/1.1 Georgia,serif;color:#334d3a;margin:12px 0}
+.nx-gate-secondary p{font:400 12px/1.8 Arial,sans-serif;max-width:630px;color:#819082}
+.nx-gate-actions{display:grid;gap:10px;min-width:215px}
+.nx .nx-gate-actions button{display:flex;justify-content:space-between;gap:20px;text-align:left;font-size:11px;color:#496d50;border-bottom:1px solid #dce6db;padding:12px 0}
+.nx-gate-bottom-note{font-size:9px;line-height:1.7;color:#8c9e8e;text-align:center;letter-spacing:.07em;padding:25px 20px;background:#edf2ed}
+.nx-gate-notice{margin:12px 4vw 25px;border-radius:10px;padding:15px;background:#ecf5ee;border:1px solid #c9dfce;color:#36603e;font-size:12px}
+.nx-gate-loading,.nx-gate-elevation{width:100%;height:100%;display:grid;place-items:center;color:#708575;font:400 12px Arial,sans-serif}
+.nx-gate-elevation{padding:clamp(22px,5vw,75px)}
+.nx-gate-elevation svg{width:100%;max-width:760px;height:auto;max-height:85%;filter:drop-shadow(0 20px 30px #3d59412b)}
+.nx-gate-modal-backdrop{position:fixed;inset:0;z-index:1000;background:#192c23af;display:grid;place-items:center;padding:15px}
+.nx-gate-quote-dialog{background:#fffefa;border-radius:17px;box-shadow:0 24px 80px #172b2563;padding:clamp(22px,4vw,38px);max-width:560px;width:100%;max-height:94vh;overflow:auto;color:#33473a}
+.nx-gate-dialog-head{display:flex;justify-content:space-between;gap:20px}
+.nx-gate-dialog-head h2{font:400 38px Georgia,serif;margin:12px 0}.nx-gate-dialog-head button{font-size:24px;align-self:start;color:#66816b}
+.nx-gate-quote-dialog>p{font-size:12px;line-height:1.6;color:#7a897c}
+.nx-gate-dialog-price{display:block;font:400 29px Georgia,serif;margin:17px 0;color:#35583f}
+.nx-gate-dialog-price small{font:400 11px Arial,sans-serif;color:#8f9e90}
+.nx-gate-quote-dialog form{display:grid;gap:14px}
+.nx-gate-quote-dialog form label{display:grid;gap:7px;font-size:11px;color:#5a735f}
+.nx-gate-quote-dialog input,.nx-gate-quote-dialog textarea{width:100%;min-height:43px;border:1px solid #cbdccb;border-radius:8px;padding:10px 12px;font:400 13px Arial,sans-serif;background:#fff;color:#273f30}
+.nx-gate-quote-dialog textarea{resize:vertical}
+.nx-gate-quote-dialog .nx-gate-modal-note{font-size:10px;margin-top:14px}
+@media(max-width:1100px){.nx-gate-layout{grid-template-columns:1fr}.nx-gate-stage{position:relative;top:auto;min-height:500px;height:65vh}.nx-gate-customizer{border-left:0;border-top:1px solid #e4e8de}.nx-gate-intro-meta{display:none}.nx-gate-secondary{flex-direction:column;align-items:flex-start}.nx-gate-actions{width:100%}}
+@media(max-width:540px){.nx-gate-stage{height:60vh;min-height:440px}.nx-gate-stage-toolbar,.nx-gate-stage-foot{padding:12px}.nx-gate-stage-foot{flex-wrap:wrap;min-height:80px}.nx-gate-orbit-hint{display:none}.nx-gate-style-options{gap:5px}.nx-gate-style-thumb{height:66px}.nx-gate-total strong{font-size:40px}.nx-gate-intro{padding-top:35px}.nx-gate-lab-pill{font-size:9px}}
