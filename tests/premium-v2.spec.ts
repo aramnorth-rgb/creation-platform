@@ -549,3 +549,31 @@ test("Reconstruction endpoints reject unauthorised paid operations", async ({ re
   const model = await request.get("/api/reconstruction/12345678/model");
   expect([401,503]).toContain(model.status());
 });
+
+
+test("Bespoke gate pilot keeps geometry, choices, quote and shared configuration coherent", async ({ page }) => {
+  await noWebgl(page);
+  await page.goto("/gates");
+  await expect(page.getByRole("heading",{name:/Made for your entrance/i})).toBeVisible();
+  await expect(page.getByRole("region",{name:"Illustrative price estimate"})).toBeVisible();
+  await expect(page.getByRole("button",{name:"Front elevation"})).toHaveAttribute("aria-pressed","true");
+  const initial = await page.locator(".nx-gate-total strong").innerText();
+  await page.getByRole("button",{name:/Atelier/}).click();
+  await expect(page.getByText("Atelier collection")).toBeVisible();
+  await page.getByRole("button",{name:"Single leaf"}).click();
+  await expect(page.getByText("Single swing")).toBeVisible();
+  await expect(page.getByRole("slider",{name:"Clear opening width"})).toHaveAttribute("max","3000");
+  await page.getByRole("slider",{name:"Gate leaf height"}).fill("2000");
+  await page.getByRole("button",{name:"Warm bronze"}).click();
+  const after=await page.locator(".nx-gate-total strong").innerText();
+  expect(after).not.toEqual(initial);
+  await page.getByRole("button",{name:"Prepare enquiry"}).click();
+  await expect(page.getByRole("dialog",{name:"Prepare gate enquiry"})).toBeVisible();
+  await expect(page.getByText("Nothing was sent.",{exact:false})).toBeVisible();
+  await page.getByRole("button",{name:"Close enquiry"}).click();
+  await page.reload();
+  await expect(page.getByText("Atelier collection")).toBeVisible();
+  await expect(page.getByRole("button",{name:"Warm bronze"})).toHaveAttribute("aria-pressed","true");
+  await page.getByRole("button",{name:"Reset design"}).click();
+  await expect(page.getByText("Horizon collection")).toBeVisible();
+});
